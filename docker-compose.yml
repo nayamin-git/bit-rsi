@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  rsi-bot:
+    build: .
+    container_name: rsi-trading-bot
+    restart: unless-stopped
+    environment:
+      - BINANCE_API_KEY=${BINANCE_API_KEY}
+      - BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - USE_TESTNET=${USE_TESTNET:-true}
+      - SYMBOL=${SYMBOL:-BTC/USDT}
+      - LEVERAGE=${LEVERAGE:-10}
+      - RSI_OVERSOLD=${RSI_OVERSOLD:-25}
+      - RSI_OVERBOUGHT=${RSI_OVERBOUGHT:-75}
+    volumes:
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro
+    networks:
+      - bot-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:9000/status')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  webhook-listener:
+    build: .
+    container_name: webhook-listener
+    restart: unless-stopped
+    command: ["python", "webhook_listener.py"]
+    ports:
+      - "9000:9000"
+    environment:
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-default_secret_change_me}
+    volumes:
+      - ./logs:/app/logs
+      - .:/app
+    networks:
+      - bot-network
+    depends_on:
+      - rsi-bot
+
+networks:
+  bot-network:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local
