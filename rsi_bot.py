@@ -7,6 +7,10 @@ from datetime import datetime
 import json
 import csv
 import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 class BinanceRSIBot:
     def __init__(self, api_key, api_secret, testnet=True):
@@ -349,6 +353,8 @@ class BinanceRSIBot:
                 # Log para análisis posterior
                 with open(f'logs/signals_{datetime.now().strftime("%Y%m%d")}.log', 'a') as f:
                     f.write(f"{datetime.now().isoformat()},{signal_type},{rsi:.2f},{price:.2f},{price_trend},{volatility:.2f}\n")
+        
+    def calculate_rsi(self, prices, period=14):
         """Calcula el RSI (Relative Strength Index)"""
         deltas = np.diff(prices)
         gains = np.where(deltas > 0, deltas, 0)
@@ -551,23 +557,7 @@ class BinanceRSIBot:
             if current_price >= self.position['stop_loss']:
                 self.close_position("Stop Loss", current_rsi)
             elif current_price <= self.position['take_profit']:
-                self.close_position("Take Profit", current_rsi)Verifica condiciones de salida (stop loss / take profit)"""
-        if not self.in_position:
-            return
-            
-        if self.position['side'] == 'long':
-            # Stop loss o take profit para LONG
-            if current_price <= self.position['stop_loss']:
-                self.close_position("Stop Loss")
-            elif current_price >= self.position['take_profit']:
-                self.close_position("Take Profit")
-                
-        else:  # SHORT
-            # Stop loss o take profit para SHORT
-            if current_price >= self.position['stop_loss']:
-                self.close_position("Stop Loss")
-            elif current_price <= self.position['take_profit']:
-                self.close_position("Take Profit")
+                self.close_position("Take Profit", current_rsi)
     
     def analyze_and_trade(self):
         """Análisis principal y ejecución de trades"""
@@ -584,7 +574,7 @@ class BinanceRSIBot:
         self.logger.info(f"📈 BTC: ${current_price:.2f} | RSI: {current_rsi:.2f}")
         
         # Verificar condiciones de salida si estamos en posición
-        self.check_exit_conditions(current_price)
+        self.check_exit_conditions(current_price, current_rsi)
         
         # Evitar señales muy frecuentes (mínimo 5 minutos entre señales)
         current_time = time.time()
@@ -597,13 +587,15 @@ class BinanceRSIBot:
             # Señal LONG (RSI oversold)
             if current_rsi < self.rsi_oversold:
                 self.logger.info(f"🟢 Señal LONG detectada - RSI: {current_rsi:.2f}")
-                if self.open_long_position(current_price):
+                self.log_signal_analysis(current_rsi, current_price, 'LONG_SIGNAL')
+                if self.open_long_position(current_price, current_rsi):
                     self.last_signal_time = current_time
                     
             # Señal SHORT (RSI overbought)
             elif current_rsi > self.rsi_overbought:
                 self.logger.info(f"🔴 Señal SHORT detectada - RSI: {current_rsi:.2f}")
-                if self.open_short_position(current_price):
+                self.log_signal_analysis(current_rsi, current_price, 'SHORT_SIGNAL')
+                if self.open_short_position(current_price, current_rsi):
                     self.last_signal_time = current_time
     
     def run(self):
@@ -630,33 +622,46 @@ class BinanceRSIBot:
 # Ejemplo de uso
 if __name__ == "__main__":
     
-    # ⚠️ CONFIGURACIÓN IMPORTANTE ⚠️
-    API_KEY = "tu_api_key_aqui"
-    API_SECRET = "tu_api_secret_aqui"
+    # ⚠️ CONFIGURACIÓN CON VARIABLES DE ENTORNO ⚠️
+    API_KEY = os.getenv('BINANCE_API_KEY')
+    API_SECRET = os.getenv('BINANCE_API_SECRET')
+    USE_TESTNET = os.getenv('USE_TESTNET', 'true').lower() == 'true'
     
-    # USAR TESTNET PRIMERO - Cambiar a False solo cuando estés 100% seguro
-    USE_TESTNET = True
-    
-    if API_KEY == "tu_api_key_aqui":
-        print("❌ ERROR: Debes configurar tus API keys de Binance")
-        print("1. Ve a Binance > Cuenta > API Management")
-        print("2. Crea nuevas API keys con permisos de trading")
-        print("3. ⚠️ IMPORTANTE: Habilita testnet primero para pruebas")
-        print("4. Reemplaza las variables API_KEY y API_SECRET")
+    if not API_KEY or not API_SECRET:
+        print("❌ ERROR: Variables de entorno no configuradas")
+        print("Configura BINANCE_API_KEY y BINANCE_API_SECRET")
         exit(1)
     
-    # Crear y ejecutar el bot
-    bot = BinanceRSIBot(
-        api_key=API_KEY,
-        api_secret=API_SECRET, 
-        testnet=USE_TESTNET
-    )
+    print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
     
-    # ⚠️ ADVERTENCIA FINAL ⚠️
-    if not USE_TESTNET:
-        response = input("🚨 ¿Estás seguro de usar dinero real? (yes/no): ")
-        if response.lower() != 'yes':
-            print("Cambiando a testnet por seguridad...")
-            bot.exchange.sandbox = True
+    # Auto-restart en caso de errores críticos
+    restart_count = 0
+    max_restarts = 5
     
-    bot.run()
+    while restart_count < max_restarts:
+        try:
+            # Crear y ejecutar el bot
+            bot = BinanceRSIBot(
+                api_key=API_KEY,
+                api_secret=API_SECRET, 
+                testnet=USE_TESTNET
+            )
+            
+            bot.run()
+            break  # Si termina normalmente, salir del loop
+            
+        except KeyboardInterrupt:
+            print("🛑 Bot detenido por el usuario")
+            break
+            
+        except Exception as e:
+            restart_count += 1
+            print(f"❌ Error crítico ({restart_count}/{max_restarts}): {e}")
+            
+            if restart_count < max_restarts:
+                wait_time = min(60 * restart_count, 300)  # Max 5 minutos
+                print(f"🔄 Reiniciando en {wait_time} segundos...")
+                time.sleep(wait_time)
+            else:
+                print("💀 Máximo de reinicios alcanzado. Bot detenido.")
+                break
