@@ -1,5 +1,10 @@
-ccxt==4.2.25
-pandas==2.1.4
-numpy==1.24.3
-python-dotenv==1.0.0
-requests==2.31.0
+setuptools==70.0.0
+wheel==0.43.0
+ccxt==4.3.95
+pandas==2.2.2
+numpy==1.26.4
+python-dotenv==1.0.1
+flask==3.0.3
+requests==2.32.3
+Werkzeug==3.0.3
+markupsafe==2.1.5
