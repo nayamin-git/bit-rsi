@@ -23,6 +23,9 @@ class BinanceRSIBot:
             testnet: True para usar testnet, False para trading real
         """
         
+        # IMPORTANTE: Configurar logging PRIMERO
+        self.setup_logging()
+        
         # Configuración del exchange con URLs correctas
         self.testnet = testnet
         self.exchange = ccxt.binance({
@@ -35,7 +38,7 @@ class BinanceRSIBot:
             }
         })
         
-        # Verificar conexión al inicializar
+        # Verificar conexión después de configurar el logger
         self.verify_connection()
         
         # Configuración de la estrategia RSI
@@ -72,10 +75,7 @@ class BinanceRSIBot:
             'peak_balance': 0
         }
         
-        # Configurar logging detallado
-        self.setup_logging()
-        
-        # Inicializar archivos de logs
+        # Inicializar archivos de logs después de configurar el logger
         self.init_log_files()
         
     def verify_connection(self):
@@ -98,14 +98,23 @@ class BinanceRSIBot:
             self.logger.info(f"💰 Balance USDT disponible: ${usdt_balance:.2f}")
             
         except ccxt.AuthenticationError as e:
-            self.logger.error(f"❌ Error de autenticación: {e}")
-            self.logger.error("Verifica tus API keys y permisos")
+            if hasattr(self, 'logger'):
+                self.logger.error(f"❌ Error de autenticación: {e}")
+                self.logger.error("Verifica tus API keys y permisos")
+            else:
+                print(f"❌ Error de autenticación: {e}")
             raise
         except ccxt.NetworkError as e:
-            self.logger.error(f"❌ Error de red: {e}")
+            if hasattr(self, 'logger'):
+                self.logger.error(f"❌ Error de red: {e}")
+            else:
+                print(f"❌ Error de red: {e}")
             raise
         except Exception as e:
-            self.logger.error(f"❌ Error de conexión: {e}")
+            if hasattr(self, 'logger'):
+                self.logger.error(f"❌ Error de conexión: {e}")
+            else:
+                print(f"❌ Error de conexión: {e}")
             raise
         
     def setup_logging(self):

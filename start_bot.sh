@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuración
-BOT_FILE="rsi_bot_fixed.py"
+BOT_FILE="rsi_bot.py"
 LOG_DIR="logs"
 PID_FILE="bot.pid"
 
