@@ -26,22 +26,8 @@ class BinanceRSIBot:
         # IMPORTANTE: Configurar logging PRIMERO
         self.setup_logging()
         
-        # Configuración del exchange con URLs correctas
+        # Configurar variables básicas ANTES de exchange
         self.testnet = testnet
-        self.exchange = ccxt.binance({
-            'apiKey': api_key,
-            'secret': api_secret,
-            'sandbox': testnet,
-            'enableRateLimit': True,
-            'options': {
-                'adjustForTimeDifference': True,
-            }
-        })
-        
-        # Verificar conexión después de configurar el logger
-        self.verify_connection()
-        
-        # Configuración de la estrategia RSI
         self.symbol = 'BTC/USDT'
         self.timeframe = '5m'
         self.rsi_period = 14
@@ -75,7 +61,21 @@ class BinanceRSIBot:
             'peak_balance': 0
         }
         
-        # Inicializar archivos de logs después de configurar el logger
+        # Configuración del exchange DESPUÉS de definir variables
+        self.exchange = ccxt.binance({
+            'apiKey': api_key,
+            'secret': api_secret,
+            'sandbox': testnet,
+            'enableRateLimit': True,
+            'options': {
+                'adjustForTimeDifference': True,
+            }
+        })
+        
+        # Verificar conexión después de configurar todo
+        self.verify_connection()
+        
+        # Inicializar archivos de logs al final
         self.init_log_files()
         
     def verify_connection(self):
