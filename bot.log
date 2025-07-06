@@ -1,0 +1,543 @@
+nohup: ignoring input
+2025-06-26 20:01:20 | INFO | 🤖 Bot RSI Agresivo iniciado
+2025-06-26 20:01:20 | INFO | 📊 Configuración: RSI(14) | OS: 25 | OB: 75
+2025-06-26 20:01:20 | INFO | ⚡ Apalancamiento: 10x | Risk: 5% | SL: 3% | TP: 6%
+2025-06-26 20:01:24 | INFO | 📈 BTC: $107453.81 | RSI: 57.03
+2025-06-26 20:01:54 | INFO | 📈 BTC: $107464.46 | RSI: 57.78
+2025-06-26 20:02:24 | INFO | 📈 BTC: $107459.40 | RSI: 57.42
+2025-06-26 20:02:54 | INFO | 📈 BTC: $107476.56 | RSI: 58.66
+2025-06-26 20:03:25 | INFO | 📈 BTC: $107476.55 | RSI: 58.66
+2025-06-26 20:03:55 | INFO | 📈 BTC: $107480.00 | RSI: 58.91
+2025-06-26 20:04:25 | INFO | 📈 BTC: $107462.00 | RSI: 57.61
+2025-06-26 20:04:55 | INFO | 📈 BTC: $107453.63 | RSI: 57.02
+2025-06-26 20:05:25 | INFO | 📈 BTC: $107483.99 | RSI: 56.20
+2025-06-26 20:05:56 | INFO | 📈 BTC: $107613.44 | RSI: 62.27
+2025-06-26 20:06:26 | INFO | 📈 BTC: $107629.26 | RSI: 62.90
+2025-06-26 20:06:56 | INFO | 📈 BTC: $107587.99 | RSI: 61.22
+2025-06-26 20:07:26 | INFO | 📈 BTC: $107612.39 | RSI: 62.23
+2025-06-26 20:07:57 | INFO | 📈 BTC: $107612.39 | RSI: 62.23
+2025-06-26 20:08:27 | INFO | 📈 BTC: $107625.37 | RSI: 62.75
+2025-06-26 20:08:57 | INFO | 📈 BTC: $107625.39 | RSI: 62.75
+2025-06-26 20:09:27 | INFO | 📈 BTC: $107629.24 | RSI: 62.90
+2025-06-26 20:09:58 | INFO | 📈 BTC: $107621.49 | RSI: 62.59
+2025-06-26 20:10:28 | INFO | 📈 BTC: $107627.00 | RSI: 58.68
+2025-06-26 20:10:58 | INFO | 📈 BTC: $107590.00 | RSI: 56.25
+2025-06-26 20:11:28 | INFO | 📈 BTC: $107583.33 | RSI: 55.83
+2025-06-26 20:11:59 | INFO | 📈 BTC: $107583.33 | RSI: 55.83
+2025-06-26 20:12:29 | INFO | 📈 BTC: $107577.93 | RSI: 55.50
+2025-06-26 20:12:59 | INFO | 📈 BTC: $107577.93 | RSI: 55.50
+2025-06-26 20:13:29 | INFO | 📈 BTC: $107555.44 | RSI: 54.15
+2025-06-26 20:14:00 | INFO | 📈 BTC: $107555.44 | RSI: 54.15
+2025-06-26 20:14:30 | INFO | 📈 BTC: $107529.35 | RSI: 52.66
+2025-06-26 20:15:00 | INFO | 📈 BTC: $107537.52 | RSI: 53.12
+2025-06-26 20:15:30 | INFO | 📈 BTC: $107566.80 | RSI: 61.73
+2025-06-26 20:16:00 | INFO | 📈 BTC: $107573.51 | RSI: 62.03
+2025-06-26 20:16:31 | INFO | 📈 BTC: $107552.90 | RSI: 61.10
+2025-06-26 20:17:01 | INFO | 📈 BTC: $107552.91 | RSI: 61.10
+2025-06-26 20:17:31 | INFO | 📈 BTC: $107541.74 | RSI: 60.58
+2025-06-26 20:18:01 | INFO | 📈 BTC: $107592.91 | RSI: 62.87
+2025-06-26 20:18:32 | INFO | 📈 BTC: $107592.91 | RSI: 62.87
+2025-06-26 20:19:02 | INFO | 📈 BTC: $107610.97 | RSI: 63.61
+2025-06-26 20:19:32 | INFO | 📈 BTC: $107600.22 | RSI: 63.17
+2025-06-26 20:20:02 | INFO | 📈 BTC: $107593.83 | RSI: 64.05
+2025-06-26 20:20:33 | INFO | 📈 BTC: $107593.83 | RSI: 64.05
+2025-06-26 20:21:03 | INFO | 📈 BTC: $107593.84 | RSI: 64.05
+2025-06-26 20:21:33 | INFO | 📈 BTC: $107573.28 | RSI: 62.57
+2025-06-26 20:22:03 | INFO | 📈 BTC: $107529.34 | RSI: 59.62
+2025-06-26 20:22:34 | INFO | 📈 BTC: $107529.35 | RSI: 59.62
+2025-06-26 20:23:04 | INFO | 📈 BTC: $107574.99 | RSI: 62.69
+2025-06-26 20:23:34 | INFO | 📈 BTC: $107627.49 | RSI: 65.39
+2025-06-26 20:24:04 | INFO | 📈 BTC: $107580.01 | RSI: 63.04
+2025-06-26 20:24:35 | INFO | 📈 BTC: $107571.74 | RSI: 62.46
+2025-06-26 20:25:05 | INFO | 📈 BTC: $107571.73 | RSI: 52.50
+2025-06-26 20:25:35 | INFO | 📈 BTC: $107560.01 | RSI: 51.64
+2025-06-26 20:26:05 | INFO | 📈 BTC: $107558.10 | RSI: 51.51
+2025-06-26 20:26:36 | INFO | 📈 BTC: $107553.60 | RSI: 51.18
+2025-06-26 20:27:06 | INFO | 📈 BTC: $107550.67 | RSI: 50.98
+2025-06-26 20:27:36 | INFO | 📈 BTC: $107550.67 | RSI: 50.98
+2025-06-26 20:28:06 | INFO | 📈 BTC: $107550.66 | RSI: 50.98
+2025-06-26 20:28:36 | INFO | 📈 BTC: $107549.31 | RSI: 50.88
+2025-06-26 20:29:07 | INFO | 📈 BTC: $107612.50 | RSI: 55.11
+2025-06-26 20:29:37 | INFO | 📈 BTC: $107602.55 | RSI: 54.50
+2025-06-26 20:30:07 | INFO | 📈 BTC: $107602.54 | RSI: 56.96
+2025-06-26 20:30:37 | INFO | 📈 BTC: $107643.63 | RSI: 59.34
+2025-06-26 20:31:08 | INFO | 📈 BTC: $107643.63 | RSI: 59.34
+2025-06-26 20:31:38 | INFO | 📈 BTC: $107665.19 | RSI: 60.48
+2025-06-26 20:32:08 | INFO | 📈 BTC: $107676.99 | RSI: 61.08
+2025-06-26 20:32:38 | INFO | 📈 BTC: $107680.40 | RSI: 61.25
+2025-06-26 20:33:09 | INFO | 📈 BTC: $107680.40 | RSI: 61.25
+2025-06-26 20:33:39 | INFO | 📈 BTC: $107872.00 | RSI: 68.89
+2025-06-26 20:34:09 | INFO | 📈 BTC: $107811.36 | RSI: 66.82
+2025-06-26 20:34:39 | INFO | 📈 BTC: $107816.54 | RSI: 67.01
+2025-06-26 20:35:10 | INFO | 📈 BTC: $107844.94 | RSI: 71.63
+2025-06-26 20:35:40 | INFO | 📈 BTC: $107808.80 | RSI: 69.25
+2025-06-26 20:36:10 | INFO | 📈 BTC: $107843.76 | RSI: 71.60
+2025-06-26 20:36:40 | INFO | 📈 BTC: $107852.94 | RSI: 71.89
+2025-06-26 20:37:11 | INFO | 📈 BTC: $107814.84 | RSI: 69.71
+2025-06-26 20:37:41 | INFO | 📈 BTC: $107861.80 | RSI: 72.16
+2025-06-26 20:38:11 | INFO | 📈 BTC: $107899.00 | RSI: 73.25
+2025-06-26 20:38:41 | INFO | 📈 BTC: $107875.01 | RSI: 72.55
+2025-06-26 20:39:11 | INFO | 📈 BTC: $107800.20 | RSI: 68.61
+2025-06-26 20:39:42 | INFO | 📈 BTC: $107809.80 | RSI: 69.33
+2025-06-26 20:40:12 | INFO | 📈 BTC: $107830.73 | RSI: 66.69
+2025-06-26 20:40:42 | INFO | 📈 BTC: $107822.13 | RSI: 66.35
+2025-06-26 20:41:12 | INFO | 📈 BTC: $107865.00 | RSI: 68.00
+2025-06-26 20:41:43 | INFO | 📈 BTC: $107868.48 | RSI: 68.12
+2025-06-26 20:42:13 | INFO | 📈 BTC: $107847.23 | RSI: 67.33
+2025-06-26 20:42:43 | INFO | 📈 BTC: $107858.28 | RSI: 67.75
+2025-06-26 20:43:13 | INFO | 📈 BTC: $107879.32 | RSI: 68.51
+2025-06-26 20:43:44 | INFO | 📈 BTC: $107879.33 | RSI: 68.51
+2025-06-26 20:44:14 | INFO | 📈 BTC: $107879.33 | RSI: 68.51
+2025-06-26 20:44:44 | INFO | 📈 BTC: $107891.96 | RSI: 68.95
+2025-06-26 20:45:14 | INFO | 📈 BTC: $107967.50 | RSI: 70.16
+2025-06-26 20:45:45 | INFO | 📈 BTC: $107840.00 | RSI: 62.08
+2025-06-26 20:46:15 | INFO | 📈 BTC: $107744.56 | RSI: 56.86
+2025-06-26 20:46:45 | INFO | 📈 BTC: $107766.66 | RSI: 57.99
+2025-06-26 20:47:15 | INFO | 📈 BTC: $107770.14 | RSI: 58.17
+2025-06-26 20:47:46 | INFO | 📈 BTC: $107812.52 | RSI: 60.48
+2025-06-26 20:48:16 | INFO | 📈 BTC: $107815.14 | RSI: 60.63
+2025-06-26 20:48:46 | INFO | 📈 BTC: $107807.37 | RSI: 60.19
+2025-06-26 20:49:17 | INFO | 📈 BTC: $107745.88 | RSI: 56.92
+2025-06-26 20:49:47 | INFO | 📈 BTC: $107721.04 | RSI: 55.70
+2025-06-26 20:50:17 | INFO | 📈 BTC: $107710.66 | RSI: 55.26
+2025-06-26 20:50:47 | INFO | 📈 BTC: $107713.18 | RSI: 55.37
+2025-06-26 20:51:18 | INFO | 📈 BTC: $107681.73 | RSI: 53.92
+2025-06-26 20:51:48 | INFO | 📈 BTC: $107681.94 | RSI: 53.93
+2025-06-26 20:52:18 | INFO | 📈 BTC: $107715.09 | RSI: 55.45
+2025-06-26 20:52:48 | INFO | 📈 BTC: $107706.39 | RSI: 55.05
+2025-06-26 20:53:19 | INFO | 📈 BTC: $107731.45 | RSI: 56.06
+2025-06-26 20:53:49 | INFO | 📈 BTC: $107751.68 | RSI: 56.80
+2025-06-26 20:54:20 | INFO | 📈 BTC: $107773.24 | RSI: 57.56
+2025-06-26 20:54:50 | INFO | 📈 BTC: $107747.52 | RSI: 56.65
+2025-06-26 20:55:20 | INFO | 📈 BTC: $107760.01 | RSI: 56.80
+2025-06-26 20:55:51 | INFO | 📈 BTC: $107757.96 | RSI: 56.73
+2025-06-26 20:56:21 | INFO | 📈 BTC: $107748.04 | RSI: 56.37
+2025-06-26 20:56:51 | INFO | 📈 BTC: $107728.09 | RSI: 55.45
+2025-06-26 20:57:21 | INFO | 📈 BTC: $107709.70 | RSI: 54.62
+2025-06-26 20:57:52 | INFO | 📈 BTC: $107727.76 | RSI: 55.44
+2025-06-26 20:58:22 | INFO | 📈 BTC: $107748.49 | RSI: 56.38
+2025-06-26 20:58:53 | INFO | 📈 BTC: $107758.96 | RSI: 56.76
+2025-06-26 20:59:23 | INFO | 📈 BTC: $107754.65 | RSI: 56.61
+2025-06-26 20:59:53 | INFO | 📈 BTC: $107766.30 | RSI: 57.02
+2025-06-26 21:00:23 | INFO | 📈 BTC: $107734.12 | RSI: 58.15
+2025-06-26 21:00:54 | INFO | 📈 BTC: $107722.82 | RSI: 57.60
+2025-06-26 21:01:24 | INFO | 📈 BTC: $107732.84 | RSI: 58.08
+2025-06-26 21:01:54 | INFO | 📈 BTC: $107718.01 | RSI: 57.37
+2025-06-26 21:02:24 | INFO | 📈 BTC: $107759.99 | RSI: 59.44
+2025-06-26 21:02:54 | INFO | 📈 BTC: $107740.00 | RSI: 58.43
+2025-06-26 21:03:25 | INFO | 📈 BTC: $107720.01 | RSI: 57.46
+2025-06-26 21:03:55 | INFO | 📈 BTC: $107712.01 | RSI: 57.08
+2025-06-26 21:04:25 | INFO | 📈 BTC: $107702.51 | RSI: 56.63
+2025-06-26 21:04:55 | INFO | 📈 BTC: $107702.51 | RSI: 56.63
+2025-06-26 21:05:26 | INFO | 📈 BTC: $107712.01 | RSI: 57.35
+2025-06-26 21:05:56 | INFO | 📈 BTC: $107683.03 | RSI: 56.11
+2025-06-26 21:06:26 | INFO | 📈 BTC: $107698.92 | RSI: 56.84
+2025-06-26 21:06:56 | INFO | 📈 BTC: $107698.91 | RSI: 56.84
+2025-06-26 21:07:27 | INFO | 📈 BTC: $107685.73 | RSI: 56.23
+2025-06-26 21:07:57 | INFO | 📈 BTC: $107664.36 | RSI: 55.27
+2025-06-26 21:08:27 | INFO | 📈 BTC: $107600.69 | RSI: 52.58
+2025-06-26 21:08:57 | INFO | 📈 BTC: $107536.90 | RSI: 50.14
+2025-06-26 21:09:28 | INFO | 📈 BTC: $107521.31 | RSI: 49.58
+2025-06-26 21:09:58 | INFO | 📈 BTC: $107521.31 | RSI: 49.58
+2025-06-26 21:10:28 | INFO | 📈 BTC: $107505.56 | RSI: 51.96
+2025-06-26 21:10:58 | INFO | 📈 BTC: $107494.24 | RSI: 51.52
+2025-06-26 21:11:29 | INFO | 📈 BTC: $107428.57 | RSI: 49.11
+2025-06-26 21:11:59 | INFO | 📈 BTC: $107475.14 | RSI: 50.79
+2025-06-26 21:12:29 | INFO | 📈 BTC: $107402.17 | RSI: 48.20
+2025-06-26 21:12:59 | INFO | 📈 BTC: $107381.00 | RSI: 47.50
+2025-06-26 21:13:29 | INFO | 📈 BTC: $107386.00 | RSI: 47.66
+2025-06-26 21:14:00 | INFO | 📈 BTC: $107393.23 | RSI: 47.90
+2025-06-26 21:14:30 | INFO | 📈 BTC: $107402.18 | RSI: 48.20
+2025-06-26 21:15:00 | INFO | 📈 BTC: $107406.71 | RSI: 48.35
+2025-06-26 21:15:30 | INFO | 📈 BTC: $107363.90 | RSI: 39.89
+2025-06-26 21:16:01 | INFO | 📈 BTC: $107369.26 | RSI: 40.05
+2025-06-26 21:16:31 | INFO | 📈 BTC: $107372.18 | RSI: 40.14
+2025-06-26 21:17:01 | INFO | 📈 BTC: $107361.43 | RSI: 39.81
+2025-06-26 21:17:31 | INFO | 📈 BTC: $107371.98 | RSI: 40.14
+2025-06-26 21:18:02 | INFO | 📈 BTC: $107359.79 | RSI: 39.76
+2025-06-26 21:18:32 | INFO | 📈 BTC: $107353.20 | RSI: 39.56
+2025-06-26 21:19:02 | INFO | 📈 BTC: $107371.69 | RSI: 40.13
+2025-06-26 21:19:32 | INFO | 📈 BTC: $107407.51 | RSI: 41.29
+2025-06-26 21:20:03 | INFO | 📈 BTC: $107419.49 | RSI: 44.99
+2025-06-26 21:20:33 | INFO | 📈 BTC: $107419.50 | RSI: 44.99
+2025-06-26 21:21:03 | INFO | 📈 BTC: $107337.07 | RSI: 42.04
+2025-06-26 21:21:33 | INFO | 📈 BTC: $107291.05 | RSI: 40.56
+2025-06-26 21:22:04 | INFO | 📈 BTC: $107197.68 | RSI: 37.86
+2025-06-26 21:22:34 | INFO | 📈 BTC: $107232.61 | RSI: 38.83
+2025-06-26 21:23:04 | INFO | 📈 BTC: $107280.00 | RSI: 40.22
+2025-06-26 21:23:34 | INFO | 📈 BTC: $107265.61 | RSI: 39.79
+2025-06-26 21:24:04 | INFO | 📈 BTC: $107169.49 | RSI: 37.11
+2025-06-26 21:24:35 | INFO | 📈 BTC: $107225.23 | RSI: 38.62
+2025-06-26 21:25:05 | INFO | 📈 BTC: $107239.26 | RSI: 37.08
+2025-06-26 21:25:35 | INFO | 📈 BTC: $107256.98 | RSI: 37.88
+2025-06-26 21:26:05 | INFO | 📈 BTC: $107260.00 | RSI: 38.01
+2025-06-26 21:26:36 | INFO | 📈 BTC: $107262.14 | RSI: 38.11
+2025-06-26 21:27:06 | INFO | 📈 BTC: $107262.15 | RSI: 38.11
+2025-06-26 21:27:36 | INFO | 📈 BTC: $107274.75 | RSI: 38.66
+2025-06-26 21:28:06 | INFO | 📈 BTC: $107274.74 | RSI: 38.66
+2025-06-26 21:28:37 | INFO | 📈 BTC: $107274.75 | RSI: 38.66
+2025-06-26 21:29:07 | INFO | 📈 BTC: $107248.63 | RSI: 37.50
+2025-06-26 21:29:37 | INFO | 📈 BTC: $107255.40 | RSI: 37.81
+2025-06-26 21:30:07 | INFO | 📈 BTC: $107255.41 | RSI: 38.42
+2025-06-26 21:30:38 | INFO | 📈 BTC: $107267.02 | RSI: 38.94
+2025-06-26 21:31:08 | INFO | 📈 BTC: $107310.68 | RSI: 40.82
+2025-06-26 21:31:38 | INFO | 📈 BTC: $107111.89 | RSI: 34.77
+2025-06-26 21:32:08 | INFO | 📈 BTC: $107124.68 | RSI: 35.06
+2025-06-26 21:32:38 | INFO | 📈 BTC: $107126.00 | RSI: 35.10
+2025-06-26 21:33:09 | INFO | 📈 BTC: $107076.48 | RSI: 33.97
+2025-06-26 21:33:39 | INFO | 📈 BTC: $107066.03 | RSI: 33.74
+2025-06-26 21:34:09 | INFO | 📈 BTC: $107039.64 | RSI: 33.18
+2025-06-26 21:34:39 | INFO | 📈 BTC: $107000.00 | RSI: 32.37
+2025-06-26 21:35:10 | INFO | 📈 BTC: $106961.95 | RSI: 30.33
+2025-06-26 21:35:40 | INFO | 📈 BTC: $106877.53 | RSI: 28.84
+2025-06-26 21:36:10 | INFO | 📈 BTC: $106850.01 | RSI: 28.38
+2025-06-26 21:36:40 | INFO | 📈 BTC: $106954.90 | RSI: 30.20
+2025-06-26 21:37:11 | INFO | 📈 BTC: $106995.99 | RSI: 30.98
+2025-06-26 21:37:41 | INFO | 📈 BTC: $106980.69 | RSI: 30.69
+2025-06-26 21:38:11 | INFO | 📈 BTC: $106975.04 | RSI: 30.58
+2025-06-26 21:38:41 | INFO | 📈 BTC: $107009.33 | RSI: 31.46
+2025-06-26 21:39:12 | INFO | 📈 BTC: $107040.01 | RSI: 32.75
+2025-06-26 21:39:42 | INFO | 📈 BTC: $107063.05 | RSI: 33.69
+2025-06-26 21:40:12 | INFO | 📈 BTC: $107050.71 | RSI: 23.12
+2025-06-26 21:40:12 | INFO | 🟢 Señal LONG detectada - RSI: 23.12
+2025-06-26 21:40:12 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 23.12 | Price: $107050.71
+2025-06-26 21:40:12 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.06%
+2025-06-26 21:40:13 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:40:43 | INFO | 📈 BTC: $106925.78 | RSI: 21.30
+2025-06-26 21:40:43 | INFO | 🟢 Señal LONG detectada - RSI: 21.30
+2025-06-26 21:40:43 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.30 | Price: $106925.78
+2025-06-26 21:40:43 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.06%
+2025-06-26 21:40:43 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:41:13 | INFO | 📈 BTC: $106887.71 | RSI: 20.80
+2025-06-26 21:41:13 | INFO | 🟢 Señal LONG detectada - RSI: 20.80
+2025-06-26 21:41:13 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 20.80 | Price: $106887.71
+2025-06-26 21:41:13 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.05%
+2025-06-26 21:41:14 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:41:44 | INFO | 📈 BTC: $106924.43 | RSI: 21.28
+2025-06-26 21:41:44 | INFO | 🟢 Señal LONG detectada - RSI: 21.28
+2025-06-26 21:41:44 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.28 | Price: $106924.43
+2025-06-26 21:41:44 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.05%
+2025-06-26 21:41:45 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:42:15 | INFO | 📈 BTC: $106908.04 | RSI: 21.06
+2025-06-26 21:42:15 | INFO | 🟢 Señal LONG detectada - RSI: 21.06
+2025-06-26 21:42:15 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.06 | Price: $106908.04
+2025-06-26 21:42:15 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.06%
+2025-06-26 21:42:15 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:42:46 | INFO | 📈 BTC: $106924.43 | RSI: 21.28
+2025-06-26 21:42:46 | INFO | 🟢 Señal LONG detectada - RSI: 21.28
+2025-06-26 21:42:46 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.28 | Price: $106924.43
+2025-06-26 21:42:46 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.06%
+2025-06-26 21:42:46 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:43:16 | INFO | 📈 BTC: $106935.87 | RSI: 21.43
+2025-06-26 21:43:16 | INFO | 🟢 Señal LONG detectada - RSI: 21.43
+2025-06-26 21:43:16 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.43 | Price: $106935.87
+2025-06-26 21:43:16 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.06%
+2025-06-26 21:43:17 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:43:47 | INFO | 📈 BTC: $106960.00 | RSI: 21.77
+2025-06-26 21:43:47 | INFO | 🟢 Señal LONG detectada - RSI: 21.77
+2025-06-26 21:43:47 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.77 | Price: $106960.00
+2025-06-26 21:43:47 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.06%
+2025-06-26 21:43:48 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:44:18 | INFO | 📈 BTC: $106959.93 | RSI: 21.76
+2025-06-26 21:44:18 | INFO | 🟢 Señal LONG detectada - RSI: 21.76
+2025-06-26 21:44:18 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.76 | Price: $106959.93
+2025-06-26 21:44:18 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.05%
+2025-06-26 21:44:18 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:44:49 | INFO | 📈 BTC: $106979.99 | RSI: 22.05
+2025-06-26 21:44:49 | INFO | 🟢 Señal LONG detectada - RSI: 22.05
+2025-06-26 21:44:49 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 22.05 | Price: $106979.99
+2025-06-26 21:44:49 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.04%
+2025-06-26 21:44:49 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:45:19 | INFO | 📈 BTC: $106984.25 | RSI: 22.89
+2025-06-26 21:45:19 | INFO | 🟢 Señal LONG detectada - RSI: 22.89
+2025-06-26 21:45:19 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 22.89 | Price: $106984.25
+2025-06-26 21:45:19 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.03%
+2025-06-26 21:45:20 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:45:50 | INFO | 📈 BTC: $106994.02 | RSI: 23.38
+2025-06-26 21:45:50 | INFO | 🟢 Señal LONG detectada - RSI: 23.38
+2025-06-26 21:45:50 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 23.38 | Price: $106994.02
+2025-06-26 21:45:50 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.03%
+2025-06-26 21:45:50 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:46:21 | INFO | 📈 BTC: $106911.71 | RSI: 21.45
+2025-06-26 21:46:21 | INFO | 🟢 Señal LONG detectada - RSI: 21.45
+2025-06-26 21:46:21 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.45 | Price: $106911.71
+2025-06-26 21:46:21 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.03%
+2025-06-26 21:46:21 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:46:51 | INFO | 📈 BTC: $106929.99 | RSI: 21.70
+2025-06-26 21:46:51 | INFO | 🟢 Señal LONG detectada - RSI: 21.70
+2025-06-26 21:46:51 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.70 | Price: $106929.99
+2025-06-26 21:46:51 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.03%
+2025-06-26 21:46:52 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:47:22 | INFO | 📈 BTC: $106936.96 | RSI: 21.80
+2025-06-26 21:47:22 | INFO | 🟢 Señal LONG detectada - RSI: 21.80
+2025-06-26 21:47:22 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.80 | Price: $106936.96
+2025-06-26 21:47:22 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 21:47:23 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:47:53 | INFO | 📈 BTC: $106936.97 | RSI: 21.80
+2025-06-26 21:47:53 | INFO | 🟢 Señal LONG detectada - RSI: 21.80
+2025-06-26 21:47:53 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.80 | Price: $106936.97
+2025-06-26 21:47:53 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 21:47:53 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:48:23 | INFO | 📈 BTC: $106947.07 | RSI: 21.95
+2025-06-26 21:48:23 | INFO | 🟢 Señal LONG detectada - RSI: 21.95
+2025-06-26 21:48:23 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.95 | Price: $106947.07
+2025-06-26 21:48:23 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.02%
+2025-06-26 21:48:24 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:48:54 | INFO | 📈 BTC: $106940.34 | RSI: 21.85
+2025-06-26 21:48:54 | INFO | 🟢 Señal LONG detectada - RSI: 21.85
+2025-06-26 21:48:54 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.85 | Price: $106940.34
+2025-06-26 21:48:54 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.02%
+2025-06-26 21:48:55 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:49:25 | INFO | 📈 BTC: $106963.00 | RSI: 22.18
+2025-06-26 21:49:25 | INFO | 🟢 Señal LONG detectada - RSI: 22.18
+2025-06-26 21:49:25 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 22.18 | Price: $106963.00
+2025-06-26 21:49:25 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.02%
+2025-06-26 21:49:25 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:49:56 | INFO | 📈 BTC: $107043.29 | RSI: 25.77
+2025-06-26 21:50:26 | INFO | 📈 BTC: $107067.30 | RSI: 19.69
+2025-06-26 21:50:26 | INFO | 🟢 Señal LONG detectada - RSI: 19.69
+2025-06-26 21:50:26 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 19.69 | Price: $107067.30
+2025-06-26 21:50:26 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.05%
+2025-06-26 21:50:26 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:50:57 | INFO | 📈 BTC: $107092.63 | RSI: 21.05
+2025-06-26 21:50:57 | INFO | 🟢 Señal LONG detectada - RSI: 21.05
+2025-06-26 21:50:57 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.05 | Price: $107092.63
+2025-06-26 21:50:57 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.06%
+2025-06-26 21:50:57 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:51:27 | INFO | 📈 BTC: $107104.60 | RSI: 21.68
+2025-06-26 21:51:27 | INFO | 🟢 Señal LONG detectada - RSI: 21.68
+2025-06-26 21:51:27 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.68 | Price: $107104.60
+2025-06-26 21:51:27 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.06%
+2025-06-26 21:51:28 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:51:58 | INFO | 📈 BTC: $107070.26 | RSI: 19.85
+2025-06-26 21:51:58 | INFO | 🟢 Señal LONG detectada - RSI: 19.85
+2025-06-26 21:51:58 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 19.85 | Price: $107070.26
+2025-06-26 21:51:58 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.06%
+2025-06-26 21:51:58 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:52:29 | INFO | 📈 BTC: $107029.32 | RSI: 18.55
+2025-06-26 21:52:29 | INFO | 🟢 Señal LONG detectada - RSI: 18.55
+2025-06-26 21:52:29 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 18.55 | Price: $107029.32
+2025-06-26 21:52:29 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.06%
+2025-06-26 21:52:29 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:52:59 | INFO | 📈 BTC: $106993.50 | RSI: 18.10
+2025-06-26 21:52:59 | INFO | 🟢 Señal LONG detectada - RSI: 18.10
+2025-06-26 21:52:59 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 18.10 | Price: $106993.50
+2025-06-26 21:52:59 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.05%
+2025-06-26 21:53:00 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:53:30 | INFO | 📈 BTC: $107016.62 | RSI: 18.39
+2025-06-26 21:53:30 | INFO | 🟢 Señal LONG detectada - RSI: 18.39
+2025-06-26 21:53:30 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 18.39 | Price: $107016.62
+2025-06-26 21:53:30 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.05%
+2025-06-26 21:53:31 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:54:01 | INFO | 📈 BTC: $107016.62 | RSI: 18.39
+2025-06-26 21:54:01 | INFO | 🟢 Señal LONG detectada - RSI: 18.39
+2025-06-26 21:54:01 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 18.39 | Price: $107016.62
+2025-06-26 21:54:01 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.04%
+2025-06-26 21:54:01 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:54:32 | INFO | 📈 BTC: $106990.20 | RSI: 18.06
+2025-06-26 21:54:32 | INFO | 🟢 Señal LONG detectada - RSI: 18.06
+2025-06-26 21:54:32 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 18.06 | Price: $106990.20
+2025-06-26 21:54:32 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.04%
+2025-06-26 21:54:32 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:55:02 | INFO | 📈 BTC: $106990.19 | RSI: 21.49
+2025-06-26 21:55:02 | INFO | 🟢 Señal LONG detectada - RSI: 21.49
+2025-06-26 21:55:02 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.49 | Price: $106990.19
+2025-06-26 21:55:02 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.04%
+2025-06-26 21:55:03 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:55:33 | INFO | 📈 BTC: $106960.01 | RSI: 20.99
+2025-06-26 21:55:33 | INFO | 🟢 Señal LONG detectada - RSI: 20.99
+2025-06-26 21:55:33 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 20.99 | Price: $106960.01
+2025-06-26 21:55:33 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.04%
+2025-06-26 21:55:33 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:56:04 | INFO | 📈 BTC: $106960.00 | RSI: 20.99
+2025-06-26 21:56:04 | INFO | 🟢 Señal LONG detectada - RSI: 20.99
+2025-06-26 21:56:04 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 20.99 | Price: $106960.00
+2025-06-26 21:56:04 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.04%
+2025-06-26 21:56:04 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:56:34 | INFO | 📈 BTC: $106954.65 | RSI: 20.90
+2025-06-26 21:56:34 | INFO | 🟢 Señal LONG detectada - RSI: 20.90
+2025-06-26 21:56:34 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 20.90 | Price: $106954.65
+2025-06-26 21:56:34 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.03%
+2025-06-26 21:56:35 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:57:05 | INFO | 📈 BTC: $106979.69 | RSI: 21.31
+2025-06-26 21:57:05 | INFO | 🟢 Señal LONG detectada - RSI: 21.31
+2025-06-26 21:57:05 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.31 | Price: $106979.69
+2025-06-26 21:57:05 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.02%
+2025-06-26 21:57:06 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:57:36 | INFO | 📈 BTC: $106979.68 | RSI: 21.31
+2025-06-26 21:57:36 | INFO | 🟢 Señal LONG detectada - RSI: 21.31
+2025-06-26 21:57:36 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.31 | Price: $106979.68
+2025-06-26 21:57:36 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.02%
+2025-06-26 21:57:36 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:58:07 | INFO | 📈 BTC: $106979.69 | RSI: 21.31
+2025-06-26 21:58:07 | INFO | 🟢 Señal LONG detectada - RSI: 21.31
+2025-06-26 21:58:07 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.31 | Price: $106979.69
+2025-06-26 21:58:07 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.02%
+2025-06-26 21:58:07 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:58:37 | INFO | 📈 BTC: $106984.31 | RSI: 21.39
+2025-06-26 21:58:37 | INFO | 🟢 Señal LONG detectada - RSI: 21.39
+2025-06-26 21:58:37 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.39 | Price: $106984.31
+2025-06-26 21:58:37 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.02%
+2025-06-26 21:58:38 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:59:08 | INFO | 📈 BTC: $106990.19 | RSI: 21.49
+2025-06-26 21:59:08 | INFO | 🟢 Señal LONG detectada - RSI: 21.49
+2025-06-26 21:59:08 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.49 | Price: $106990.19
+2025-06-26 21:59:08 | INFO | 📈 Market Context | Trend: DOWN | Volatility: 0.01%
+2025-06-26 21:59:08 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 21:59:39 | INFO | 📈 BTC: $107036.01 | RSI: 24.23
+2025-06-26 21:59:39 | INFO | 🟢 Señal LONG detectada - RSI: 24.23
+2025-06-26 21:59:39 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 24.23 | Price: $107036.01
+2025-06-26 21:59:39 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 21:59:39 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 22:00:09 | INFO | 📈 BTC: $106992.63 | RSI: 21.28
+2025-06-26 22:00:09 | INFO | 🟢 Señal LONG detectada - RSI: 21.28
+2025-06-26 22:00:09 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.28 | Price: $106992.63
+2025-06-26 22:00:09 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 22:00:10 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 22:00:40 | INFO | 📈 BTC: $107006.26 | RSI: 21.50
+2025-06-26 22:00:40 | INFO | 🟢 Señal LONG detectada - RSI: 21.50
+2025-06-26 22:00:40 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.50 | Price: $107006.26
+2025-06-26 22:00:40 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 22:00:41 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 22:01:11 | INFO | 📈 BTC: $107008.75 | RSI: 21.54
+2025-06-26 22:01:11 | INFO | 🟢 Señal LONG detectada - RSI: 21.54
+2025-06-26 22:01:11 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.54 | Price: $107008.75
+2025-06-26 22:01:11 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 22:01:11 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 22:01:42 | INFO | 📈 BTC: $107008.75 | RSI: 21.54
+2025-06-26 22:01:42 | INFO | 🟢 Señal LONG detectada - RSI: 21.54
+2025-06-26 22:01:42 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.54 | Price: $107008.75
+2025-06-26 22:01:42 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 22:01:42 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 22:02:12 | INFO | 📈 BTC: $107014.26 | RSI: 21.63
+2025-06-26 22:02:12 | INFO | 🟢 Señal LONG detectada - RSI: 21.63
+2025-06-26 22:02:12 | INFO | 🔍 SIGNAL ANALYSIS | Type: LONG_SIGNAL | RSI: 21.63 | Price: $107014.26
+2025-06-26 22:02:12 | INFO | 📈 Market Context | Trend: UP | Volatility: 0.02%
+2025-06-26 22:02:13 | ERROR | Error abriendo posición LONG: binance {"code":-1104,"msg":"Not all sent parameters were read; read '9' parameter(s) but was sent '10'."}
+2025-06-26 22:02:43 | INFO | 📈 BTC: $107131.01 | RSI: 27.65
+2025-06-26 22:03:13 | INFO | 📈 BTC: $107160.00 | RSI: 29.14
+2025-06-26 22:03:43 | INFO | 📈 BTC: $107140.01 | RSI: 28.12
+2025-06-26 22:04:14 | INFO | 📈 BTC: $107200.01 | RSI: 31.11
+2025-06-26 22:04:44 | INFO | 📈 BTC: $107210.25 | RSI: 31.59
+2025-06-26 22:05:14 | INFO | 📈 BTC: $107175.00 | RSI: 29.33
+2025-06-26 22:05:44 | INFO | 📈 BTC: $107147.83 | RSI: 28.78
+2025-06-26 22:06:15 | INFO | 📈 BTC: $107160.30 | RSI: 29.03
+2025-06-26 22:06:45 | INFO | 📈 BTC: $107145.50 | RSI: 28.73
+2025-06-26 22:07:15 | INFO | 📈 BTC: $107145.50 | RSI: 28.73
+2025-06-26 22:07:45 | INFO | 📈 BTC: $107145.49 | RSI: 28.73
+2025-06-26 22:08:16 | INFO | 📈 BTC: $107131.60 | RSI: 28.46
+2025-06-26 22:08:46 | INFO | 📈 BTC: $107131.50 | RSI: 28.46
+2025-06-26 22:09:16 | INFO | 📈 BTC: $107074.48 | RSI: 27.40
+2025-06-26 22:09:46 | INFO | 📈 BTC: $107135.52 | RSI: 28.54
+2025-06-26 22:10:17 | INFO | 📈 BTC: $107153.25 | RSI: 30.37
+2025-06-26 22:10:47 | INFO | 📈 BTC: $107127.19 | RSI: 29.66
+2025-06-26 22:11:17 | INFO | 📈 BTC: $107081.99 | RSI: 28.74
+2025-06-26 22:11:47 | INFO | 📈 BTC: $107076.58 | RSI: 28.63
+2025-06-26 22:12:18 | INFO | 📈 BTC: $107028.26 | RSI: 27.72
+2025-06-26 22:12:48 | INFO | 📈 BTC: $107026.19 | RSI: 27.68
+2025-06-26 22:13:18 | INFO | 📈 BTC: $107026.18 | RSI: 27.68
+2025-06-26 22:13:48 | INFO | 📈 BTC: $107021.74 | RSI: 27.60
+2025-06-26 22:14:18 | INFO | 📈 BTC: $107014.02 | RSI: 27.46
+2025-06-26 22:14:49 | INFO | 📈 BTC: $107029.94 | RSI: 27.75
+2025-06-26 22:15:19 | INFO | 📈 BTC: $107020.20 | RSI: 31.30
+2025-06-26 22:15:49 | INFO | 📈 BTC: $107020.67 | RSI: 31.32
+2025-06-26 22:16:19 | INFO | 📈 BTC: $107029.01 | RSI: 31.75
+2025-06-26 22:16:50 | INFO | 📈 BTC: $107034.30 | RSI: 32.02
+2025-06-26 22:17:20 | INFO | 📈 BTC: $107032.50 | RSI: 31.93
+2025-06-26 22:17:50 | INFO | 📈 BTC: $107020.66 | RSI: 31.32
+2025-06-26 22:18:20 | INFO | 📈 BTC: $106973.99 | RSI: 30.26
+2025-06-26 22:18:51 | INFO | 📈 BTC: $107009.06 | RSI: 31.04
+2025-06-26 22:19:21 | INFO | 📈 BTC: $107022.64 | RSI: 31.43
+2025-06-26 22:19:51 | INFO | 📈 BTC: $107022.65 | RSI: 31.43
+2025-06-26 22:20:21 | INFO | 📈 BTC: $107033.34 | RSI: 34.93
+2025-06-26 22:20:52 | INFO | 📈 BTC: $107040.35 | RSI: 35.29
+2025-06-26 22:21:22 | INFO | 📈 BTC: $107040.34 | RSI: 35.29
+2025-06-26 22:21:52 | INFO | 📈 BTC: $107033.33 | RSI: 34.93
+2025-06-26 22:22:22 | INFO | 📈 BTC: $107033.33 | RSI: 34.93
+2025-06-26 22:22:52 | INFO | 📈 BTC: $107033.33 | RSI: 34.93
+2025-06-26 22:23:23 | INFO | 📈 BTC: $107082.00 | RSI: 37.39
+2025-06-26 22:23:53 | INFO | 📈 BTC: $107076.89 | RSI: 37.14
+2025-06-26 22:24:23 | INFO | 📈 BTC: $107114.12 | RSI: 38.91
+2025-06-26 22:24:53 | INFO | 📈 BTC: $107175.59 | RSI: 41.63
+2025-06-26 22:25:24 | INFO | 📈 BTC: $107207.44 | RSI: 42.43
+2025-06-26 22:25:54 | INFO | 📈 BTC: $107202.53 | RSI: 42.22
+2025-06-26 22:26:24 | INFO | 📈 BTC: $107219.97 | RSI: 42.94
+2025-06-26 22:26:54 | INFO | 📈 BTC: $107235.29 | RSI: 43.55
+2025-06-26 22:27:25 | INFO | 📈 BTC: $107175.58 | RSI: 41.08
+2025-06-26 22:27:55 | INFO | 📈 BTC: $107188.00 | RSI: 41.61
+2025-06-26 22:28:25 | INFO | 📈 BTC: $107187.99 | RSI: 41.61
+2025-06-26 22:28:55 | INFO | 📈 BTC: $107188.00 | RSI: 41.61
+2025-06-26 22:29:26 | INFO | 📈 BTC: $107187.99 | RSI: 41.61
+2025-06-26 22:29:56 | INFO | 📈 BTC: $107182.01 | RSI: 41.36
+2025-06-26 22:30:26 | INFO | 📈 BTC: $107177.90 | RSI: 48.88
+2025-06-26 22:30:57 | INFO | 📈 BTC: $107187.99 | RSI: 49.31
+2025-06-26 22:31:27 | INFO | 📈 BTC: $107199.15 | RSI: 49.79
+2025-06-26 22:31:57 | INFO | 📈 BTC: $107206.01 | RSI: 50.08
+2025-06-26 22:32:27 | INFO | 📈 BTC: $107185.31 | RSI: 49.20
+2025-06-26 22:32:58 | INFO | 📈 BTC: $107167.51 | RSI: 48.44
+2025-06-26 22:33:28 | INFO | 📈 BTC: $107133.29 | RSI: 47.07
+2025-06-26 22:33:58 | INFO | 📈 BTC: $107110.38 | RSI: 46.20
+2025-06-26 22:34:28 | INFO | 📈 BTC: $107063.04 | RSI: 44.48
+2025-06-26 22:34:59 | INFO | 📈 BTC: $107078.95 | RSI: 45.04
+2025-06-26 22:35:29 | INFO | 📈 BTC: $107088.85 | RSI: 43.16
+2025-06-26 22:35:59 | INFO | 📈 BTC: $107068.71 | RSI: 42.35
+2025-06-26 22:36:29 | INFO | 📈 BTC: $107066.56 | RSI: 42.28
+2025-06-26 22:37:00 | INFO | 📈 BTC: $107051.03 | RSI: 41.75
+2025-06-26 22:37:30 | INFO | 📈 BTC: $107085.90 | RSI: 43.02
+2025-06-26 22:38:00 | INFO | 📈 BTC: $107080.89 | RSI: 42.78
+2025-06-26 22:38:30 | INFO | 📈 BTC: $107080.90 | RSI: 42.78
+2025-06-26 22:39:01 | INFO | 📈 BTC: $107087.50 | RSI: 43.09
+2025-06-26 22:39:31 | INFO | 📈 BTC: $107080.89 | RSI: 42.78
+2025-06-26 22:40:01 | INFO | 📈 BTC: $107090.36 | RSI: 54.69
+2025-06-26 22:40:31 | INFO | 📈 BTC: $107078.11 | RSI: 54.01
+2025-06-26 22:41:01 | INFO | 📈 BTC: $107078.11 | RSI: 54.01
+2025-06-26 22:41:32 | INFO | 📈 BTC: $107078.10 | RSI: 54.01
+2025-06-26 22:42:02 | INFO | 📈 BTC: $107078.11 | RSI: 54.01
+2025-06-26 22:42:32 | INFO | 📈 BTC: $107042.97 | RSI: 52.13
+2025-06-26 22:43:02 | INFO | 📈 BTC: $107052.89 | RSI: 52.64
+2025-06-26 22:43:33 | INFO | 📈 BTC: $107063.05 | RSI: 53.18
+2025-06-26 22:44:03 | INFO | 📈 BTC: $107033.48 | RSI: 51.64
+2025-06-26 22:44:33 | INFO | 📈 BTC: $106998.44 | RSI: 49.93
+2025-06-26 22:45:03 | INFO | 📈 BTC: $106961.95 | RSI: 44.36
+2025-06-26 22:45:34 | INFO | 📈 BTC: $106973.99 | RSI: 44.92
+2025-06-26 22:46:04 | INFO | 📈 BTC: $107006.40 | RSI: 46.64
+2025-06-26 22:46:34 | INFO | 📈 BTC: $107014.01 | RSI: 47.02
+2025-06-26 22:47:04 | INFO | 📈 BTC: $106977.18 | RSI: 45.09
+2025-06-26 22:47:35 | INFO | 📈 BTC: $106979.51 | RSI: 45.22
+2025-06-26 22:48:05 | INFO | 📈 BTC: $106977.44 | RSI: 45.11
+2025-06-26 22:48:35 | INFO | 📈 BTC: $106977.44 | RSI: 45.11
+2025-06-26 22:49:05 | INFO | 📈 BTC: $106987.99 | RSI: 45.67
+2025-06-26 22:49:35 | INFO | 📈 BTC: $106995.63 | RSI: 46.08
+2025-06-26 22:50:06 | INFO | 📈 BTC: $106995.63 | RSI: 51.21
+2025-06-26 22:50:36 | INFO | 📈 BTC: $106995.63 | RSI: 51.21
+2025-06-26 22:51:06 | INFO | 📈 BTC: $107068.01 | RSI: 54.75
+2025-06-26 22:51:36 | INFO | 📈 BTC: $107100.00 | RSI: 56.15
+2025-06-26 22:52:07 | INFO | 📈 BTC: $107082.01 | RSI: 55.37
+2025-06-26 22:52:37 | INFO | 📈 BTC: $107060.00 | RSI: 54.38
+2025-06-26 22:53:08 | INFO | 📈 BTC: $107049.31 | RSI: 53.89
+2025-06-26 22:53:38 | INFO | 📈 BTC: $107049.32 | RSI: 53.89
+2025-06-26 22:54:08 | INFO | 📈 BTC: $107026.14 | RSI: 52.77
+2025-06-26 22:54:38 | INFO | 📈 BTC: $106978.27 | RSI: 50.27
+2025-06-26 22:55:09 | INFO | 📈 BTC: $106978.27 | RSI: 45.78
+2025-06-26 22:55:39 | INFO | 📈 BTC: $107005.50 | RSI: 47.42
+2025-06-26 22:56:09 | INFO | 📈 BTC: $107005.51 | RSI: 47.42
+2025-06-26 22:56:39 | INFO | 📈 BTC: $107017.60 | RSI: 48.12
+2025-06-26 22:57:09 | INFO | 📈 BTC: $107017.61 | RSI: 48.12
+2025-06-26 22:57:40 | INFO | 📈 BTC: $107017.61 | RSI: 48.12
+2025-06-26 22:58:10 | INFO | 📈 BTC: $107017.60 | RSI: 48.12
+2025-06-26 22:58:40 | INFO | 📈 BTC: $106986.47 | RSI: 46.29
+2025-06-26 22:59:10 | INFO | 📈 BTC: $106992.59 | RSI: 46.66
+2025-06-26 22:59:41 | INFO | 📈 BTC: $106992.58 | RSI: 46.66
+2025-06-26 23:00:11 | INFO | 📈 BTC: $106992.59 | RSI: 50.15
+2025-06-26 23:00:41 | INFO | 📈 BTC: $106992.59 | RSI: 50.15
+2025-06-26 23:01:11 | INFO | 📈 BTC: $106985.63 | RSI: 49.73
+2025-06-26 23:01:42 | INFO | 📈 BTC: $107005.36 | RSI: 50.90
+2025-06-26 23:02:12 | INFO | 📈 BTC: $107000.00 | RSI: 50.59
+2025-06-26 23:02:42 | INFO | 📈 BTC: $106981.30 | RSI: 49.47
+2025-06-26 23:03:12 | INFO | 📈 BTC: $106957.68 | RSI: 48.11
+2025-06-26 23:03:43 | INFO | 📈 BTC: $106975.05 | RSI: 49.10
+2025-06-26 23:04:13 | INFO | 📈 BTC: $106963.81 | RSI: 48.46
+2025-06-26 23:04:43 | INFO | 📈 BTC: $106920.27 | RSI: 46.11
+2025-06-26 23:05:13 | INFO | 📈 BTC: $106911.60 | RSI: 43.21
+2025-06-26 23:05:44 | INFO | 📈 BTC: $106920.00 | RSI: 43.75
+2025-06-26 23:06:14 | INFO | 📈 BTC: $106900.01 | RSI: 42.64

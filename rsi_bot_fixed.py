@@ -23,16 +23,27 @@ class BinanceRSIBot:
             testnet: True para usar testnet, False para trading real
         """
         
-        # IMPORTANTE: Configurar logging PRIMERO
-        self.setup_logging()
-        
-        # Configurar variables básicas ANTES de exchange
+        # Configuración del exchange con URLs correctas
         self.testnet = testnet
+        self.exchange = ccxt.binance({
+            'apiKey': api_key,
+            'secret': api_secret,
+            'sandbox': testnet,
+            'enableRateLimit': True,
+            'options': {
+                'adjustForTimeDifference': True,
+            }
+        })
+        
+        # Verificar conexión al inicializar
+        self.verify_connection()
+        
+        # Configuración de la estrategia RSI
         self.symbol = 'BTC/USDT'
         self.timeframe = '5m'
         self.rsi_period = 14
-        self.rsi_oversold = 30
-        self.rsi_overbought = 70
+        self.rsi_oversold = 25
+        self.rsi_overbought = 75
         
         # Gestión de riesgo mejorada
         self.leverage = 1 if testnet else 5  # Sin leverage en testnet para simplicidad
@@ -61,21 +72,10 @@ class BinanceRSIBot:
             'peak_balance': 0
         }
         
-        # Configuración del exchange DESPUÉS de definir variables
-        self.exchange = ccxt.binance({
-            'apiKey': api_key,
-            'secret': api_secret,
-            'sandbox': testnet,
-            'enableRateLimit': True,
-            'options': {
-                'adjustForTimeDifference': True,
-            }
-        })
+        # Configurar logging detallado
+        self.setup_logging()
         
-        # Verificar conexión después de configurar todo
-        self.verify_connection()
-        
-        # Inicializar archivos de logs al final
+        # Inicializar archivos de logs
         self.init_log_files()
         
     def verify_connection(self):
@@ -98,23 +98,14 @@ class BinanceRSIBot:
             self.logger.info(f"💰 Balance USDT disponible: ${usdt_balance:.2f}")
             
         except ccxt.AuthenticationError as e:
-            if hasattr(self, 'logger'):
-                self.logger.error(f"❌ Error de autenticación: {e}")
-                self.logger.error("Verifica tus API keys y permisos")
-            else:
-                print(f"❌ Error de autenticación: {e}")
+            self.logger.error(f"❌ Error de autenticación: {e}")
+            self.logger.error("Verifica tus API keys y permisos")
             raise
         except ccxt.NetworkError as e:
-            if hasattr(self, 'logger'):
-                self.logger.error(f"❌ Error de red: {e}")
-            else:
-                print(f"❌ Error de red: {e}")
+            self.logger.error(f"❌ Error de red: {e}")
             raise
         except Exception as e:
-            if hasattr(self, 'logger'):
-                self.logger.error(f"❌ Error de conexión: {e}")
-            else:
-                print(f"❌ Error de conexión: {e}")
+            self.logger.error(f"❌ Error de conexión: {e}")
             raise
         
     def setup_logging(self):

@@ -1,0 +1,8 @@
+nohup: ignoring input
+🤖 Iniciando bot en modo: TESTNET
+❌ Error crítico (1/3): 'BinanceRSIBot' object has no attribute 'logger'
+🔄 Reiniciando en 30 segundos...
+❌ Error crítico (2/3): 'BinanceRSIBot' object has no attribute 'logger'
+🔄 Reiniciando en 60 segundos...
+❌ Error crítico (3/3): 'BinanceRSIBot' object has no attribute 'logger'
+💀 Máximo de reinicios alcanzado. Bot detenido.
