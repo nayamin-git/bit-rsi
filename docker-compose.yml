@@ -1,3 +1,6 @@
+# ========================================
+# docker-compose.yml
+# ========================================
 version: '3.8'
 
 services:
@@ -6,46 +9,31 @@ services:
     container_name: rsi-trading-bot
     restart: unless-stopped
     environment:
-      - BINANCE_API_KEY=${BINANCE_API_KEY}
-      - BINANCE_API_SECRET=${BINANCE_API_SECRET}
-      - USE_TESTNET=${USE_TESTNET:-true}
-      - SYMBOL=${SYMBOL:-BTC/USDT}
-      - LEVERAGE=${LEVERAGE:-10}
-      - RSI_OVERSOLD=${RSI_OVERSOLD:-25}
-      - RSI_OVERBOUGHT=${RSI_OVERBOUGHT:-75}
+      - TZ=UTC
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
     volumes:
+      # Volumen para logs persistentes
       - ./logs:/app/logs
+      # Volumen para datos de estado
+      - ./data:/app/data
+      # Volumen para configuración (opcional)
       - ./.env:/app/.env:ro
     networks:
       - bot-network
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:9000/status')"]
+      test: ["CMD", "python", "-c", "import os; exit(0 if os.path.exists('/app/logs') else 1)"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-
-  webhook-listener:
-    build: .
-    container_name: webhook-listener
-    restart: unless-stopped
-    command: ["python", "webhook_listener.py"]
-    ports:
-      - "9000:9000"
-    environment:
-      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-default_secret_change_me}
-    volumes:
-      - ./logs:/app/logs
-      - .:/app
-    networks:
-      - bot-network
-    depends_on:
-      - rsi-bot
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   bot-network:
     driver: bridge
-
-volumes:
-  logs:
-    driver: local
