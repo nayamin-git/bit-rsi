@@ -94,3 +94,6 @@ docker stats rsi-trading-bot
 
 # Entrar al contenedor (si necesitas debuggear)
 docker-compose exec rsi-bot /bin/bash
+
+
+sudo su - botuser
