@@ -64,3 +64,33 @@ rsi-bot-docker/
 ├── logs/           # ← Persistente (volumen)
 ├── data/           # ← Persistente (volumen) 
 └── backups/        # ← Backups automáticos
+
+
+
+
+# 1. Construir la imagen Docker
+docker-compose build
+
+# 2. Iniciar el bot en segundo plano
+docker-compose up -d
+
+# 3. Ver logs en tiempo real
+docker-compose logs -f rsi-bot
+
+# Ver estado del bot
+docker-compose ps
+
+# Reiniciar bot
+docker-compose restart rsi-bot
+
+# Detener bot
+docker-compose down
+
+# Ver últimos 50 logs
+docker-compose logs --tail=50 rsi-bot
+
+# Ver uso de recursos
+docker stats rsi-trading-bot
+
+# Entrar al contenedor (si necesitas debuggear)
+docker-compose exec rsi-bot /bin/bash
