@@ -44,14 +44,18 @@ class BinanceRSIBot:
         self.min_notional_usdt = 15 if testnet else 10  # Mínimo para evitar error NOTIONAL
         
         # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO Y TENDENCIA
-        self.confirmation_threshold = 0.1  # % de movimiento mínimo para confirmar
-        self.max_confirmation_wait = 10  # Máximo 10 períodos esperando confirmación
+        self.confirmation_threshold = 0.05  # REDUCIDO: 0.05% en lugar de 0.1%
+        self.max_confirmation_wait = 15  # AUMENTADO: 15 períodos en lugar de 10
         
         # VARIABLES PARA TRAILING STOP INTELIGENTE
-        self.trend_confirmation_periods = 3  # Períodos para confirmar cambio de tendencia
-        self.trend_threshold = 0.05  # % mínimo para confirmar cambio de tendencia
+        self.trend_confirmation_periods = 2  # REDUCIDO: 2 períodos en lugar de 3
+        self.trend_threshold = 0.03  # REDUCIDO: 0.03% en lugar de 0.05%
         self.trailing_stop_distance = 1.5  # % de distancia para trailing stop
         self.price_history = []  # Historial de precios para analizar tendencia
+        
+        # MEJORAR RECUPERACIÓN DE ESTADO
+        self.force_state_recovery = True  # Forzar verificación en cada inicio
+        self.state_backup_interval = 5   # Guardar estado cada 5 iteraciones en lugar de 10
         
         # ARCHIVOS DE PERSISTENCIA (compatible con Docker)
         self.logs_dir = os.path.join(os.getcwd(), 'logs')
@@ -565,9 +569,13 @@ class BinanceRSIBot:
         if len(self.market_data_log) > 1000:
             self.market_data_log = self.market_data_log[-1000:]
         
-        # Guardar estado cada 10 iteraciones
-        if len(self.market_data_log) % 10 == 0:
+        # Verificar estado cada iteración en lugar de solo cada 10
+        if len(self.market_data_log) % self.state_backup_interval == 0:
             self.save_bot_state()
+            
+            # NUEVA: Verificación adicional de posiciones perdidas
+            if not self.in_position:
+                self.verify_lost_positions()
     
     def reset_signal_state(self):
         """Resetea el estado de señales pendientes"""
@@ -607,8 +615,36 @@ class BinanceRSIBot:
         
         return signal_detected
     
+    def verify_lost_positions(self):
+        """Verifica periódicamente si hay posiciones perdidas"""
+        try:
+            # Verificar si hay BTC en la cuenta que no está siendo monitoreado
+            balance = self.exchange.fetch_balance()
+            btc_balance = float(balance.get('BTC', {}).get('free', 0))
+            
+            # Si hay más de 0.001 BTC y no estamos en posición, hay un problema
+            if btc_balance > 0.001 and not self.in_position:
+                current_price = self.last_price or 108000  # Usar último precio conocido
+                
+                self.logger.warning(f"🚨 POSICIÓN PERDIDA DETECTADA: {btc_balance:.6f} BTC sin monitorear")
+                self.logger.warning(f"💡 Intentando recuperar automáticamente...")
+                
+                # Crear posición de recuperación
+                self.recover_position_from_exchange({
+                    'side': 'long',
+                    'size': btc_balance,
+                    'entryPrice': current_price,
+                    'symbol': self.symbol
+                })
+                
+                return True
+        except Exception as e:
+            self.logger.error(f"Error verificando posiciones perdidas: {e}")
+        
+        return False
+            
     def check_signal_confirmation(self, current_price, current_rsi):
-        """Verifica si la señal pendiente se confirma"""
+        """Verifica si la señal pendiente se confirma (VERSIÓN MEJORADA)"""
         if not (self.pending_long_signal or self.pending_short_signal):
             return False, None
             
@@ -618,8 +654,9 @@ class BinanceRSIBot:
         if self.pending_long_signal:
             price_change_pct = ((current_price - self.signal_trigger_price) / self.signal_trigger_price) * 100
             
+            # MEJORADO: Confirmación más flexible
             if price_change_pct >= self.confirmation_threshold:
-                self.logger.info(f"✅ Señal LONG CONFIRMADA! Precio subió {price_change_pct:.2f}%")
+                self.logger.info(f"✅ Señal LONG CONFIRMADA! Precio subió {price_change_pct:.3f}%")
                 self.performance_metrics['signals_confirmed'] += 1
                 self.reset_signal_state()
                 return True, 'long'
@@ -630,8 +667,9 @@ class BinanceRSIBot:
                 self.reset_signal_state()
                 return False, None
                 
-            elif current_rsi > self.rsi_oversold + 5:  # RSI se aleja mucho del oversold sin movimiento de precio
-                self.logger.warning(f"❌ Señal LONG CANCELADA - RSI subió sin movimiento de precio confirmatorio")
+            # MEJORADO: Menos estricto con RSI - solo cancelar si RSI > 40
+            elif current_rsi > 40:  # Antes era oversold + 5
+                self.logger.warning(f"❌ Señal LONG CANCELADA - RSI subió mucho sin confirmación de precio")
                 self.performance_metrics['signals_expired'] += 1
                 self.reset_signal_state()
                 return False, None
@@ -641,7 +679,7 @@ class BinanceRSIBot:
             price_change_pct = ((self.signal_trigger_price - current_price) / self.signal_trigger_price) * 100
             
             if price_change_pct >= self.confirmation_threshold:
-                self.logger.info(f"✅ Señal SHORT CONFIRMADA! Precio bajó {price_change_pct:.2f}%")
+                self.logger.info(f"✅ Señal SHORT CONFIRMADA! Precio bajó {price_change_pct:.3f}%")
                 self.performance_metrics['signals_confirmed'] += 1
                 self.reset_signal_state()
                 return True, 'short'
@@ -652,14 +690,14 @@ class BinanceRSIBot:
                 self.reset_signal_state()
                 return False, None
                 
-            elif current_rsi < self.rsi_overbought - 5:  # RSI se aleja mucho del overbought sin movimiento de precio
-                self.logger.warning(f"❌ Señal SHORT CANCELADA - RSI bajó sin movimiento de precio confirmatorio")
+            elif current_rsi < 60:  # Antes era overbought - 5
+                self.logger.warning(f"❌ Señal SHORT CANCELADA - RSI bajó mucho sin confirmación de precio")
                 self.performance_metrics['signals_expired'] += 1
                 self.reset_signal_state()
                 return False, None
         
-        # Mostrar progreso cada 3 períodos
-        if self.confirmation_wait_count % 3 == 0:
+        # Mostrar progreso cada 2 períodos en lugar de 3
+        if self.confirmation_wait_count % 2 == 0:
             signal_type = "LONG" if self.pending_long_signal else "SHORT"
             remaining = self.max_confirmation_wait - self.confirmation_wait_count
             price_change = ((current_price - self.signal_trigger_price) / self.signal_trigger_price) * 100
@@ -667,7 +705,7 @@ class BinanceRSIBot:
                 price_change = -price_change
                 
             self.logger.info(f"⏳ Esperando confirmación {signal_type}: {self.confirmation_wait_count}/{self.max_confirmation_wait} | "
-                           f"Cambio precio: {price_change:+.2f}% (necesario: {self.confirmation_threshold:+.2f}%)")
+                           f"Cambio precio: {price_change:+.3f}% (necesario: {self.confirmation_threshold:+.2f}%)")
         
         return False, None
     
@@ -1009,7 +1047,7 @@ class BinanceRSIBot:
             self.price_history = self.price_history[-10:]
     
     def detect_trend_change(self, current_price):
-        """Detecta si ha cambiado la tendencia basado en precios recientes"""
+        """Detecta si ha cambiado la tendencia basado en precios recientes (MEJORADO)"""
         if not self.in_position or len(self.price_history) < self.trend_confirmation_periods:
             return False, "Insuficientes datos"
         
@@ -1017,37 +1055,54 @@ class BinanceRSIBot:
             # Para LONG: Detectar si empezó a bajar
             recent_prices = self.price_history[-self.trend_confirmation_periods:]
             
-            # Verificar si los últimos N períodos han sido bajistas
+            # MEJORADO: Verificar tendencia más flexible
             consecutive_down = 0
+            total_change = 0
+            
             for i in range(1, len(recent_prices)):
+                change_pct = ((recent_prices[i] - recent_prices[i-1]) / recent_prices[i-1]) * 100
+                total_change += change_pct
+                
                 if recent_prices[i] < recent_prices[i-1]:
                     consecutive_down += 1
-                else:
-                    break
             
-            # Calcular el cambio porcentual en los últimos períodos
-            price_change_pct = ((current_price - recent_prices[0]) / recent_prices[0]) * 100
+            # Calcular el cambio porcentual total en los últimos períodos
+            overall_change = ((current_price - recent_prices[0]) / recent_prices[0]) * 100
             
-            if consecutive_down >= self.trend_confirmation_periods - 1 and price_change_pct < -self.trend_threshold:
-                return True, f"Tendencia bajista confirmada: {consecutive_down} períodos, {price_change_pct:.2f}%"
+            # CONDICIONES MÁS FLEXIBLES:
+            # Opción 1: X períodos consecutivos bajando
+            # Opción 2: Caída total mayor al threshold
+            # Opción 3: Caída significativa desde el máximo
+            max_price = self.position.get('highest_price', current_price)
+            drop_from_max = ((max_price - current_price) / max_price) * 100
+            
+            if (consecutive_down >= self.trend_confirmation_periods - 1 and overall_change < -self.trend_threshold) or \
+               (drop_from_max > self.trend_threshold * 2):  # Caída 2x el threshold desde máximo
+                return True, f"Tendencia bajista: {consecutive_down} períodos, {overall_change:.2f}%, drop desde max: {drop_from_max:.2f}%"
                 
         else:  # SHORT
             # Para SHORT: Detectar si empezó a subir
             recent_prices = self.price_history[-self.trend_confirmation_periods:]
             
             consecutive_up = 0
+            total_change = 0
+            
             for i in range(1, len(recent_prices)):
+                change_pct = ((recent_prices[i] - recent_prices[i-1]) / recent_prices[i-1]) * 100
+                total_change += change_pct
+                
                 if recent_prices[i] > recent_prices[i-1]:
                     consecutive_up += 1
-                else:
-                    break
             
-            price_change_pct = ((current_price - recent_prices[0]) / recent_prices[0]) * 100
+            overall_change = ((current_price - recent_prices[0]) / recent_prices[0]) * 100
+            min_price = self.position.get('lowest_price', current_price)
+            rise_from_min = ((current_price - min_price) / min_price) * 100
             
-            if consecutive_up >= self.trend_confirmation_periods - 1 and price_change_pct > self.trend_threshold:
-                return True, f"Tendencia alcista confirmada: {consecutive_up} períodos, {price_change_pct:.2f}%"
+            if (consecutive_up >= self.trend_confirmation_periods - 1 and overall_change > self.trend_threshold) or \
+               (rise_from_min > self.trend_threshold * 2):
+                return True, f"Tendencia alcista: {consecutive_up} períodos, {overall_change:.2f}%, rise desde min: {rise_from_min:.2f}%"
         
-        return False, "Sin cambio de tendencia"
+        return False, "Sin cambio de tendencia confirmado"
     
     def update_trailing_stop(self, current_price):
         """Actualiza el trailing stop dinámico"""
@@ -1224,11 +1279,12 @@ class BinanceRSIBot:
     
     def run(self):
         """Ejecuta el bot en un loop continuo (optimizado para Docker)"""
-        self.logger.info("🤖 Bot RSI con Trailing Stop Inteligente iniciado")
+        self.logger.info("🤖 Bot RSI con Trailing Stop Inteligente v2.0 iniciado")
         self.logger.info(f"📊 Config: RSI({self.rsi_period}) | OS: {self.rsi_oversold} | OB: {self.rsi_overbought}")
         self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.position_size_pct}% | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
-        self.logger.info(f"🔔 Confirmación: {self.confirmation_threshold}% movimiento | Max espera: {self.max_confirmation_wait} períodos")
-        self.logger.info(f"🎯 Trailing Stop: {self.trailing_stop_distance}% | Confirmación tendencia: {self.trend_confirmation_periods} períodos")
+        self.logger.info(f"🔔 Confirmación MEJORADA: {self.confirmation_threshold}% movimiento | Max espera: {self.max_confirmation_wait} períodos")
+        self.logger.info(f"🎯 Trailing Stop MEJORADO: {self.trailing_stop_distance}% | Confirmación tendencia: {self.trend_confirmation_periods} períodos")
+        self.logger.info(f"🛡️ Verificación de posiciones perdidas: Cada {self.state_backup_interval} iteraciones")
         self.logger.info(f"💾 Estado guardado en: {self.state_file}")
         self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
         
@@ -1328,8 +1384,13 @@ if __name__ == "__main__":
         exit(1)
     
     print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
-    print("🔔 CARACTERÍSTICAS: Confirmación de movimiento + Recuperación de posiciones")
-    print("🐳 DOCKER: Auto-restart habilitado")
+    print("🔔 CARACTERÍSTICAS v2.0:")
+    print("  • Sistema de confirmación MEJORADO (0.05% threshold)")
+    print("  • Trailing stop inteligente con detección de tendencia")
+    print("  • Recuperación automática de posiciones perdidas") 
+    print("  • Guardado de estado cada 5 iteraciones")
+    print("  • Verificación periódica de balances BTC")
+    print("🐳 DOCKER: Auto-restart + persistencia garantizada")
     
     if not USE_TESTNET:
         print("⚠️  ADVERTENCIA: Vas a usar DINERO REAL")
