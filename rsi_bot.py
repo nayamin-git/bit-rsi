@@ -36,16 +36,16 @@ class BinanceRSIBot:
         self.rsi_overbought = 70
         
         # Gestión de riesgo mejorada
-        self.leverage = 1 if testnet else 5  # Sin leverage en testnet para simplicidad
-        self.position_size_pct = 10 if testnet else 2  # 10% en testnet, 2% en real
+        self.leverage = 1
+        self.position_size_pct = 10
         self.stop_loss_pct = 2  # Stop loss al 2%
         self.take_profit_pct = 4  # Take profit al 4%
         self.min_balance_usdt = 10  # Balance mínimo para operar
         self.min_notional_usdt = 15 if testnet else 10  # Mínimo para evitar error NOTIONAL
         
         # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO Y TENDENCIA
-        self.confirmation_threshold = 0.05  # REDUCIDO: 0.05% en lugar de 0.1%
-        self.max_confirmation_wait = 15  # AUMENTADO: 15 períodos en lugar de 10
+        self.confirmation_threshold = 0.15  # REDUCIDO: 0.05% en lugar de 0.1%
+        self.max_confirmation_wait = 10  # AUMENTADO: 15 períodos en lugar de 10
         
         # VARIABLES PARA TRAILING STOP INTELIGENTE
         self.trend_confirmation_periods = 2  # REDUCIDO: 2 períodos en lugar de 3
