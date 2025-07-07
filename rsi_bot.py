@@ -43,9 +43,15 @@ class BinanceRSIBot:
         self.min_balance_usdt = 10  # Balance mínimo para operar
         self.min_notional_usdt = 15 if testnet else 10  # Mínimo para evitar error NOTIONAL
         
-        # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO
+        # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO Y TENDENCIA
         self.confirmation_threshold = 0.1  # % de movimiento mínimo para confirmar
         self.max_confirmation_wait = 10  # Máximo 10 períodos esperando confirmación
+        
+        # VARIABLES PARA TRAILING STOP INTELIGENTE
+        self.trend_confirmation_periods = 3  # Períodos para confirmar cambio de tendencia
+        self.trend_threshold = 0.05  # % mínimo para confirmar cambio de tendencia
+        self.trailing_stop_distance = 1.5  # % de distancia para trailing stop
+        self.price_history = []  # Historial de precios para analizar tendencia
         
         # ARCHIVOS DE PERSISTENCIA (compatible con Docker)
         self.logs_dir = os.path.join(os.getcwd(), 'logs')
@@ -386,7 +392,12 @@ class BinanceRSIBot:
                 'take_profit': take_profit_price,
                 'order_id': f"recovered_{int(time.time())}",
                 'entry_rsi': 50,  # RSI neutro ya que no sabemos el original
-                'recovered': True
+                'recovered': True,
+                'highest_price': current_price if side == 'long' else None,
+                'lowest_price': current_price if side == 'short' else None,
+                'trailing_stop': stop_price,
+                'consecutive_down_periods': 0 if side == 'long' else None,
+                'consecutive_up_periods': 0 if side == 'short' else None
             }
             
             self.in_position = True
@@ -768,7 +779,10 @@ class BinanceRSIBot:
                 'order_id': order['id'],
                 'entry_rsi': rsi,
                 'confirmation_time': confirmation_time,
-                'recovered': False
+                'recovered': False,
+                'highest_price': price,  # Para trailing stop
+                'trailing_stop': stop_price,  # Stop loss dinámico
+                'consecutive_down_periods': 0  # Para detectar cambio de tendencia
             }
             
             self.in_position = True
@@ -830,7 +844,10 @@ class BinanceRSIBot:
                 'order_id': order['id'],
                 'entry_rsi': rsi,
                 'confirmation_time': confirmation_time,
-                'recovered': False
+                'recovered': False,
+                'lowest_price': price,  # Para trailing stop
+                'trailing_stop': stop_price,  # Stop loss dinámico
+                'consecutive_up_periods': 0  # Para detectar cambio de tendencia
             }
             
             self.in_position = True
@@ -983,33 +1000,160 @@ class BinanceRSIBot:
         if self.performance_metrics['consecutive_losses'] > self.performance_metrics['max_consecutive_losses']:
             self.performance_metrics['max_consecutive_losses'] = self.performance_metrics['consecutive_losses']
     
-    def check_exit_conditions(self, current_price, current_rsi):
-        """Verifica condiciones de salida"""
+    def update_price_history(self, current_price):
+        """Actualiza el historial de precios para análisis de tendencia"""
+        self.price_history.append(current_price)
+        
+        # Mantener solo los últimos 10 precios para análisis
+        if len(self.price_history) > 10:
+            self.price_history = self.price_history[-10:]
+    
+    def detect_trend_change(self, current_price):
+        """Detecta si ha cambiado la tendencia basado en precios recientes"""
+        if not self.in_position or len(self.price_history) < self.trend_confirmation_periods:
+            return False, "Insuficientes datos"
+        
+        if self.position['side'] == 'long':
+            # Para LONG: Detectar si empezó a bajar
+            recent_prices = self.price_history[-self.trend_confirmation_periods:]
+            
+            # Verificar si los últimos N períodos han sido bajistas
+            consecutive_down = 0
+            for i in range(1, len(recent_prices)):
+                if recent_prices[i] < recent_prices[i-1]:
+                    consecutive_down += 1
+                else:
+                    break
+            
+            # Calcular el cambio porcentual en los últimos períodos
+            price_change_pct = ((current_price - recent_prices[0]) / recent_prices[0]) * 100
+            
+            if consecutive_down >= self.trend_confirmation_periods - 1 and price_change_pct < -self.trend_threshold:
+                return True, f"Tendencia bajista confirmada: {consecutive_down} períodos, {price_change_pct:.2f}%"
+                
+        else:  # SHORT
+            # Para SHORT: Detectar si empezó a subir
+            recent_prices = self.price_history[-self.trend_confirmation_periods:]
+            
+            consecutive_up = 0
+            for i in range(1, len(recent_prices)):
+                if recent_prices[i] > recent_prices[i-1]:
+                    consecutive_up += 1
+                else:
+                    break
+            
+            price_change_pct = ((current_price - recent_prices[0]) / recent_prices[0]) * 100
+            
+            if consecutive_up >= self.trend_confirmation_periods - 1 and price_change_pct > self.trend_threshold:
+                return True, f"Tendencia alcista confirmada: {consecutive_up} períodos, {price_change_pct:.2f}%"
+        
+        return False, "Sin cambio de tendencia"
+    
+    def update_trailing_stop(self, current_price):
+        """Actualiza el trailing stop dinámico"""
         if not self.in_position or not self.position:
             return
-            
+        
         if self.position['side'] == 'long':
-            # Verificar stop loss y take profit normales
-            if current_price <= self.position['stop_loss']:
-                self.close_position("Stop Loss", current_rsi, current_price)
-            elif current_price >= self.position['take_profit']:
-                self.close_position("Take Profit", current_rsi, current_price)
-            # NUEVO: Cerrar LONG si RSI está muy overbought (>75)
-            elif current_rsi > 75:
-                self.logger.info(f"🔴 RSI muy alto ({current_rsi:.2f}) - Considerando cierre de LONG")
-                # Cerrar si RSI > 80 para asegurar ganancias
-                if current_rsi > 80:
-                    self.close_position("RSI Overbought (>80)", current_rsi, current_price)
+            # Actualizar precio máximo alcanzado
+            if current_price > self.position['highest_price']:
+                self.position['highest_price'] = current_price
+                
+                # Calcular nuevo trailing stop (% abajo del máximo)
+                new_trailing_stop = current_price * (1 - self.trailing_stop_distance / 100)
+                
+                # Solo mover el trailing stop hacia arriba, nunca hacia abajo
+                if new_trailing_stop > self.position['trailing_stop']:
+                    old_stop = self.position['trailing_stop']
+                    self.position['trailing_stop'] = new_trailing_stop
+                    
+                    self.logger.info(f"📈 Nuevo máximo: ${current_price:.2f} | "
+                                   f"Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f}")
+                    
         else:  # SHORT
+            # Actualizar precio mínimo alcanzado
+            if current_price < self.position['lowest_price']:
+                self.position['lowest_price'] = current_price
+                
+                # Calcular nuevo trailing stop (% arriba del mínimo)
+                new_trailing_stop = current_price * (1 + self.trailing_stop_distance / 100)
+                
+                # Solo mover el trailing stop hacia abajo, nunca hacia arriba
+                if new_trailing_stop < self.position['trailing_stop']:
+                    old_stop = self.position['trailing_stop']
+                    self.position['trailing_stop'] = new_trailing_stop
+                    
+                    self.logger.info(f"📉 Nuevo mínimo: ${current_price:.2f} | "
+                                   f"Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f}")
+
+    def check_exit_conditions(self, current_price, current_rsi):
+        """Verifica condiciones de salida con trailing stop inteligente"""
+        if not self.in_position or not self.position:
+            return
+        
+        # Actualizar trailing stop primero
+        self.update_trailing_stop(current_price)
+        
+        # Detectar cambio de tendencia
+        trend_changed, trend_reason = self.detect_trend_change(current_price)
+        
+        if self.position['side'] == 'long':
+            # 1. Stop Loss de emergencia (nunca cambiar - protección absoluta)
+            if current_price <= self.position['stop_loss']:
+                self.close_position("Stop Loss Emergencia", current_rsi, current_price)
+                return
+            
+            # 2. Take Profit tradicional (conservador)
+            elif current_price >= self.position['take_profit']:
+                self.close_position("Take Profit Objetivo", current_rsi, current_price)
+                return
+            
+            # 3. NUEVO: Trailing stop por cambio de tendencia
+            elif trend_changed:
+                self.close_position(f"Cambio de Tendencia: {trend_reason}", current_rsi, current_price)
+                return
+            
+            # 4. Trailing stop dinámico (solo si está muy lejos del precio actual)
+            elif current_price <= self.position['trailing_stop']:
+                price_from_max = ((self.position['highest_price'] - current_price) / self.position['highest_price']) * 100
+                self.close_position(f"Trailing Stop (-{price_from_max:.1f}% desde máximo)", current_rsi, current_price)
+                return
+            
+            # 5. RSI extremo como respaldo (solo si está MUY overbought)
+            elif current_rsi > 85:
+                self.logger.warning(f"⚠️ RSI extremo ({current_rsi:.2f}) - Monitoreando para cierre")
+                if current_rsi > 90:
+                    self.close_position("RSI Extremo (>90)", current_rsi, current_price)
+                    return
+                    
+        else:  # SHORT
+            # 1. Stop Loss de emergencia
             if current_price >= self.position['stop_loss']:
-                self.close_position("Stop Loss", current_rsi, current_price)
+                self.close_position("Stop Loss Emergencia", current_rsi, current_price)
+                return
+            
+            # 2. Take Profit tradicional
             elif current_price <= self.position['take_profit']:
-                self.close_position("Take Profit", current_rsi, current_price)
-            # NUEVO: Cerrar SHORT si RSI está muy oversold (<25)
-            elif current_rsi < 25:
-                self.logger.info(f"🟢 RSI muy bajo ({current_rsi:.2f}) - Considerando cierre de SHORT")
-                if current_rsi < 20:
-                    self.close_position("RSI Oversold (<20)", current_rsi, current_price)
+                self.close_position("Take Profit Objetivo", current_rsi, current_price)
+                return
+            
+            # 3. Trailing stop por cambio de tendencia
+            elif trend_changed:
+                self.close_position(f"Cambio de Tendencia: {trend_reason}", current_rsi, current_price)
+                return
+            
+            # 4. Trailing stop dinámico
+            elif current_price >= self.position['trailing_stop']:
+                price_from_min = ((current_price - self.position['lowest_price']) / self.position['lowest_price']) * 100
+                self.close_position(f"Trailing Stop (+{price_from_min:.1f}% desde mínimo)", current_rsi, current_price)
+                return
+            
+            # 5. RSI extremo como respaldo
+            elif current_rsi < 15:
+                self.logger.warning(f"⚠️ RSI extremo ({current_rsi:.2f}) - Monitoreando para cierre")
+                if current_rsi < 10:
+                    self.close_position("RSI Extremo (<10)", current_rsi, current_price)
+                    return
     
     def analyze_and_trade(self):
         """Análisis principal y ejecución de trades"""
@@ -1021,7 +1165,27 @@ class BinanceRSIBot:
         current_rsi = market_data['rsi']
         current_price = market_data['price']
         
-        self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f}")
+        # Actualizar historial de precios para análisis de tendencia
+        self.update_price_history(current_price)
+        
+        # Log con información de trailing stop si estamos en posición
+        if self.in_position and self.position:
+            if self.position['side'] == 'long':
+                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
+                max_price = self.position.get('highest_price', current_price)
+                trailing_stop = self.position.get('trailing_stop', 0)
+                
+                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f} | "
+                               f"PnL: {pnl_pct:+.2f}% | Max: ${max_price:.2f} | TS: ${trailing_stop:.2f}")
+            else:
+                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
+                min_price = self.position.get('lowest_price', current_price)
+                trailing_stop = self.position.get('trailing_stop', 0)
+                
+                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f} | "
+                               f"PnL: {pnl_pct:+.2f}% | Min: ${min_price:.2f} | TS: ${trailing_stop:.2f}")
+        else:
+            self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f}")
         
         # Verificar condiciones de salida si estamos en posición
         self.check_exit_conditions(current_price, current_rsi)
@@ -1060,10 +1224,11 @@ class BinanceRSIBot:
     
     def run(self):
         """Ejecuta el bot en un loop continuo (optimizado para Docker)"""
-        self.logger.info("🤖 Bot RSI con Recuperación de Posiciones iniciado")
+        self.logger.info("🤖 Bot RSI con Trailing Stop Inteligente iniciado")
         self.logger.info(f"📊 Config: RSI({self.rsi_period}) | OS: {self.rsi_oversold} | OB: {self.rsi_overbought}")
         self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.position_size_pct}% | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
         self.logger.info(f"🔔 Confirmación: {self.confirmation_threshold}% movimiento | Max espera: {self.max_confirmation_wait} períodos")
+        self.logger.info(f"🎯 Trailing Stop: {self.trailing_stop_distance}% | Confirmación tendencia: {self.trend_confirmation_periods} períodos")
         self.logger.info(f"💾 Estado guardado en: {self.state_file}")
         self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
         
