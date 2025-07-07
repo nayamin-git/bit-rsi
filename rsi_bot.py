@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import time
 import logging
+import signal
 from datetime import datetime
 import json
 import csv
@@ -36,18 +37,26 @@ class BinanceRSIBot:
         
         # Gestión de riesgo mejorada
         self.leverage = 1 if testnet else 5  # Sin leverage en testnet para simplicidad
-        self.position_size_pct = 2  # 2% del capital por trade
+        self.position_size_pct = 10 if testnet else 2  # 10% en testnet, 2% en real
         self.stop_loss_pct = 2  # Stop loss al 2%
         self.take_profit_pct = 4  # Take profit al 4%
         self.min_balance_usdt = 10  # Balance mínimo para operar
+        self.min_notional_usdt = 15 if testnet else 10  # Mínimo para evitar error NOTIONAL
         
         # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO
         self.confirmation_threshold = 0.1  # % de movimiento mínimo para confirmar
         self.max_confirmation_wait = 10  # Máximo 10 períodos esperando confirmación
         
-        # ARCHIVOS DE PERSISTENCIA
-        self.state_file = f'logs/bot_state_{datetime.now().strftime("%Y%m%d")}.json'
-        self.recovery_file = f'logs/recovery_log_{datetime.now().strftime("%Y%m%d")}.txt'
+        # ARCHIVOS DE PERSISTENCIA (compatible con Docker)
+        self.logs_dir = os.path.join(os.getcwd(), 'logs')
+        self.data_dir = os.path.join(os.getcwd(), 'data')
+        
+        # Crear directorios si no existen
+        os.makedirs(self.logs_dir, exist_ok=True)
+        os.makedirs(self.data_dir, exist_ok=True)
+        
+        self.state_file = os.path.join(self.data_dir, f'bot_state_{datetime.now().strftime("%Y%m%d")}.json')
+        self.recovery_file = os.path.join(self.logs_dir, f'recovery_log_{datetime.now().strftime("%Y%m%d")}.txt')
         
         # Estado del bot
         self.position = None
@@ -142,9 +151,10 @@ class BinanceRSIBot:
             raise
     
     def setup_logging(self):
-        """Configura sistema de logging"""
-        if not os.path.exists('logs'):
-            os.makedirs('logs')
+        """Configura sistema de logging (compatible con Docker)"""
+        # Crear directorio de logs si no existe
+        logs_dir = os.path.join(os.getcwd(), 'logs')
+        os.makedirs(logs_dir, exist_ok=True)
             
         # Logger principal
         self.logger = logging.getLogger(__name__)
@@ -161,20 +171,48 @@ class BinanceRSIBot:
         )
         
         # Handler para archivo
-        file_handler = logging.FileHandler(f'logs/rsi_bot_{datetime.now().strftime("%Y%m%d")}.log')
+        log_file = os.path.join(logs_dir, f'rsi_bot_{datetime.now().strftime("%Y%m%d")}.log')
+        file_handler = logging.FileHandler(log_file)
         file_handler.setFormatter(formatter)
         
-        # Handler para consola
+        # Handler para consola (importante para Docker)
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
         
         self.logger.addHandler(file_handler)
         self.logger.addHandler(console_handler)
         
+        # Log inicial para Docker
+        self.logger.info(f"🐳 Bot iniciando - Logs en: {log_file}")
+        self.logger.info(f"🐳 Directorio de trabajo: {os.getcwd()}")
+        self.logger.info(f"🐳 Usuario actual: {os.getenv('USER', 'unknown')}")
+        
+        # Configurar manejo de señales para Docker
+        signal.signal(signal.SIGTERM, self._signal_handler)
+        signal.signal(signal.SIGINT, self._signal_handler)
+        
+    def _signal_handler(self, signum, frame):
+        """Maneja señales de Docker (SIGTERM, SIGINT)"""
+        signal_names = {2: 'SIGINT', 15: 'SIGTERM'}
+        signal_name = signal_names.get(signum, f'Signal {signum}')
+        
+        self.logger.info(f"🐳 Recibida señal {signal_name} - Cerrando bot gracefully...")
+        
+        if self.in_position:
+            self.logger.info("💾 Cerrando posición antes de salir...")
+            self.close_position("Señal Docker")
+        
+        # Guardar estado final
+        self.save_bot_state()
+        self.log_performance_summary()
+        
+        self.logger.info("🐳 Bot cerrado correctamente")
+        exit(0)
+        
     def init_log_files(self):
-        """Inicializa archivos CSV para análisis"""
-        self.trades_csv = f'logs/trades_detail_{datetime.now().strftime("%Y%m%d")}.csv'
-        self.market_csv = f'logs/market_data_{datetime.now().strftime("%Y%m%d")}.csv'
+        """Inicializa archivos CSV para análisis (compatible con Docker)"""
+        self.trades_csv = os.path.join(self.logs_dir, f'trades_detail_{datetime.now().strftime("%Y%m%d")}.csv')
+        self.market_csv = os.path.join(self.logs_dir, f'market_data_{datetime.now().strftime("%Y%m%d")}.csv')
         
         # Crear headers para archivo de trades
         if not os.path.exists(self.trades_csv):
@@ -200,10 +238,21 @@ class BinanceRSIBot:
     def save_bot_state(self):
         """Guarda el estado actual del bot en archivo JSON"""
         try:
+            # Función helper para serializar datetime
+            def serialize_datetime(obj):
+                if isinstance(obj, datetime):
+                    return obj.isoformat()
+                elif isinstance(obj, dict):
+                    return {k: serialize_datetime(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [serialize_datetime(item) for item in obj]
+                else:
+                    return obj
+            
             state_data = {
                 'timestamp': datetime.now().isoformat(),
                 'in_position': self.in_position,
-                'position': self.position,
+                'position': serialize_datetime(self.position) if self.position else None,
                 'last_signal_time': self.last_signal_time,
                 'pending_long_signal': self.pending_long_signal,
                 'pending_short_signal': self.pending_short_signal,
@@ -215,15 +264,12 @@ class BinanceRSIBot:
                 'last_price': self.last_price
             }
             
-            # Convertir datetime objects en position si existen
-            if self.position and 'entry_time' in self.position:
-                state_data['position']['entry_time'] = self.position['entry_time'].isoformat()
-            
             with open(self.state_file, 'w') as f:
                 json.dump(state_data, f, indent=2, default=str)
                 
         except Exception as e:
             self.logger.error(f"Error guardando estado del bot: {e}")
+            # Continuar sin guardado en caso de error crítico
     
     def load_bot_state(self):
         """Carga el estado previo del bot desde archivo JSON"""
@@ -638,11 +684,23 @@ class BinanceRSIBot:
         # Con apalancamiento (si está habilitado)
         effective_position = position_value * self.leverage
         
+        # Verificar mínimo notional de Binance
+        if effective_position < self.min_notional_usdt:
+            self.logger.warning(f"Posición muy pequeña: ${effective_position:.2f} < ${self.min_notional_usdt}")
+            # Usar el mínimo permitido
+            effective_position = self.min_notional_usdt
+        
         # Calcular cantidad de BTC
         quantity = effective_position / price
         
-        # Redondear a 6 decimales (típico para BTC)
+        # Redondear a 6 decimales (típico para BTC) pero verificar mínimos
         quantity = round(quantity, 6)
+        
+        # Verificar que cumple el notional mínimo después del redondeo
+        final_notional = quantity * price
+        if final_notional < self.min_notional_usdt:
+            self.logger.warning(f"Notional final insuficiente: ${final_notional:.2f}")
+            return 0, 0
         
         return quantity, position_value
     
@@ -931,15 +989,27 @@ class BinanceRSIBot:
             return
             
         if self.position['side'] == 'long':
+            # Verificar stop loss y take profit normales
             if current_price <= self.position['stop_loss']:
                 self.close_position("Stop Loss", current_rsi, current_price)
             elif current_price >= self.position['take_profit']:
                 self.close_position("Take Profit", current_rsi, current_price)
+            # NUEVO: Cerrar LONG si RSI está muy overbought (>75)
+            elif current_rsi > 75:
+                self.logger.info(f"🔴 RSI muy alto ({current_rsi:.2f}) - Considerando cierre de LONG")
+                # Cerrar si RSI > 80 para asegurar ganancias
+                if current_rsi > 80:
+                    self.close_position("RSI Overbought (>80)", current_rsi, current_price)
         else:  # SHORT
             if current_price >= self.position['stop_loss']:
                 self.close_position("Stop Loss", current_rsi, current_price)
             elif current_price <= self.position['take_profit']:
                 self.close_position("Take Profit", current_rsi, current_price)
+            # NUEVO: Cerrar SHORT si RSI está muy oversold (<25)
+            elif current_rsi < 25:
+                self.logger.info(f"🟢 RSI muy bajo ({current_rsi:.2f}) - Considerando cierre de SHORT")
+                if current_rsi < 20:
+                    self.close_position("RSI Oversold (<20)", current_rsi, current_price)
     
     def analyze_and_trade(self):
         """Análisis principal y ejecución de trades"""
@@ -989,12 +1059,13 @@ class BinanceRSIBot:
         self.last_price = current_price
     
     def run(self):
-        """Ejecuta el bot en un loop continuo"""
+        """Ejecuta el bot en un loop continuo (optimizado para Docker)"""
         self.logger.info("🤖 Bot RSI con Recuperación de Posiciones iniciado")
         self.logger.info(f"📊 Config: RSI({self.rsi_period}) | OS: {self.rsi_oversold} | OB: {self.rsi_overbought}")
         self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.position_size_pct}% | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
         self.logger.info(f"🔔 Confirmación: {self.confirmation_threshold}% movimiento | Max espera: {self.max_confirmation_wait} períodos")
         self.logger.info(f"💾 Estado guardado en: {self.state_file}")
+        self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
         
         # Mostrar performance cada 20 iteraciones
         iteration = 0
@@ -1011,17 +1082,18 @@ class BinanceRSIBot:
                 time.sleep(30)  # Verificar cada 30 segundos
                 
         except KeyboardInterrupt:
-            self.logger.info("🛑 Bot detenido por el usuario")
+            self.logger.info("🛑 Bot detenido por el usuario (KeyboardInterrupt)")
             if self.in_position:
                 self.close_position("Bot detenido")
             self.save_bot_state()
             self.log_performance_summary()
                 
         except Exception as e:
-            self.logger.error(f"Error en el bot: {e}")
+            self.logger.error(f"❌ Error en el bot: {e}")
             if self.in_position:
                 self.close_position("Error del bot")
             self.save_bot_state()
+            raise  # Re-raise para que Docker pueda manejar el restart
     
     def log_performance_summary(self):
         """Muestra resumen de performance"""
@@ -1072,8 +1144,12 @@ class BinanceRSIBot:
         
         self.logger.info("="*60)
 
-# Ejemplo de uso
+# Ejemplo de uso (optimizado para Docker)
 if __name__ == "__main__":
+    
+    print("🐳 RSI Trading Bot - Docker Edition")
+    print(f"🐳 Python PID: {os.getpid()}")
+    print(f"🐳 Working Directory: {os.getcwd()}")
     
     # Configuración con variables de entorno
     API_KEY = os.getenv('BINANCE_API_KEY')
@@ -1082,47 +1158,37 @@ if __name__ == "__main__":
     
     if not API_KEY or not API_SECRET:
         print("❌ ERROR: Variables de entorno no configuradas")
-        print("Configura BINANCE_API_KEY y BINANCE_API_SECRET en un archivo .env")
+        print("🐳 En Docker, asegúrate de que el .env esté configurado correctamente")
+        print("🐳 Variables requeridas: BINANCE_API_KEY, BINANCE_API_SECRET")
         exit(1)
     
     print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
-    print("🔔 NUEVO: Sistema de confirmación de movimiento activado")
-    print("💾 NUEVO: Sistema de recuperación de posiciones activado")
+    print("🔔 CARACTERÍSTICAS: Confirmación de movimiento + Recuperación de posiciones")
+    print("🐳 DOCKER: Auto-restart habilitado")
     
     if not USE_TESTNET:
         print("⚠️  ADVERTENCIA: Vas a usar DINERO REAL")
-        confirmation = input("¿Estás seguro? (yes/no): ")
-        if confirmation.lower() != 'yes':
-            print("🛑 Bot cancelado por seguridad")
-            exit(1)
+        print("🐳 En modo Docker, no se solicita confirmación manual")
+        print("🐳 Para cancelar, detén el contenedor: docker-compose down")
     
-    # Auto-restart en caso de errores
-    restart_count = 0
-    max_restarts = 3
-    
-    while restart_count < max_restarts:
-        try:
-            bot = BinanceRSIBot(
-                api_key=API_KEY,
-                api_secret=API_SECRET, 
-                testnet=USE_TESTNET
-            )
-            
-            bot.run()
-            break  # Salir del loop si termina normalmente
-            
-        except KeyboardInterrupt:
-            print("🛑 Bot detenido por el usuario")
-            break
-            
-        except Exception as e:
-            restart_count += 1
-            print(f"❌ Error crítico ({restart_count}/{max_restarts}): {e}")
-            
-            if restart_count < max_restarts:
-                wait_time = 30 * restart_count
-                print(f"🔄 Reiniciando en {wait_time} segundos...")
-                time.sleep(wait_time)
-            else:
-                print("💀 Máximo de reinicios alcanzado. Bot detenido.")
-                break
+    # En Docker, el auto-restart lo maneja docker-compose
+    # Solo necesitamos intentar ejecutar una vez
+    try:
+        print("🚀 Creando instancia del bot...")
+        bot = BinanceRSIBot(
+            api_key=API_KEY,
+            api_secret=API_SECRET, 
+            testnet=USE_TESTNET
+        )
+        
+        print("✅ Bot inicializado correctamente")
+        print("🔄 Iniciando loop principal...")
+        bot.run()
+        
+    except KeyboardInterrupt:
+        print("🛑 Bot detenido por señal de usuario")
+        
+    except Exception as e:
+        print(f"❌ Error crítico: {e}")
+        print("🐳 Docker reiniciará automáticamente el contenedor")
+        exit(1)  # Exit code 1 para indicar error a Docker
