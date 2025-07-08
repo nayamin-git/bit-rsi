@@ -44,8 +44,8 @@ class BinanceRSIBot:
         self.min_notional_usdt = 15 if testnet else 10  # Mínimo para evitar error NOTIONAL
         
         # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO Y TENDENCIA
-        self.confirmation_threshold = 0.15  # REDUCIDO: 0.05% en lugar de 0.1%
-        self.max_confirmation_wait = 10  # AUMENTADO: 15 períodos en lugar de 10
+        self.confirmation_threshold = 0.10  # REDUCIDO: 0.05% en lugar de 0.1%
+        self.max_confirmation_wait = 5  # AUMENTADO: 15 períodos en lugar de 10
         
         # VARIABLES PARA TRAILING STOP INTELIGENTE
         self.trend_confirmation_periods = 2  # REDUCIDO: 2 períodos en lugar de 3
