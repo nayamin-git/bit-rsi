@@ -37,20 +37,20 @@ class BinanceRSIBot:
         
         # Gestión de riesgo mejorada
         self.leverage = 1
-        self.position_size_pct = 10
+        self.position_size_pct = 5
         self.stop_loss_pct = 2  # Stop loss al 2%
         self.take_profit_pct = 4  # Take profit al 4%
-        self.min_balance_usdt = 10  # Balance mínimo para operar
-        self.min_notional_usdt = 15 if testnet else 10  # Mínimo para evitar error NOTIONAL
+        self.min_balance_usdt = 50  # Balance mínimo para operar
+        self.min_notional_usdt = 12 # Mínimo para evitar error NOTIONAL
         
         # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO Y TENDENCIA
-        self.confirmation_threshold = 0.10  # REDUCIDO: 0.05% en lugar de 0.1%
-        self.max_confirmation_wait = 5  # AUMENTADO: 15 períodos en lugar de 10
+        self.confirmation_threshold = 0.08  # REDUCIDO: 0.05% en lugar de 0.1%
+        self.max_confirmation_wait = 6  # AUMENTADO: 15 períodos en lugar de 10
         
         # VARIABLES PARA TRAILING STOP INTELIGENTE
         self.trend_confirmation_periods = 2  # REDUCIDO: 2 períodos en lugar de 3
-        self.trend_threshold = 0.03  # REDUCIDO: 0.03% en lugar de 0.05%
-        self.trailing_stop_distance = 1.5  # % de distancia para trailing stop
+        self.trend_threshold = 0.04  # REDUCIDO: 0.03% en lugar de 0.05%
+        self.trailing_stop_distance = 1.8  # % de distancia para trailing stop
         self.price_history = []  # Historial de precios para analizar tendencia
         
         # MEJORAR RECUPERACIÓN DE ESTADO
