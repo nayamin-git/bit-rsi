@@ -16,7 +16,7 @@ load_dotenv()
 class BinanceRSIBot:
     def __init__(self, api_key, api_secret, testnet=True):
         """
-        Bot de trading RSI para Binance - Versión con Recuperación de Posiciones
+        Bot de trading RSI para Binance - Versión con Recuperación de Posiciones v1.0
         
         Args:
             api_key: Tu API key de Binance
@@ -602,7 +602,7 @@ class BinanceRSIBot:
             self.logger.info(f"📍 Precio trigger: ${current_price:.2f} - Esperando subida de {self.confirmation_threshold}%")
             
         # Detectar señal SHORT (RSI overbought)
-        elif current_rsi > self.rsi_overbought and not self.pending_long_signal and not self.pending_short_signal:
+        elif False and current_rsi > self.rsi_overbought and not self.pending_long_signal and not self.pending_short_signal:
             self.pending_short_signal = True
             self.signal_trigger_price = current_price
             self.signal_trigger_time = datetime.now()
