@@ -599,6 +599,295 @@ class BinanceRSIBot:
         unrealized_pnl = 0
         if self.in_position and self.position:
             if self.position['side'] == 'long':
+            # 1. Stop Loss de emergencia (nunca cambiar - protección absoluta)
+            if current_price <= self.position['stop_loss']:
+                self.close_position("Stop Loss Emergencia", current_rsi, current_price)
+                return
+            
+            # 2. Take Profit tradicional (conservador)
+            elif current_price >= self.position['take_profit']:
+                self.close_position("Take Profit Objetivo", current_rsi, current_price)
+                return
+            
+            # 3. Trailing stop por cambio de tendencia
+            elif trend_changed:
+                self.close_position(f"Cambio de Tendencia: {trend_reason}", current_rsi, current_price)
+                return
+            
+            # 4. Trailing stop dinámico
+            elif current_price <= self.position['trailing_stop']:
+                price_from_max = ((self.position['highest_price'] - current_price) / self.position['highest_price']) * 100
+                self.close_position(f"Trailing Stop (-{price_from_max:.1f}% desde máximo)", current_rsi, current_price)
+                return
+            
+            # 5. RSI extremo como respaldo
+            elif current_rsi > 85:
+                self.logger.warning(f"⚠️ RSI extremo ({current_rsi:.2f}) - Monitoreando para cierre")
+                if current_rsi > 90:
+                    self.close_position("RSI Extremo (>90)", current_rsi, current_price)
+                    return
+                    
+        else:  # SHORT
+            # 1. Stop Loss de emergencia
+            if current_price >= self.position['stop_loss']:
+                self.close_position("Stop Loss Emergencia", current_rsi, current_price)
+                return
+            
+            # 2. Take Profit tradicional
+            elif current_price <= self.position['take_profit']:
+                self.close_position("Take Profit Objetivo", current_rsi, current_price)
+                return
+            
+            # 3. Trailing stop por cambio de tendencia
+            elif trend_changed:
+                self.close_position(f"Cambio de Tendencia: {trend_reason}", current_rsi, current_price)
+                return
+            
+            # 4. Trailing stop dinámico
+            elif current_price >= self.position['trailing_stop']:
+                price_from_min = ((current_price - self.position['lowest_price']) / self.position['lowest_price']) * 100
+                self.close_position(f"Trailing Stop (+{price_from_min:.1f}% desde mínimo)", current_rsi, current_price)
+                return
+            
+            # 5. RSI extremo como respaldo
+            elif current_rsi < 15:
+                self.logger.warning(f"⚠️ RSI extremo ({current_rsi:.2f}) - Monitoreando para cierre")
+                if current_rsi < 10:
+                    self.close_position("RSI Extremo (<10)", current_rsi, current_price)
+                    return
+    
+    def analyze_and_trade(self):
+        """Análisis principal y ejecución de trades"""
+        # Obtener datos del mercado
+        market_data = self.get_market_data()
+        if not market_data:
+            return
+            
+        current_rsi = market_data['rsi']
+        current_price = market_data['price']
+        current_volume = market_data['volume']
+        
+        # Actualizar historial de precios para análisis de tendencia
+        self.update_price_history(current_price)
+        
+        # Log con información de trailing stop si estamos en posición
+        if self.in_position and self.position:
+            if self.position['side'] == 'long':
+                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
+                max_price = self.position.get('highest_price', current_price)
+                trailing_stop = self.position.get('trailing_stop', 0)
+                
+                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f} | "
+                               f"PnL: {pnl_pct:+.2f}% | Max: ${max_price:.2f} | TS: ${trailing_stop:.2f}")
+            else:
+                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
+                min_price = self.position.get('lowest_price', current_price)
+                trailing_stop = self.position.get('trailing_stop', 0)
+                
+                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f} | "
+                               f"PnL: {pnl_pct:+.2f}% | Min: ${min_price:.2f} | TS: ${trailing_stop:.2f}")
+        else:
+            self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f}")
+        
+        # Verificar condiciones de salida si estamos en posición
+        self.check_exit_conditions(current_price, current_rsi)
+        
+        # Si estamos en posición, no buscar nuevas señales
+        if self.in_position:
+            return
+        
+        # Verificar confirmación de señales pendientes
+        confirmed, signal_type = self.check_signal_confirmation(current_price, current_rsi)
+        
+        if confirmed:
+            current_time = time.time()
+            
+            # Calcular tiempo de confirmación
+            confirmation_time_mins = 0
+            if self.signal_trigger_time:
+                confirmation_time_mins = (datetime.now() - self.signal_trigger_time).total_seconds() / 60
+            
+            if signal_type == 'long':
+                if self.open_long_position(current_price, current_rsi, confirmation_time_mins):
+                    self.last_signal_time = current_time
+            elif signal_type == 'short':
+                if self.open_short_position(current_price, current_rsi, confirmation_time_mins):
+                    self.last_signal_time = current_time
+        
+        # Solo buscar nuevas señales si no hay señales pendientes y ha pasado tiempo suficiente
+        elif not (self.pending_long_signal or self.pending_short_signal):
+            current_time = time.time()
+            if current_time - self.last_signal_time >= 300:  # 5 minutos
+                self.detect_rsi_signal(current_rsi, current_price, current_volume)
+        
+        # Actualizar datos históricos
+        self.last_rsi = current_rsi
+        self.last_price = current_price
+    
+    def run(self):
+        """Ejecuta el bot en un loop continuo (optimizado para Docker)"""
+        self.logger.info("🤖 Bot RSI OPTIMIZADO v3.0 iniciado")
+        self.logger.info(f"📊 Config: RSI({self.rsi_period}) | OS: {self.rsi_oversold} | OB: {self.rsi_overbought}")
+        self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.position_size_pct}% | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
+        self.logger.info(f"🔔 Confirmación OPTIMIZADA: LONG {self.long_confirmation_threshold}% | SHORT {self.short_confirmation_threshold}% | Max espera: {self.max_confirmation_wait} períodos")
+        self.logger.info(f"🎯 Trailing Stop OPTIMIZADO: LONG {self.long_trailing_distance}% | SHORT {self.short_trailing_distance}%")
+        self.logger.info(f"🚫 SHORTs: {'HABILITADOS' if self.enable_short_trading else 'DESHABILITADOS'}")
+        self.logger.info(f"📊 Filtros: Volumen {self.min_volume_multiplier}x | Precio máx {self.max_price_above_ma}% sobre MA20")
+        self.logger.info(f"🛡️ Verificación posiciones perdidas: Cada {self.state_backup_interval} iteraciones")
+        self.logger.info(f"💾 Estado guardado en: {self.state_file}")
+        self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
+        
+        # Mostrar performance cada 20 iteraciones
+        iteration = 0
+        
+        try:
+            while True:
+                self.analyze_and_trade()
+                
+                # Mostrar resumen cada 10 minutos aproximadamente
+                iteration += 1
+                if iteration % 20 == 0:
+                    self.log_performance_summary()
+                
+                time.sleep(30)  # Verificar cada 30 segundos
+                
+        except KeyboardInterrupt:
+            self.logger.info("🛑 Bot detenido por el usuario (KeyboardInterrupt)")
+            if self.in_position:
+                self.close_position("Bot detenido")
+            self.save_bot_state()
+            self.log_performance_summary()
+                
+        except Exception as e:
+            self.logger.error(f"❌ Error en el bot: {e}")
+            if self.in_position:
+                self.close_position("Error del bot")
+            self.save_bot_state()
+            raise  # Re-raise para que Docker pueda manejar el restart
+    
+    def log_performance_summary(self):
+        """Muestra resumen de performance mejorado"""
+        metrics = self.performance_metrics
+        
+        self.logger.info("="*60)
+        self.logger.info("📊 RESUMEN DE PERFORMANCE")
+        self.logger.info("="*60)
+        
+        # Estadísticas de señales
+        signal_confirmation_rate = 0
+        if metrics['signals_detected'] > 0:
+            signal_confirmation_rate = (metrics['signals_confirmed'] / metrics['signals_detected']) * 100
+        
+        self.logger.info(f"🔔 Señales detectadas: {metrics['signals_detected']}")
+        self.logger.info(f"✅ Señales confirmadas: {metrics['signals_confirmed']}")
+        self.logger.info(f"⏰ Señales expiradas: {metrics['signals_expired']}")
+        self.logger.info(f"📈 Tasa de confirmación: {signal_confirmation_rate:.1f}%")
+        self.logger.info(f"🔄 Recuperaciones realizadas: {metrics['recoveries_performed']}")
+        
+        # Estadísticas de SHORTs
+        if metrics['shorts_blocked'] > 0:
+            self.logger.info(f"🚫 SHORTs bloqueados: {metrics['shorts_blocked']}")
+        
+        self.logger.info("-" * 40)
+        
+        if metrics['total_trades'] == 0:
+            self.logger.info("📊 Sin trades completados aún")
+        else:
+            win_rate = (metrics['winning_trades'] / metrics['total_trades']) * 100
+            avg_pnl = metrics['total_pnl'] / metrics['total_trades']
+            
+            # Estadísticas por tipo de trade
+            long_win_rate = (metrics['long_wins'] / metrics['long_trades']) * 100 if metrics['long_trades'] > 0 else 0
+            short_win_rate = (metrics['short_wins'] / metrics['short_trades']) * 100 if metrics['short_trades'] > 0 else 0
+            
+            self.logger.info(f"🔢 Total Trades: {metrics['total_trades']}")
+            self.logger.info(f"🎯 Win Rate: {win_rate:.1f}%")
+            self.logger.info(f"💰 PnL Promedio: {avg_pnl:.2f}%")
+            self.logger.info(f"💰 PnL Total: {metrics['total_pnl']:.2f}%")
+            self.logger.info(f"✅ Ganadores: {metrics['winning_trades']}")
+            self.logger.info(f"❌ Perdedores: {metrics['losing_trades']}")
+            self.logger.info(f"📉 Max Pérdidas Consecutivas: {metrics['max_consecutive_losses']}")
+            
+            # Desglose LONG vs SHORT
+            if metrics['long_trades'] > 0:
+                self.logger.info(f"🟢 LONGs: {metrics['long_trades']} trades | {long_win_rate:.1f}% win rate")
+            if metrics['short_trades'] > 0:
+                self.logger.info(f"🔴 SHORTs: {metrics['short_trades']} trades | {short_win_rate:.1f}% win rate")
+        
+        self.logger.info(f"💵 Balance Actual: ${self.get_account_balance():.2f}")
+        
+        # Estado actual
+        if self.in_position:
+            pos_type = "RECUPERADA" if self.position.get('recovered') else "ACTIVA"
+            self.logger.info(f"📍 Posición {pos_type}: {self.position['side'].upper()}")
+        elif self.pending_long_signal:
+            self.logger.info(f"⏳ Esperando confirmación LONG ({self.confirmation_wait_count}/{self.max_confirmation_wait})")
+        elif self.pending_short_signal:
+            self.logger.info(f"⏳ Esperando confirmación SHORT ({self.confirmation_wait_count}/{self.max_confirmation_wait})")
+        else:
+            self.logger.info("🔍 Buscando oportunidades...")
+        
+        self.logger.info("="*60)
+
+# Ejemplo de uso (optimizado para Docker)
+if __name__ == "__main__":
+    
+    print("🐳 RSI Trading Bot OPTIMIZADO - Docker Edition v3.0")
+    print(f"🐳 Python PID: {os.getpid()}")
+    print(f"🐳 Working Directory: {os.getcwd()}")
+    
+    # Configuración con variables de entorno
+    API_KEY = os.getenv('BINANCE_API_KEY')
+    API_SECRET = os.getenv('BINANCE_API_SECRET')
+    USE_TESTNET = os.getenv('USE_TESTNET', 'true').lower() == 'true'
+    
+    if not API_KEY or not API_SECRET:
+        print("❌ ERROR: Variables de entorno no configuradas")
+        print("🐳 En Docker, asegúrate de que el .env esté configurado correctamente")
+        print("🐳 Variables requeridas: BINANCE_API_KEY, BINANCE_API_SECRET")
+        exit(1)
+    
+    print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
+    print("🔔 CARACTERÍSTICAS OPTIMIZADAS v3.0:")
+    print("  • RSI más estrictos: OS=25, OB=80 (era 30/70)")
+    print("  • Confirmación mejorada: LONG 0.15%, SHORT 0.25% (era 0.08%)")
+    print("  • SHORTs DESHABILITADOS por defecto (enable_short_trading=False)")
+    print("  • Trailing stops diferenciados: LONG 1.8%, SHORT 2.5%")
+    print("  • Filtros de volumen y tendencia implementados")
+    print("  • Reducción automática de posición tras pérdidas consecutivas")
+    print("  • Recuperación automática de posiciones perdidas")
+    print("  • Métricas detalladas por tipo de trade (LONG/SHORT)")
+    print("🐳 DOCKER: Auto-restart + persistencia garantizada")
+    
+    if not USE_TESTNET:
+        print("⚠️  ADVERTENCIA: Vas a usar DINERO REAL")
+        print("🐳 En modo Docker, no se solicita confirmación manual")
+        print("🐳 Para cancelar, detén el contenedor: docker-compose down")
+    
+    print("🔴 IMPORTANTE: SHORTs están DESHABILITADOS por defecto")
+    print("   Para habilitar: cambiar 'enable_short_trading = True' en el código")
+    print("   RECOMENDACIÓN: Mantener deshabilitados hasta mejorar condiciones del mercado")
+    
+    # En Docker, el auto-restart lo maneja docker-compose
+    try:
+        print("🚀 Creando instancia del bot optimizado...")
+        bot = BinanceRSIBot(
+            api_key=API_KEY,
+            api_secret=API_SECRET, 
+            testnet=USE_TESTNET
+        )
+        
+        print("✅ Bot inicializado correctamente")
+        print("🔄 Iniciando loop principal...")
+        bot.run()
+        
+    except KeyboardInterrupt:
+        print("🛑 Bot detenido por señal de usuario")
+        
+    except Exception as e:
+        print(f"❌ Error crítico: {e}")
+        print("🐳 Docker reiniciará automáticamente el contenedor")
+        exit(1)  # Exit code 1 para indicar error a Docker'] == 'long':
                 unrealized_pnl = ((price - self.position['entry_price']) / self.position['entry_price']) * 100 * self.leverage
             else:
                 unrealized_pnl = ((self.position['entry_price'] - price) / self.position['entry_price']) * 100 * self.leverage
@@ -655,11 +944,11 @@ class BinanceRSIBot:
         if len(self.market_data_log) > 1000:
             self.market_data_log = self.market_data_log[-1000:]
         
-        # Verificar estado cada iteración en lugar de solo cada 10
+        # Verificar estado cada iteración
         if len(self.market_data_log) % self.state_backup_interval == 0:
             self.save_bot_state()
             
-            # NUEVA: Verificación adicional de posiciones perdidas
+            # Verificación adicional de posiciones perdidas
             if not self.in_position:
                 self.verify_lost_positions()
     
@@ -1282,290 +1571,4 @@ class BinanceRSIBot:
         # Detectar cambio de tendencia
         trend_changed, trend_reason = self.detect_trend_change(current_price)
         
-        if self.position['side'] == 'long':
-            # 1. Stop Loss de emergencia (nunca cambiar - protección absoluta)
-            
-            # 2. Take Profit tradicional (conservador)
-            elif current_price >= self.position['take_profit']:
-                self.close_position("Take Profit Objetivo", current_rsi, current_price)
-                return
-            
-            # 3. NUEVO: Trailing stop por cambio de tendencia
-            elif trend_changed:
-                self.close_position(f"Cambio de Tendencia: {trend_reason}", current_rsi, current_price)
-                return
-            
-            # 4. Trailing stop dinámico (solo si está muy lejos del precio actual)
-            elif current_price <= self.position['trailing_stop']:
-                price_from_max = ((self.position['highest_price'] - current_price) / self.position['highest_price']) * 100
-                self.close_position(f"Trailing Stop (-{price_from_max:.1f}% desde máximo)", current_rsi, current_price)
-                return
-            
-            # 5. RSI extremo como respaldo (solo si está MUY overbought)
-            elif current_rsi > 85:
-                self.logger.warning(f"⚠️ RSI extremo ({current_rsi:.2f}) - Monitoreando para cierre")
-                if current_rsi > 90:
-                    self.close_position("RSI Extremo (>90)", current_rsi, current_price)
-                    return
-                    
-        else:  # SHORT
-            # 1. Stop Loss de emergencia
-            if current_price >= self.position['stop_loss']:
-                self.close_position("Stop Loss Emergencia", current_rsi, current_price)
-                return
-            
-            # 2. Take Profit tradicional
-            elif current_price <= self.position['take_profit']:
-                self.close_position("Take Profit Objetivo", current_rsi, current_price)
-                return
-            
-            # 3. Trailing stop por cambio de tendencia
-            elif trend_changed:
-                self.close_position(f"Cambio de Tendencia: {trend_reason}", current_rsi, current_price)
-                return
-            
-            # 4. Trailing stop dinámico
-            elif current_price >= self.position['trailing_stop']:
-                price_from_min = ((current_price - self.position['lowest_price']) / self.position['lowest_price']) * 100
-                self.close_position(f"Trailing Stop (+{price_from_min:.1f}% desde mínimo)", current_rsi, current_price)
-                return
-            
-            # 5. RSI extremo como respaldo
-            elif current_rsi < 15:
-                self.logger.warning(f"⚠️ RSI extremo ({current_rsi:.2f}) - Monitoreando para cierre")
-                if current_rsi < 10:
-                    self.close_position("RSI Extremo (<10)", current_rsi, current_price)
-                    return
-    
-    def analyze_and_trade(self):
-        """Análisis principal y ejecución de trades"""
-        # Obtener datos del mercado
-        market_data = self.get_market_data()
-        if not market_data:
-            return
-            
-        current_rsi = market_data['rsi']
-        current_price = market_data['price']
-        current_volume = market_data['volume']
-        
-        # Actualizar historial de precios para análisis de tendencia
-        self.update_price_history(current_price)
-        
-        # Log con información de trailing stop si estamos en posición
-        if self.in_position and self.position:
-            if self.position['side'] == 'long':
-                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-                max_price = self.position.get('highest_price', current_price)
-                trailing_stop = self.position.get('trailing_stop', 0)
-                
-                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f} | "
-                               f"PnL: {pnl_pct:+.2f}% | Max: ${max_price:.2f} | TS: ${trailing_stop:.2f}")
-            else:
-                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-                min_price = self.position.get('lowest_price', current_price)
-                trailing_stop = self.position.get('trailing_stop', 0)
-                
-                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f} | "
-                               f"PnL: {pnl_pct:+.2f}% | Min: ${min_price:.2f} | TS: ${trailing_stop:.2f}")
-        else:
-            self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.2f}")
-        
-        # Verificar condiciones de salida si estamos en posición
-        self.check_exit_conditions(current_price, current_rsi)
-        
-        # Si estamos en posición, no buscar nuevas señales
-        if self.in_position:
-            return
-        
-        # Verificar confirmación de señales pendientes
-        confirmed, signal_type = self.check_signal_confirmation(current_price, current_rsi)
-        
-        if confirmed:
-            current_time = time.time()
-            
-            # Calcular tiempo de confirmación
-            confirmation_time_mins = 0
-            if self.signal_trigger_time:
-                confirmation_time_mins = (datetime.now() - self.signal_trigger_time).total_seconds() / 60
-            
-            if signal_type == 'long':
-                if self.open_long_position(current_price, current_rsi, confirmation_time_mins):
-                    self.last_signal_time = current_time
-            elif signal_type == 'short':
-                if self.open_short_position(current_price, current_rsi, confirmation_time_mins):
-                    self.last_signal_time = current_time
-        
-        # Solo buscar nuevas señales si no hay señales pendientes y ha pasado tiempo suficiente
-        elif not (self.pending_long_signal or self.pending_short_signal):
-            current_time = time.time()
-            if current_time - self.last_signal_time >= 300:  # 5 minutos
-                self.detect_rsi_signal(current_rsi, current_price, current_volume)
-        
-        # Actualizar datos históricos
-        self.last_rsi = current_rsi
-        self.last_price = current_price
-    
-    def run(self):
-        """Ejecuta el bot en un loop continuo (optimizado para Docker)"""
-        self.logger.info("🤖 Bot RSI OPTIMIZADO v3.0 iniciado")
-        self.logger.info(f"📊 Config: RSI({self.rsi_period}) | OS: {self.rsi_oversold} | OB: {self.rsi_overbought}")
-        self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.position_size_pct}% | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
-        self.logger.info(f"🔔 Confirmación OPTIMIZADA: LONG {self.long_confirmation_threshold}% | SHORT {self.short_confirmation_threshold}% | Max espera: {self.max_confirmation_wait} períodos")
-        self.logger.info(f"🎯 Trailing Stop OPTIMIZADO: LONG {self.long_trailing_distance}% | SHORT {self.short_trailing_distance}%")
-        self.logger.info(f"🚫 SHORTs: {'HABILITADOS' if self.enable_short_trading else 'DESHABILITADOS'}")
-        self.logger.info(f"📊 Filtros: Volumen {self.min_volume_multiplier}x | Precio máx {self.max_price_above_ma}% sobre MA20")
-        self.logger.info(f"🛡️ Verificación posiciones perdidas: Cada {self.state_backup_interval} iteraciones")
-        self.logger.info(f"💾 Estado guardado en: {self.state_file}")
-        self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
-        
-        # Mostrar performance cada 20 iteraciones
-        iteration = 0
-        
-        try:
-            while True:
-                self.analyze_and_trade()
-                
-                # Mostrar resumen cada 10 minutos aproximadamente
-                iteration += 1
-                if iteration % 20 == 0:
-                    self.log_performance_summary()
-                
-                time.sleep(30)  # Verificar cada 30 segundos
-                
-        except KeyboardInterrupt:
-            self.logger.info("🛑 Bot detenido por el usuario (KeyboardInterrupt)")
-            if self.in_position:
-                self.close_position("Bot detenido")
-            self.save_bot_state()
-            self.log_performance_summary()
-                
-        except Exception as e:
-            self.logger.error(f"❌ Error en el bot: {e}")
-            if self.in_position:
-                self.close_position("Error del bot")
-            self.save_bot_state()
-            raise  # Re-raise para que Docker pueda manejar el restart
-    
-    def log_performance_summary(self):
-        """Muestra resumen de performance mejorado"""
-        metrics = self.performance_metrics
-        
-        self.logger.info("="*60)
-        self.logger.info("📊 RESUMEN DE PERFORMANCE")
-        self.logger.info("="*60)
-        
-        # Estadísticas de señales
-        signal_confirmation_rate = 0
-        if metrics['signals_detected'] > 0:
-            signal_confirmation_rate = (metrics['signals_confirmed'] / metrics['signals_detected']) * 100
-        
-        self.logger.info(f"🔔 Señales detectadas: {metrics['signals_detected']}")
-        self.logger.info(f"✅ Señales confirmadas: {metrics['signals_confirmed']}")
-        self.logger.info(f"⏰ Señales expiradas: {metrics['signals_expired']}")
-        self.logger.info(f"📈 Tasa de confirmación: {signal_confirmation_rate:.1f}%")
-        self.logger.info(f"🔄 Recuperaciones realizadas: {metrics['recoveries_performed']}")
-        
-        # Estadísticas de SHORTs
-        if metrics['shorts_blocked'] > 0:
-            self.logger.info(f"🚫 SHORTs bloqueados: {metrics['shorts_blocked']}")
-        
-        self.logger.info("-" * 40)
-        
-        if metrics['total_trades'] == 0:
-            self.logger.info("📊 Sin trades completados aún")
-        else:
-            win_rate = (metrics['winning_trades'] / metrics['total_trades']) * 100
-            avg_pnl = metrics['total_pnl'] / metrics['total_trades']
-            
-            # Estadísticas por tipo de trade
-            long_win_rate = (metrics['long_wins'] / metrics['long_trades']) * 100 if metrics['long_trades'] > 0 else 0
-            short_win_rate = (metrics['short_wins'] / metrics['short_trades']) * 100 if metrics['short_trades'] > 0 else 0
-            
-            self.logger.info(f"🔢 Total Trades: {metrics['total_trades']}")
-            self.logger.info(f"🎯 Win Rate: {win_rate:.1f}%")
-            self.logger.info(f"💰 PnL Promedio: {avg_pnl:.2f}%")
-            self.logger.info(f"💰 PnL Total: {metrics['total_pnl']:.2f}%")
-            self.logger.info(f"✅ Ganadores: {metrics['winning_trades']}")
-            self.logger.info(f"❌ Perdedores: {metrics['losing_trades']}")
-            self.logger.info(f"📉 Max Pérdidas Consecutivas: {metrics['max_consecutive_losses']}")
-            
-            # Desglose LONG vs SHORT
-            if metrics['long_trades'] > 0:
-                self.logger.info(f"🟢 LONGs: {metrics['long_trades']} trades | {long_win_rate:.1f}% win rate")
-            if metrics['short_trades'] > 0:
-                self.logger.info(f"🔴 SHORTs: {metrics['short_trades']} trades | {short_win_rate:.1f}% win rate")
-        
-        self.logger.info(f"💵 Balance Actual: ${self.get_account_balance():.2f}")
-        
-        # Estado actual
-        if self.in_position:
-            pos_type = "RECUPERADA" if self.position.get('recovered') else "ACTIVA"
-            self.logger.info(f"📍 Posición {pos_type}: {self.position['side'].upper()}")
-        elif self.pending_long_signal:
-            self.logger.info(f"⏳ Esperando confirmación LONG ({self.confirmation_wait_count}/{self.max_confirmation_wait})")
-        elif self.pending_short_signal:
-            self.logger.info(f"⏳ Esperando confirmación SHORT ({self.confirmation_wait_count}/{self.max_confirmation_wait})")
-        else:
-            self.logger.info("🔍 Buscando oportunidades...")
-        
-        self.logger.info("="*60)
-
-# Ejemplo de uso (optimizado para Docker)
-if __name__ == "__main__":
-    
-    print("🐳 RSI Trading Bot OPTIMIZADO - Docker Edition v3.0")
-    print(f"🐳 Python PID: {os.getpid()}")
-    print(f"🐳 Working Directory: {os.getcwd()}")
-    
-    # Configuración con variables de entorno
-    API_KEY = os.getenv('BINANCE_API_KEY')
-    API_SECRET = os.getenv('BINANCE_API_SECRET')
-    USE_TESTNET = os.getenv('USE_TESTNET', 'true').lower() == 'true'
-    
-    if not API_KEY or not API_SECRET:
-        print("❌ ERROR: Variables de entorno no configuradas")
-        print("🐳 En Docker, asegúrate de que el .env esté configurado correctamente")
-        print("🐳 Variables requeridas: BINANCE_API_KEY, BINANCE_API_SECRET")
-        exit(1)
-    
-    print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
-    print("🔔 CARACTERÍSTICAS OPTIMIZADAS v3.0:")
-    print("  • RSI más estrictos: OS=25, OB=80 (era 30/70)")
-    print("  • Confirmación mejorada: LONG 0.15%, SHORT 0.25% (era 0.08%)")
-    print("  • SHORTs DESHABILITADOS por defecto (enable_short_trading=False)")
-    print("  • Trailing stops diferenciados: LONG 1.8%, SHORT 2.5%")
-    print("  • Filtros de volumen y tendencia implementados")
-    print("  • Reducción automática de posición tras pérdidas consecutivas")
-    print("  • Recuperación automática de posiciones perdidas")
-    print("  • Métricas detalladas por tipo de trade (LONG/SHORT)")
-    print("🐳 DOCKER: Auto-restart + persistencia garantizada")
-    
-    if not USE_TESTNET:
-        print("⚠️  ADVERTENCIA: Vas a usar DINERO REAL")
-        print("🐳 En modo Docker, no se solicita confirmación manual")
-        print("🐳 Para cancelar, detén el contenedor: docker-compose down")
-    
-    print("🔴 IMPORTANTE: SHORTs están DESHABILITADOS por defecto")
-    print("   Para habilitar: cambiar 'enable_short_trading = True' en el código")
-    print("   RECOMENDACIÓN: Mantener deshabilitados hasta mejorar condiciones del mercado")
-    
-    # En Docker, el auto-restart lo maneja docker-compose
-    try:
-        print("🚀 Creando instancia del bot optimizado...")
-        bot = BinanceRSIBot(
-            api_key=API_KEY,
-            api_secret=API_SECRET, 
-            testnet=USE_TESTNET
-        )
-        
-        print("✅ Bot inicializado correctamente")
-        print("🔄 Iniciando loop principal...")
-        bot.run()
-        
-    except KeyboardInterrupt:
-        print("🛑 Bot detenido por señal de usuario")
-        
-    except Exception as e:
-        print(f"❌ Error crítico: {e}")
-        print("🐳 Docker reiniciará automáticamente el contenedor")
-        exit(1)  # Exit code 1 para indicar error a Docker
+        if self.position['side
