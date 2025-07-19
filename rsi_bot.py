@@ -16,7 +16,7 @@ load_dotenv()
 class BinanceRSIBot:
     def __init__(self, api_key, api_secret, testnet=True):
         """
-        Bot de trading RSI para Binance - Versión con Recuperación de Posiciones
+        Bot de trading RSI para Binance - Versión Optimizada con Fixes para SHORTs
         
         Args:
             api_key: Tu API key de Binance
@@ -32,30 +32,44 @@ class BinanceRSIBot:
         self.symbol = 'BTC/USDT'
         self.timeframe = '5m'
         self.rsi_period = 14
-        self.rsi_oversold = 30
-        self.rsi_overbought = 70
+        
+        # PARÁMETROS OPTIMIZADOS PARA MEJOR RENDIMIENTO
+        self.rsi_oversold = 25          # Más estricto (era 30)
+        self.rsi_overbought = 80        # Más estricto (era 70)
         
         # Gestión de riesgo mejorada
         self.leverage = 1
         self.position_size_pct = 5
-        self.stop_loss_pct = 2  # Stop loss al 2%
-        self.take_profit_pct = 4  # Take profit al 4%
-        self.min_balance_usdt = 50  # Balance mínimo para operar
-        self.min_notional_usdt = 12 # Mínimo para evitar error NOTIONAL
+        self.stop_loss_pct = 2
+        self.take_profit_pct = 4
+        self.min_balance_usdt = 50
+        self.min_notional_usdt = 12
         
-        # NUEVAS VARIABLES PARA CONFIRMACIÓN DE MOVIMIENTO Y TENDENCIA
-        self.confirmation_threshold = 0.08  # REDUCIDO: 0.05% en lugar de 0.1%
-        self.max_confirmation_wait = 6  # AUMENTADO: 15 períodos en lugar de 10
+        # CONFIGURACIÓN MEJORADA PARA CONFIRMACIÓN
+        self.long_confirmation_threshold = 0.15   # Era 0.08
+        self.short_confirmation_threshold = 0.25  # Más estricto para SHORTs
+        self.max_confirmation_wait = 8            # Era 6 - más tiempo para confirmar
         
-        # VARIABLES PARA TRAILING STOP INTELIGENTE
-        self.trend_confirmation_periods = 2  # REDUCIDO: 2 períodos en lugar de 3
-        self.trend_threshold = 0.04  # REDUCIDO: 0.03% en lugar de 0.05%
-        self.trailing_stop_distance = 1.8  # % de distancia para trailing stop
-        self.price_history = []  # Historial de precios para analizar tendencia
+        # CONFIGURACIÓN MEJORADA PARA TRAILING STOP
+        self.trend_confirmation_periods = 2
+        self.trend_threshold = 0.04
+        self.long_trailing_distance = 1.8   # Para LONGs
+        self.short_trailing_distance = 2.5  # Más conservador para SHORTs
+        self.price_history = []
+        
+        # 🔥 NUEVA CONFIGURACIÓN PARA CONTROL DE SHORTs
+        self.enable_short_trading = False    # DESHABILITADO por defecto
+        self.min_volume_multiplier = 1.2     # Requerir 20% más volumen para señales
+        self.market_trend_lookback = 20      # Períodos para detectar tendencia
+        self.max_price_above_ma = 3.0        # % máximo sobre MA20 para permitir SHORTs
+        
+        # Variables para análisis de volumen
+        self.volume_history = []
+        self.average_volume = 0
         
         # MEJORAR RECUPERACIÓN DE ESTADO
-        self.force_state_recovery = True  # Forzar verificación en cada inicio
-        self.state_backup_interval = 5   # Guardar estado cada 5 iteraciones en lugar de 10
+        self.force_state_recovery = True
+        self.state_backup_interval = 5
         
         # ARCHIVOS DE PERSISTENCIA (compatible con Docker)
         self.logs_dir = os.path.join(os.getcwd(), 'logs')
@@ -98,7 +112,12 @@ class BinanceRSIBot:
             'signals_detected': 0,
             'signals_confirmed': 0,
             'signals_expired': 0,
-            'recoveries_performed': 0
+            'recoveries_performed': 0,
+            'long_trades': 0,
+            'short_trades': 0,
+            'long_wins': 0,
+            'short_wins': 0,
+            'shorts_blocked': 0  # Nueva métrica
         }
         
         # Configuración del exchange DESPUÉS de definir variables
@@ -232,7 +251,8 @@ class BinanceRSIBot:
                     'timestamp', 'action', 'side', 'price', 'quantity', 'rsi', 
                     'stop_loss', 'take_profit', 'reason', 'pnl_pct', 'pnl_usdt',
                     'balance_before', 'balance_after', 'trade_duration_mins',
-                    'signal_confirmed', 'confirmation_time_mins', 'recovered'
+                    'signal_confirmed', 'confirmation_time_mins', 'recovered',
+                    'volume', 'avg_volume', 'volume_ratio'
                 ])
         
         # Crear headers para archivo de datos de mercado
@@ -242,7 +262,7 @@ class BinanceRSIBot:
                 writer.writerow([
                     'timestamp', 'price', 'rsi', 'volume', 'signal', 'in_position',
                     'position_side', 'unrealized_pnl_pct', 'pending_signal',
-                    'confirmation_status'
+                    'confirmation_status', 'ma20', 'price_above_ma', 'trend_allowed'
                 ])
     
     def save_bot_state(self):
@@ -271,7 +291,9 @@ class BinanceRSIBot:
                 'confirmation_wait_count': self.confirmation_wait_count,
                 'performance_metrics': self.performance_metrics,
                 'last_rsi': self.last_rsi,
-                'last_price': self.last_price
+                'last_price': self.last_price,
+                'volume_history': self.volume_history[-50:],  # Guardar últimos 50 volúmenes
+                'average_volume': self.average_volume
             }
             
             with open(self.state_file, 'w') as f:
@@ -279,7 +301,6 @@ class BinanceRSIBot:
                 
         except Exception as e:
             self.logger.error(f"Error guardando estado del bot: {e}")
-            # Continuar sin guardado en caso de error crítico
     
     def load_bot_state(self):
         """Carga el estado previo del bot desde archivo JSON"""
@@ -308,6 +329,10 @@ class BinanceRSIBot:
             self.confirmation_wait_count = state_data.get('confirmation_wait_count', 0)
             self.last_rsi = state_data.get('last_rsi', 50)
             self.last_price = state_data.get('last_price', 0)
+            
+            # Restaurar historial de volumen y promedio
+            self.volume_history = state_data.get('volume_history', [])
+            self.average_volume = state_data.get('average_volume', 0)
             
             # Restaurar signal_trigger_time
             if state_data.get('signal_trigger_time'):
@@ -382,9 +407,11 @@ class BinanceRSIBot:
             if side == 'long':
                 stop_price = current_price * (1 - self.stop_loss_pct / 100)
                 take_profit_price = current_price * (1 + self.take_profit_pct / 100)
+                trailing_distance = self.long_trailing_distance
             else:
                 stop_price = current_price * (1 + self.stop_loss_pct / 100)
                 take_profit_price = current_price * (1 - self.take_profit_pct / 100)
+                trailing_distance = self.short_trailing_distance
             
             # Crear posición para monitoreo
             self.position = {
@@ -401,7 +428,8 @@ class BinanceRSIBot:
                 'lowest_price': current_price if side == 'short' else None,
                 'trailing_stop': stop_price,
                 'consecutive_down_periods': 0 if side == 'long' else None,
-                'consecutive_up_periods': 0 if side == 'short' else None
+                'consecutive_up_periods': 0 if side == 'short' else None,
+                'trailing_distance': trailing_distance
             }
             
             self.in_position = True
@@ -455,7 +483,7 @@ class BinanceRSIBot:
         self.logger.info("🔄 Recuperación completada")
                 
     def calculate_rsi(self, prices, period=14):
-        """Calcula el RSI usando TA-Lib o pandas"""
+        """Calcula el RSI usando pandas"""
         try:
             # Convertir a pandas Series si es necesario
             if isinstance(prices, (list, np.ndarray)):
@@ -482,6 +510,53 @@ class BinanceRSIBot:
             self.logger.error(f"Error calculando RSI: {e}")
             return 50  # Valor neutral en caso de error
     
+    def update_volume_average(self, current_volume):
+        """Actualiza el promedio de volumen para análisis de señales"""
+        self.volume_history.append(current_volume)
+        
+        # Mantener solo los últimos 50 volúmenes
+        if len(self.volume_history) > 50:
+            self.volume_history = self.volume_history[-50:]
+        
+        # Calcular promedio
+        if len(self.volume_history) >= 10:
+            self.average_volume = sum(self.volume_history) / len(self.volume_history)
+        else:
+            self.average_volume = current_volume  # Usar volumen actual si no hay suficientes datos
+    
+    def calculate_ma20(self, current_price):
+        """Calcula la media móvil de 20 períodos"""
+        if len(self.price_history) < self.market_trend_lookback:
+            return current_price  # No hay suficientes datos
+        
+        recent_prices = self.price_history[-self.market_trend_lookback:]
+        return sum(recent_prices) / len(recent_prices)
+    
+    def should_allow_short(self, current_price, current_rsi):
+        """Determina si se debe permitir trading de SHORTs basado en condiciones de mercado"""
+        if not self.enable_short_trading:
+            return False, "SHORTs deshabilitados globalmente"
+        
+        # 1. Verificar RSI extremo (más estricto)
+        if current_rsi < 85:
+            return False, f"RSI {current_rsi:.1f} no lo suficientemente alto (req: >85)"
+        
+        # 2. Verificar tendencia del mercado
+        if len(self.price_history) >= self.market_trend_lookback:
+            ma20 = self.calculate_ma20(current_price)
+            price_above_ma = ((current_price - ma20) / ma20) * 100
+            
+            if price_above_ma > self.max_price_above_ma:
+                return False, f"Precio {price_above_ma:.1f}% sobre MA20 (máx: {self.max_price_above_ma}%)"
+        
+        # 3. Verificar volumen suficiente
+        if self.average_volume > 0:
+            volume_ratio = self.volume_history[-1] / self.average_volume if self.volume_history else 1
+            if volume_ratio < self.min_volume_multiplier:
+                return False, f"Volumen insuficiente (ratio: {volume_ratio:.2f})"
+        
+        return True, "Condiciones OK para SHORT"
+    
     def get_market_data(self):
         """Obtiene datos del mercado para calcular RSI"""
         try:
@@ -498,6 +573,9 @@ class BinanceRSIBot:
             current_price = float(df['close'].iloc[-1])
             current_volume = float(df['volume'].iloc[-1])
             current_rsi = self.calculate_rsi(df['close'])
+            
+            # Actualizar promedio de volumen
+            self.update_volume_average(current_volume)
             
             # Log datos de mercado
             self.log_market_data(current_price, current_rsi, current_volume)
@@ -536,6 +614,11 @@ class BinanceRSIBot:
             pending_signal = "SHORT_WAITING"
             confirmation_status = f"Wait_{self.confirmation_wait_count}/{self.max_confirmation_wait}"
         
+        # Calcular datos de tendencia
+        ma20 = self.calculate_ma20(price)
+        price_above_ma = ((price - ma20) / ma20) * 100 if ma20 != price else 0
+        trend_allowed = self.should_allow_short(price, rsi)[0] if not self.in_position else True
+        
         # Guardar en CSV
         try:
             with open(self.market_csv, 'a', newline='') as f:
@@ -550,7 +633,10 @@ class BinanceRSIBot:
                     self.position['side'] if self.in_position else '',
                     unrealized_pnl,
                     pending_signal,
-                    confirmation_status
+                    confirmation_status,
+                    ma20,
+                    price_above_ma,
+                    trend_allowed
                 ])
         except Exception as e:
             self.logger.error(f"Error guardando datos de mercado: {e}")
@@ -585,9 +671,15 @@ class BinanceRSIBot:
         self.signal_trigger_time = None
         self.confirmation_wait_count = 0
     
-    def detect_rsi_signal(self, current_rsi, current_price):
-        """Detecta señales iniciales de RSI"""
+    def detect_rsi_signal(self, current_rsi, current_price, current_volume):
+        """Detecta señales iniciales de RSI con filtros mejorados"""
         signal_detected = False
+        
+        # Verificar que haya volumen suficiente para cualquier señal
+        if self.average_volume > 0:
+            volume_ratio = current_volume / self.average_volume
+            if volume_ratio < self.min_volume_multiplier:
+                return False  # Volumen insuficiente
         
         # Detectar señal LONG (RSI oversold)
         if current_rsi < self.rsi_oversold and not self.pending_long_signal and not self.pending_short_signal:
@@ -599,19 +691,26 @@ class BinanceRSIBot:
             
             self.performance_metrics['signals_detected'] += 1
             self.logger.info(f"🟡 Señal LONG detectada (RSI: {current_rsi:.2f}) - Esperando confirmación...")
-            self.logger.info(f"📍 Precio trigger: ${current_price:.2f} - Esperando subida de {self.confirmation_threshold}%")
+            self.logger.info(f"📍 Precio trigger: ${current_price:.2f} - Esperando subida de {self.long_confirmation_threshold}%")
             
-        # Detectar señal SHORT (RSI overbought)
+        # Detectar señal SHORT (RSI overbought) - CON FILTROS ESTRICTOS
         elif current_rsi > self.rsi_overbought and not self.pending_long_signal and not self.pending_short_signal:
-            self.pending_short_signal = True
-            self.signal_trigger_price = current_price
-            self.signal_trigger_time = datetime.now()
-            self.confirmation_wait_count = 0
-            signal_detected = True
+            # Verificar si se permite SHORT en las condiciones actuales
+            short_allowed, reason = self.should_allow_short(current_price, current_rsi)
             
-            self.performance_metrics['signals_detected'] += 1
-            self.logger.info(f"🟡 Señal SHORT detectada (RSI: {current_rsi:.2f}) - Esperando confirmación...")
-            self.logger.info(f"📍 Precio trigger: ${current_price:.2f} - Esperando bajada de {self.confirmation_threshold}%")
+            if short_allowed:
+                self.pending_short_signal = True
+                self.signal_trigger_price = current_price
+                self.signal_trigger_time = datetime.now()
+                self.confirmation_wait_count = 0
+                signal_detected = True
+                
+                self.performance_metrics['signals_detected'] += 1
+                self.logger.info(f"🟡 Señal SHORT detectada (RSI: {current_rsi:.2f}) - Esperando confirmación...")
+                self.logger.info(f"📍 Precio trigger: ${current_price:.2f} - Esperando bajada de {self.short_confirmation_threshold}%")
+            else:
+                self.performance_metrics['shorts_blocked'] += 1
+                self.logger.info(f"🚫 Señal SHORT bloqueada (RSI: {current_rsi:.2f}) - {reason}")
         
         return signal_detected
     
@@ -654,8 +753,7 @@ class BinanceRSIBot:
         if self.pending_long_signal:
             price_change_pct = ((current_price - self.signal_trigger_price) / self.signal_trigger_price) * 100
             
-            # MEJORADO: Confirmación más flexible
-            if price_change_pct >= self.confirmation_threshold:
+            if price_change_pct >= self.long_confirmation_threshold:
                 self.logger.info(f"✅ Señal LONG CONFIRMADA! Precio subió {price_change_pct:.3f}%")
                 self.performance_metrics['signals_confirmed'] += 1
                 self.reset_signal_state()
@@ -667,9 +765,8 @@ class BinanceRSIBot:
                 self.reset_signal_state()
                 return False, None
                 
-            # MEJORADO: Menos estricto con RSI - solo cancelar si RSI > 40
-            elif current_rsi > 40:  # Antes era oversold + 5
-                self.logger.warning(f"❌ Señal LONG CANCELADA - RSI subió mucho sin confirmación de precio")
+            elif current_rsi > 40:  # Cancelar si RSI sube mucho sin confirmación
+                self.logger.warning(f"❌ Señal LONG CANCELADA - RSI subió a {current_rsi:.2f} sin confirmación de precio")
                 self.performance_metrics['signals_expired'] += 1
                 self.reset_signal_state()
                 return False, None
@@ -678,7 +775,7 @@ class BinanceRSIBot:
         elif self.pending_short_signal:
             price_change_pct = ((self.signal_trigger_price - current_price) / self.signal_trigger_price) * 100
             
-            if price_change_pct >= self.confirmation_threshold:
+            if price_change_pct >= self.short_confirmation_threshold:
                 self.logger.info(f"✅ Señal SHORT CONFIRMADA! Precio bajó {price_change_pct:.3f}%")
                 self.performance_metrics['signals_confirmed'] += 1
                 self.reset_signal_state()
@@ -690,22 +787,22 @@ class BinanceRSIBot:
                 self.reset_signal_state()
                 return False, None
                 
-            elif current_rsi < 60:  # Antes era overbought - 5
-                self.logger.warning(f"❌ Señal SHORT CANCELADA - RSI bajó mucho sin confirmación de precio")
+            elif current_rsi < 60:  # Cancelar si RSI baja mucho sin confirmación
+                self.logger.warning(f"❌ Señal SHORT CANCELADA - RSI bajó a {current_rsi:.2f} sin confirmación de precio")
                 self.performance_metrics['signals_expired'] += 1
                 self.reset_signal_state()
                 return False, None
         
-        # Mostrar progreso cada 2 períodos en lugar de 3
+        # Mostrar progreso cada 2 períodos
         if self.confirmation_wait_count % 2 == 0:
             signal_type = "LONG" if self.pending_long_signal else "SHORT"
-            remaining = self.max_confirmation_wait - self.confirmation_wait_count
+            required_threshold = self.long_confirmation_threshold if self.pending_long_signal else self.short_confirmation_threshold
             price_change = ((current_price - self.signal_trigger_price) / self.signal_trigger_price) * 100
             if self.pending_short_signal:
                 price_change = -price_change
                 
             self.logger.info(f"⏳ Esperando confirmación {signal_type}: {self.confirmation_wait_count}/{self.max_confirmation_wait} | "
-                           f"Cambio precio: {price_change:+.3f}% (necesario: {self.confirmation_threshold:+.2f}%)")
+                           f"Cambio precio: {price_change:+.3f}% (necesario: {required_threshold:+.2f}%)")
         
         return False, None
     
@@ -720,15 +817,27 @@ class BinanceRSIBot:
             return 0
     
     def calculate_position_size(self, price):
-        """Calcula el tamaño de la posición"""
+        """Calcula el tamaño de la posición con ajuste por pérdidas consecutivas"""
         balance = self.get_account_balance()
         
         if balance < self.min_balance_usdt:
             self.logger.warning(f"Balance insuficiente: ${balance:.2f} < ${self.min_balance_usdt}")
             return 0, 0
         
+        # Ajustar tamaño de posición basado en pérdidas consecutivas
+        base_position_size = self.position_size_pct
+        consecutive_losses = self.performance_metrics['consecutive_losses']
+        
+        # Reducir tamaño después de pérdidas consecutivas
+        if consecutive_losses >= 3:
+            reduction_factor = 0.75 ** min(consecutive_losses - 2, 3)  # Máximo 3 reducciones
+            adjusted_size = base_position_size * reduction_factor
+            self.logger.info(f"📉 Tamaño reducido por {consecutive_losses} pérdidas: {base_position_size}% → {adjusted_size:.1f}%")
+        else:
+            adjusted_size = base_position_size
+        
         # Calcular valor de la posición
-        position_value = balance * (self.position_size_pct / 100)
+        position_value = balance * (adjusted_size / 100)
         
         # Con apalancamiento (si está habilitado)
         effective_position = position_value * self.leverage
@@ -788,7 +897,6 @@ class BinanceRSIBot:
             # Intentar crear orden real primero
             try:
                 if self.testnet:
-                    # En testnet, a veces necesitamos simular
                     order = self.exchange.create_market_order(
                         self.symbol,
                         'buy',
@@ -799,12 +907,10 @@ class BinanceRSIBot:
                         self.symbol,
                         'buy',
                         quantity,
-                        None,  # precio market
-                        None,  # sin params adicionales por ahora
+                        None,
                     )
             except Exception as order_error:
                 self.logger.warning(f"Error creando orden real: {order_error}")
-                # Crear orden simulada
                 order = self.create_test_order('buy', quantity, price)
             
             self.position = {
@@ -820,7 +926,8 @@ class BinanceRSIBot:
                 'recovered': False,
                 'highest_price': price,  # Para trailing stop
                 'trailing_stop': stop_price,  # Stop loss dinámico
-                'consecutive_down_periods': 0  # Para detectar cambio de tendencia
+                'consecutive_down_periods': 0,  # Para detectar cambio de tendencia
+                'trailing_distance': self.long_trailing_distance
             }
             
             self.in_position = True
@@ -829,7 +936,13 @@ class BinanceRSIBot:
             self.logger.info(f"📊 SL: ${stop_price:.2f} | TP: ${take_profit_price:.2f}")
             
             # Log detallado del trade
-            self.log_trade('OPEN', 'long', price, quantity, rsi, 'RSI Oversold + Confirmación', confirmation_time=confirmation_time)
+            current_volume = self.volume_history[-1] if self.volume_history else 0
+            avg_volume = self.average_volume
+            self.log_trade('OPEN', 'long', price, quantity, rsi, 'RSI Oversold + Confirmación', 
+                          confirmation_time=confirmation_time, volume=current_volume, avg_volume=avg_volume)
+            
+            # Actualizar métricas
+            self.performance_metrics['long_trades'] += 1
             
             # Guardar estado inmediatamente después de abrir posición
             self.save_bot_state()
@@ -885,7 +998,8 @@ class BinanceRSIBot:
                 'recovered': False,
                 'lowest_price': price,  # Para trailing stop
                 'trailing_stop': stop_price,  # Stop loss dinámico
-                'consecutive_up_periods': 0  # Para detectar cambio de tendencia
+                'consecutive_up_periods': 0,  # Para detectar cambio de tendencia
+                'trailing_distance': self.short_trailing_distance
             }
             
             self.in_position = True
@@ -894,7 +1008,13 @@ class BinanceRSIBot:
             self.logger.info(f"📊 SL: ${stop_price:.2f} | TP: ${take_profit_price:.2f}")
             
             # Log detallado del trade
-            self.log_trade('OPEN', 'short', price, quantity, rsi, 'RSI Overbought + Confirmación', confirmation_time=confirmation_time)
+            current_volume = self.volume_history[-1] if self.volume_history else 0
+            avg_volume = self.average_volume
+            self.log_trade('OPEN', 'short', price, quantity, rsi, 'RSI Overbought + Confirmación', 
+                          confirmation_time=confirmation_time, volume=current_volume, avg_volume=avg_volume)
+            
+            # Actualizar métricas
+            self.performance_metrics['short_trades'] += 1
             
             # Guardar estado inmediatamente después de abrir posición
             self.save_bot_state()
@@ -942,8 +1062,17 @@ class BinanceRSIBot:
             self.logger.info(f"💰 P&L: {pnl_pct:.2f}% (con {self.leverage}x leverage)")
             
             # Log detallado del cierre
+            current_volume = self.volume_history[-1] if self.volume_history else 0
+            avg_volume = self.average_volume
             self.log_trade('CLOSE', self.position['side'], current_price, 
-                          self.position['quantity'], current_rsi, reason, pnl_pct)
+                          self.position['quantity'], current_rsi, reason, pnl_pct,
+                          volume=current_volume, avg_volume=avg_volume)
+            
+            # Actualizar métricas específicas por tipo
+            if self.position['side'] == 'long' and pnl_pct > 0:
+                self.performance_metrics['long_wins'] += 1
+            elif self.position['side'] == 'short' and pnl_pct > 0:
+                self.performance_metrics['short_wins'] += 1
             
             self.position = None
             self.in_position = False
@@ -957,8 +1086,9 @@ class BinanceRSIBot:
             self.logger.error(f"Error cerrando posición: {e}")
             return False
     
-    def log_trade(self, action, side=None, price=None, quantity=None, rsi=None, reason=None, pnl_pct=None, confirmation_time=None):
-        """Registra trades detallados"""
+    def log_trade(self, action, side=None, price=None, quantity=None, rsi=None, reason=None, 
+                  pnl_pct=None, confirmation_time=None, volume=None, avg_volume=None):
+        """Registra trades detallados con información de volumen"""
         timestamp = datetime.now()
         balance = self.get_account_balance()
         
@@ -972,13 +1102,16 @@ class BinanceRSIBot:
             'reason': reason,
             'pnl_pct': pnl_pct,
             'balance': balance,
-            'confirmation_time': confirmation_time
+            'confirmation_time': confirmation_time,
+            'volume': volume,
+            'avg_volume': avg_volume
         }
         
         # Calcular duración del trade si es cierre
         trade_duration = 0
         confirmation_time_mins = 0
         is_recovered = False
+        volume_ratio = volume / avg_volume if avg_volume > 0 else 1
         
         if action == 'CLOSE' and self.trades_log:
             last_open = next((t for t in reversed(self.trades_log) if t['action'] == 'OPEN'), None)
@@ -1004,14 +1137,16 @@ class BinanceRSIBot:
                         self.position['stop_loss'] if self.position else '',
                         self.position['take_profit'] if self.position else '',
                         reason or '', '', '', balance, '', '',
-                        signal_confirmed, conf_time, recovered
+                        signal_confirmed, conf_time, recovered,
+                        volume or '', avg_volume or '', volume_ratio
                     ])
                 else:  # CLOSE
                     pnl_usdt = (pnl_pct / 100) * balance if pnl_pct else 0
                     writer.writerow([
                         timestamp.isoformat(), action, side, price, quantity, rsi,
                         '', '', reason or '', pnl_pct or 0, pnl_usdt,
-                        '', balance, trade_duration, '', confirmation_time_mins, ''
+                        '', balance, trade_duration, '', confirmation_time_mins, '',
+                        volume or '', avg_volume or '', volume_ratio
                     ])
         except Exception as e:
             self.logger.error(f"Error guardando trade: {e}")
@@ -1042,9 +1177,9 @@ class BinanceRSIBot:
         """Actualiza el historial de precios para análisis de tendencia"""
         self.price_history.append(current_price)
         
-        # Mantener solo los últimos 10 precios para análisis
-        if len(self.price_history) > 10:
-            self.price_history = self.price_history[-10:]
+        # Mantener solo los últimos 30 precios para análisis
+        if len(self.price_history) > 30:
+            self.price_history = self.price_history[-30:]
     
     def detect_trend_change(self, current_price):
         """Detecta si ha cambiado la tendencia basado en precios recientes (MEJORADO)"""
@@ -1055,7 +1190,6 @@ class BinanceRSIBot:
             # Para LONG: Detectar si empezó a bajar
             recent_prices = self.price_history[-self.trend_confirmation_periods:]
             
-            # MEJORADO: Verificar tendencia más flexible
             consecutive_down = 0
             total_change = 0
             
@@ -1066,18 +1200,12 @@ class BinanceRSIBot:
                 if recent_prices[i] < recent_prices[i-1]:
                     consecutive_down += 1
             
-            # Calcular el cambio porcentual total en los últimos períodos
             overall_change = ((current_price - recent_prices[0]) / recent_prices[0]) * 100
-            
-            # CONDICIONES MÁS FLEXIBLES:
-            # Opción 1: X períodos consecutivos bajando
-            # Opción 2: Caída total mayor al threshold
-            # Opción 3: Caída significativa desde el máximo
             max_price = self.position.get('highest_price', current_price)
             drop_from_max = ((max_price - current_price) / max_price) * 100
             
             if (consecutive_down >= self.trend_confirmation_periods - 1 and overall_change < -self.trend_threshold) or \
-               (drop_from_max > self.trend_threshold * 2):  # Caída 2x el threshold desde máximo
+               (drop_from_max > self.trend_threshold * 2):
                 return True, f"Tendencia bajista: {consecutive_down} períodos, {overall_change:.2f}%, drop desde max: {drop_from_max:.2f}%"
                 
         else:  # SHORT
@@ -1105,9 +1233,11 @@ class BinanceRSIBot:
         return False, "Sin cambio de tendencia confirmado"
     
     def update_trailing_stop(self, current_price):
-        """Actualiza el trailing stop dinámico"""
+        """Actualiza el trailing stop dinámico con diferentes distancias para LONG/SHORT"""
         if not self.in_position or not self.position:
             return
+        
+        trailing_distance = self.position.get('trailing_distance', self.long_trailing_distance)
         
         if self.position['side'] == 'long':
             # Actualizar precio máximo alcanzado
@@ -1115,7 +1245,7 @@ class BinanceRSIBot:
                 self.position['highest_price'] = current_price
                 
                 # Calcular nuevo trailing stop (% abajo del máximo)
-                new_trailing_stop = current_price * (1 - self.trailing_stop_distance / 100)
+                new_trailing_stop = current_price * (1 - trailing_distance / 100)
                 
                 # Solo mover el trailing stop hacia arriba, nunca hacia abajo
                 if new_trailing_stop > self.position['trailing_stop']:
@@ -1131,7 +1261,7 @@ class BinanceRSIBot:
                 self.position['lowest_price'] = current_price
                 
                 # Calcular nuevo trailing stop (% arriba del mínimo)
-                new_trailing_stop = current_price * (1 + self.trailing_stop_distance / 100)
+                new_trailing_stop = current_price * (1 + trailing_distance / 100)
                 
                 # Solo mover el trailing stop hacia abajo, nunca hacia arriba
                 if new_trailing_stop < self.position['trailing_stop']:
@@ -1154,9 +1284,6 @@ class BinanceRSIBot:
         
         if self.position['side'] == 'long':
             # 1. Stop Loss de emergencia (nunca cambiar - protección absoluta)
-            if current_price <= self.position['stop_loss']:
-                self.close_position("Stop Loss Emergencia", current_rsi, current_price)
-                return
             
             # 2. Take Profit tradicional (conservador)
             elif current_price >= self.position['take_profit']:
@@ -1219,6 +1346,7 @@ class BinanceRSIBot:
             
         current_rsi = market_data['rsi']
         current_price = market_data['price']
+        current_volume = market_data['volume']
         
         # Actualizar historial de precios para análisis de tendencia
         self.update_price_history(current_price)
@@ -1271,7 +1399,7 @@ class BinanceRSIBot:
         elif not (self.pending_long_signal or self.pending_short_signal):
             current_time = time.time()
             if current_time - self.last_signal_time >= 300:  # 5 minutos
-                self.detect_rsi_signal(current_rsi, current_price)
+                self.detect_rsi_signal(current_rsi, current_price, current_volume)
         
         # Actualizar datos históricos
         self.last_rsi = current_rsi
@@ -1279,12 +1407,14 @@ class BinanceRSIBot:
     
     def run(self):
         """Ejecuta el bot en un loop continuo (optimizado para Docker)"""
-        self.logger.info("🤖 Bot RSI con Trailing Stop Inteligente v2.0 iniciado")
+        self.logger.info("🤖 Bot RSI OPTIMIZADO v3.0 iniciado")
         self.logger.info(f"📊 Config: RSI({self.rsi_period}) | OS: {self.rsi_oversold} | OB: {self.rsi_overbought}")
         self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.position_size_pct}% | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
-        self.logger.info(f"🔔 Confirmación MEJORADA: {self.confirmation_threshold}% movimiento | Max espera: {self.max_confirmation_wait} períodos")
-        self.logger.info(f"🎯 Trailing Stop MEJORADO: {self.trailing_stop_distance}% | Confirmación tendencia: {self.trend_confirmation_periods} períodos")
-        self.logger.info(f"🛡️ Verificación de posiciones perdidas: Cada {self.state_backup_interval} iteraciones")
+        self.logger.info(f"🔔 Confirmación OPTIMIZADA: LONG {self.long_confirmation_threshold}% | SHORT {self.short_confirmation_threshold}% | Max espera: {self.max_confirmation_wait} períodos")
+        self.logger.info(f"🎯 Trailing Stop OPTIMIZADO: LONG {self.long_trailing_distance}% | SHORT {self.short_trailing_distance}%")
+        self.logger.info(f"🚫 SHORTs: {'HABILITADOS' if self.enable_short_trading else 'DESHABILITADOS'}")
+        self.logger.info(f"📊 Filtros: Volumen {self.min_volume_multiplier}x | Precio máx {self.max_price_above_ma}% sobre MA20")
+        self.logger.info(f"🛡️ Verificación posiciones perdidas: Cada {self.state_backup_interval} iteraciones")
         self.logger.info(f"💾 Estado guardado en: {self.state_file}")
         self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
         
@@ -1317,7 +1447,7 @@ class BinanceRSIBot:
             raise  # Re-raise para que Docker pueda manejar el restart
     
     def log_performance_summary(self):
-        """Muestra resumen de performance"""
+        """Muestra resumen de performance mejorado"""
         metrics = self.performance_metrics
         
         self.logger.info("="*60)
@@ -1334,6 +1464,11 @@ class BinanceRSIBot:
         self.logger.info(f"⏰ Señales expiradas: {metrics['signals_expired']}")
         self.logger.info(f"📈 Tasa de confirmación: {signal_confirmation_rate:.1f}%")
         self.logger.info(f"🔄 Recuperaciones realizadas: {metrics['recoveries_performed']}")
+        
+        # Estadísticas de SHORTs
+        if metrics['shorts_blocked'] > 0:
+            self.logger.info(f"🚫 SHORTs bloqueados: {metrics['shorts_blocked']}")
+        
         self.logger.info("-" * 40)
         
         if metrics['total_trades'] == 0:
@@ -1342,6 +1477,10 @@ class BinanceRSIBot:
             win_rate = (metrics['winning_trades'] / metrics['total_trades']) * 100
             avg_pnl = metrics['total_pnl'] / metrics['total_trades']
             
+            # Estadísticas por tipo de trade
+            long_win_rate = (metrics['long_wins'] / metrics['long_trades']) * 100 if metrics['long_trades'] > 0 else 0
+            short_win_rate = (metrics['short_wins'] / metrics['short_trades']) * 100 if metrics['short_trades'] > 0 else 0
+            
             self.logger.info(f"🔢 Total Trades: {metrics['total_trades']}")
             self.logger.info(f"🎯 Win Rate: {win_rate:.1f}%")
             self.logger.info(f"💰 PnL Promedio: {avg_pnl:.2f}%")
@@ -1349,6 +1488,12 @@ class BinanceRSIBot:
             self.logger.info(f"✅ Ganadores: {metrics['winning_trades']}")
             self.logger.info(f"❌ Perdedores: {metrics['losing_trades']}")
             self.logger.info(f"📉 Max Pérdidas Consecutivas: {metrics['max_consecutive_losses']}")
+            
+            # Desglose LONG vs SHORT
+            if metrics['long_trades'] > 0:
+                self.logger.info(f"🟢 LONGs: {metrics['long_trades']} trades | {long_win_rate:.1f}% win rate")
+            if metrics['short_trades'] > 0:
+                self.logger.info(f"🔴 SHORTs: {metrics['short_trades']} trades | {short_win_rate:.1f}% win rate")
         
         self.logger.info(f"💵 Balance Actual: ${self.get_account_balance():.2f}")
         
@@ -1368,7 +1513,7 @@ class BinanceRSIBot:
 # Ejemplo de uso (optimizado para Docker)
 if __name__ == "__main__":
     
-    print("🐳 RSI Trading Bot - Docker Edition")
+    print("🐳 RSI Trading Bot OPTIMIZADO - Docker Edition v3.0")
     print(f"🐳 Python PID: {os.getpid()}")
     print(f"🐳 Working Directory: {os.getcwd()}")
     
@@ -1384,12 +1529,15 @@ if __name__ == "__main__":
         exit(1)
     
     print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
-    print("🔔 CARACTERÍSTICAS v2.0:")
-    print("  • Sistema de confirmación MEJORADO (0.05% threshold)")
-    print("  • Trailing stop inteligente con detección de tendencia")
-    print("  • Recuperación automática de posiciones perdidas") 
-    print("  • Guardado de estado cada 5 iteraciones")
-    print("  • Verificación periódica de balances BTC")
+    print("🔔 CARACTERÍSTICAS OPTIMIZADAS v3.0:")
+    print("  • RSI más estrictos: OS=25, OB=80 (era 30/70)")
+    print("  • Confirmación mejorada: LONG 0.15%, SHORT 0.25% (era 0.08%)")
+    print("  • SHORTs DESHABILITADOS por defecto (enable_short_trading=False)")
+    print("  • Trailing stops diferenciados: LONG 1.8%, SHORT 2.5%")
+    print("  • Filtros de volumen y tendencia implementados")
+    print("  • Reducción automática de posición tras pérdidas consecutivas")
+    print("  • Recuperación automática de posiciones perdidas")
+    print("  • Métricas detalladas por tipo de trade (LONG/SHORT)")
     print("🐳 DOCKER: Auto-restart + persistencia garantizada")
     
     if not USE_TESTNET:
@@ -1397,10 +1545,13 @@ if __name__ == "__main__":
         print("🐳 En modo Docker, no se solicita confirmación manual")
         print("🐳 Para cancelar, detén el contenedor: docker-compose down")
     
+    print("🔴 IMPORTANTE: SHORTs están DESHABILITADOS por defecto")
+    print("   Para habilitar: cambiar 'enable_short_trading = True' en el código")
+    print("   RECOMENDACIÓN: Mantener deshabilitados hasta mejorar condiciones del mercado")
+    
     # En Docker, el auto-restart lo maneja docker-compose
-    # Solo necesitamos intentar ejecutar una vez
     try:
-        print("🚀 Creando instancia del bot...")
+        print("🚀 Creando instancia del bot optimizado...")
         bot = BinanceRSIBot(
             api_key=API_KEY,
             api_secret=API_SECRET, 
