@@ -1,4 +1,633 @@
-import ccxt
+if quantity <= 0:
+                self.logger.warning("⚠️ No se puede calcular tamaño de posición válido")
+                return False
+            
+            stop_price = price * (1 + self.stop_loss_pct / 100)
+            take_profit_price = price * (1 - self.take_profit_pct / 100)
+            
+            try:
+                if self.testnet:
+                    order = self.exchange.create_market_order(self.symbol, 'sell', quantity)
+                else:
+                    order = self.exchange.create_market_order(self.symbol, 'sell', quantity)
+            except Exception as order_error:
+                self.logger.warning(f"Error creando orden real: {order_error}")
+                order = self.create_test_order('sell', quantity, price)
+            
+            self.position = {
+                'side': 'short',
+                'entry_price': price,
+                'entry_time': datetime.now(),
+                'quantity': quantity,
+                'stop_loss': stop_price,
+                'take_profit': take_profit_price,
+                'order_id': order['id'],
+                'entry_rsi': rsi,
+                'entry_confidence': self.signal_confidence,
+                'entry_ema_fast': ema_fast,
+                'entry_ema_slow': ema_slow,
+                'entry_ema_trend': ema_trend,
+                'entry_trend_direction': trend_direction,
+                'entry_volatility': volatility,
+                'entry_market_regime': market_data['market_regime'],
+                'confirmation_time': confirmation_time,
+                'recovered': False,
+                'lowest_price': price,
+                'trailing_stop': stop_price,
+                'breakeven_moved': False
+            }
+            
+            self.in_position = True
+            
+            self.logger.info(f"🔴 SHORT OPTIMIZADO EJECUTADO: {quantity:.6f} BTC @ ${price:.2f}")
+            self.logger.info(f"📊 SL: ${stop_price:.2f} | TP: ${take_profit_price:.2f} | Confianza: {self.signal_confidence:.2f}")
+            self.logger.info(f"🔄 Tendencia: {trend_direction} | RSI: {rsi:.1f} | Volatilidad: {volatility:.1f}%")
+            self.logger.info(f"💰 Tamaño dinámico: {(quantity * price):.2f} USDT ({((quantity * price) / self.get_account_balance()) * 100:.1f}%)")
+            
+            self.log_trade('OPEN', 'short', price, quantity, rsi, ema_fast, ema_slow, ema_trend,
+                          trend_direction, 'Optimized Short Entry', confirmation_time=confirmation_time,
+                          confidence=self.signal_confidence, market_regime=market_data['market_regime'],
+                          volatility=volatility)
+            
+            self.save_bot_state()
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error abriendo posición SHORT: {e}")
+            return False
+    
+    def close_position(self, reason="Manual", current_rsi=None, current_price=None, market_data=None):
+        """Cierra la posición actual"""
+        if not self.in_position or not self.position:
+            return
+            
+        try:
+            side = 'sell' if self.position['side'] == 'long' else 'buy'
+            
+            # Obtener precio actual si no se proporciona
+            if current_price is None:
+                ticker = self.exchange.fetch_ticker(self.symbol)
+                current_price = ticker['last']
+            
+            # Intentar crear orden de cierre
+            try:
+                order = self.exchange.create_market_order(self.symbol, side, self.position['quantity'])
+            except Exception as order_error:
+                self.logger.warning(f"Error creando orden de cierre: {order_error}")
+                order = self.create_test_order(side, self.position['quantity'], current_price)
+            
+            # Calcular P&L
+            if self.position['side'] == 'long':
+                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
+            else:
+                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
+            
+            pnl_pct *= self.leverage
+            
+            # Calcular duración del swing
+            duration_hours = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
+            
+            # Determinar si fue ganancia o pérdida
+            if pnl_pct > 0:
+                result_emoji = "💚"
+                result_text = "GANANCIA"
+            else:
+                result_emoji = "💔"
+                result_text = "PÉRDIDA"
+            
+            self.logger.info(f"⭕ Posición OPTIMIZADA cerrada - {reason}")
+            self.logger.info(f"{result_emoji} {result_text}: {pnl_pct:+.2f}% | Duración: {duration_hours:.1f}h")
+            self.logger.info(f"📊 Confianza entrada: {self.position.get('entry_confidence', 0):.2f} | Régimen: {self.position.get('entry_market_regime', 'unknown')}")
+            
+            # Log detallado del cierre
+            ema_data = market_data if market_data else {}
+            self.log_trade('CLOSE', self.position['side'], current_price, 
+                          self.position['quantity'], current_rsi, 
+                          ema_data.get('ema_fast', 0), ema_data.get('ema_slow', 0), 
+                          ema_data.get('ema_trend', 0), ema_data.get('trend_direction', 'unknown'),
+                          reason, pnl_pct, duration_hours,
+                          confidence=self.position.get('entry_confidence', 0),
+                          market_regime=ema_data.get('market_regime', 'unknown'),
+                          volatility=ema_data.get('volatility', 0))
+            
+            self.position = None
+            self.in_position = False
+            
+            self.save_bot_state()
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error cerrando posición: {e}")
+            return False
+    
+    def update_trailing_stop_optimized(self, current_price, market_data):
+        """Sistema de trailing stop optimizado"""
+        if not self.in_position or not self.position:
+            return
+        
+        volatility = market_data.get('volatility', 1.0)
+        
+        # Ajustar distancia del trailing stop basado en volatilidad
+        dynamic_trailing_distance = self.trailing_stop_distance
+        if volatility > 3.0:  # Alta volatilidad
+            dynamic_trailing_distance *= 1.5
+        elif volatility < 1.0:  # Baja volatilidad
+            dynamic_trailing_distance *= 0.8
+        
+        if self.position['side'] == 'long':
+            # Actualizar precio máximo
+            if current_price > self.position['highest_price']:
+                self.position['highest_price'] = current_price
+                
+                # Mover stop loss a breakeven cuando ganemos el threshold
+                if not self.position['breakeven_moved']:
+                    gain_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
+                    if gain_pct >= self.breakeven_threshold:
+                        self.position['trailing_stop'] = self.position['entry_price'] * 1.002  # Breakeven + 0.2%
+                        self.position['breakeven_moved'] = True
+                        self.logger.info(f"🔒 Stop movido a BREAKEVEN: ${self.position['trailing_stop']:.2f} (ganancia: {gain_pct:.1f}%)")
+                        return
+                
+                # Trailing stop normal (solo si ya está en breakeven)
+                if self.position['breakeven_moved']:
+                    new_trailing_stop = current_price * (1 - dynamic_trailing_distance / 100)
+                    if new_trailing_stop > self.position['trailing_stop']:
+                        old_stop = self.position['trailing_stop']
+                        self.position['trailing_stop'] = new_trailing_stop
+                        gain_from_entry = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
+                        self.logger.info(f"📈 Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f} | Ganancia: {gain_from_entry:.1f}%")
+                        
+        else:  # SHORT
+            if current_price < self.position['lowest_price']:
+                self.position['lowest_price'] = current_price
+                
+                if not self.position['breakeven_moved']:
+                    gain_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
+                    if gain_pct >= self.breakeven_threshold:
+                        self.position['trailing_stop'] = self.position['entry_price'] * 0.998  # Breakeven - 0.2%
+                        self.position['breakeven_moved'] = True
+                        self.logger.info(f"🔒 Stop movido a BREAKEVEN: ${self.position['trailing_stop']:.2f} (ganancia: {gain_pct:.1f}%)")
+                        return
+                
+                if self.position['breakeven_moved']:
+                    new_trailing_stop = current_price * (1 + dynamic_trailing_distance / 100)
+                    if new_trailing_stop < self.position['trailing_stop']:
+                        old_stop = self.position['trailing_stop']
+                        self.position['trailing_stop'] = new_trailing_stop
+                        gain_from_entry = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
+                        self.logger.info(f"📉 Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f} | Ganancia: {gain_from_entry:.1f}%")
+    
+    def check_exit_conditions_optimized(self, current_price, current_rsi, market_data):
+        """Condiciones de salida optimizadas"""
+        if not self.in_position or not self.position:
+            return
+        
+        # Actualizar trailing stop
+        self.update_trailing_stop_optimized(current_price, market_data)
+        
+        trend_direction = market_data.get('trend_direction', 'neutral')
+        ema_fast = market_data.get('ema_fast', 0)
+        ema_slow = market_data.get('ema_slow', 0)
+        volatility = market_data.get('volatility', 1.0)
+        market_regime = market_data.get('market_regime', 'trending')
+        
+        if self.position['side'] == 'long':
+            # 1. Stop Loss de emergencia
+            if current_price <= self.position['stop_loss']:
+                self.close_position("Stop Loss Emergencia", current_rsi, current_price, market_data)
+                return
+            
+            # 2. Take Profit objetivo
+            elif current_price >= self.position['take_profit']:
+                self.close_position("Take Profit Objetivo", current_rsi, current_price, market_data)
+                return
+            
+            # 3. Trailing stop dinámico
+            elif current_price <= self.position['trailing_stop']:
+                price_from_max = ((self.position['highest_price'] - current_price) / self.position['highest_price']) * 100
+                self.close_position(f"Trailing Stop (-{price_from_max:.1f}%)", current_rsi, current_price, market_data)
+                return
+            
+            # 4. Salida por cambio de régimen de mercado
+            elif (market_regime == 'volatile' and volatility > 4.0 and 
+                  self.position.get('entry_market_regime') != 'volatile'):
+                self.close_position("Mercado muy volátil", current_rsi, current_price, market_data)
+                return
+            
+            # 5. Cambio de tendencia a bajista (solo con confirmaciones adicionales)
+            elif trend_direction == 'bearish':
+                # Solo salir si también hay señales técnicas adversas
+                if current_rsi > 70 or current_price < ema_fast:
+                    self.close_position("Tendencia bajista + señales adversas", current_rsi, current_price, market_data)
+                    return
+                else:
+                    self.logger.warning("⚠️ Tendencia bajista detectada pero manteniendo posición (sin señales adversas)")
+            
+            # 6. RSI extremadamente overbought + precio bajo EMA21
+            elif current_rsi > 80 and current_price < ema_fast:
+                self.close_position("RSI extremo + ruptura EMA21", current_rsi, current_price, market_data)
+                return
+                
+        else:  # SHORT
+            # 1. Stop Loss de emergencia
+            if current_price >= self.position['stop_loss']:
+                self.close_position("Stop Loss Emergencia", current_rsi, current_price, market_data)
+                return
+            
+            # 2. Take Profit objetivo
+            elif current_price <= self.position['take_profit']:
+                self.close_position("Take Profit Objetivo", current_rsi, current_price, market_data)
+                return
+            
+            # 3. Trailing stop dinámico
+            elif current_price >= self.position['trailing_stop']:
+                price_from_min = ((current_price - self.position['lowest_price']) / self.position['lowest_price']) * 100
+                self.close_position(f"Trailing Stop (+{price_from_min:.1f}%)", current_rsi, current_price, market_data)
+                return
+            
+            # 4. Salida por cambio de régimen de mercado
+            elif (market_regime == 'volatile' and volatility > 4.0 and 
+                  self.position.get('entry_market_regime') != 'volatile'):
+                self.close_position("Mercado muy volátil", current_rsi, current_price, market_data)
+                return
+            
+            # 5. Cambio de tendencia a alcista
+            elif trend_direction == 'bullish':
+                if current_rsi < 30 or current_price > ema_fast:
+                    self.close_position("Tendencia alcista + señales adversas", current_rsi, current_price, market_data)
+                    return
+                else:
+                    self.logger.warning("⚠️ Tendencia alcista detectada pero manteniendo posición (sin señales adversas)")
+            
+            # 6. RSI extremadamente oversold + precio sobre EMA21
+            elif current_rsi < 20 and current_price > ema_fast:
+                self.close_position("RSI extremo + ruptura EMA21", current_rsi, current_price, market_data)
+                return
+    
+    def log_trade(self, action, side=None, price=None, quantity=None, rsi=None, 
+                  ema_fast=None, ema_slow=None, ema_trend=None, trend_direction=None,
+                  reason=None, pnl_pct=None, duration_hours=None, confirmation_time=None,
+                  confidence=None, market_regime=None, volatility=None):
+        """Registra trades con datos optimizados"""
+        timestamp = datetime.now()
+        balance = self.get_account_balance()
+        
+        try:
+            with open(self.trades_csv, 'a', newline='') as f:
+                writer = csv.writer(f)
+                
+                if action == 'OPEN':
+                    volume_confirmed = "YES" if hasattr(self, '_last_volume_confirmation') and self._last_volume_confirmation else "NO"
+                    
+                    writer.writerow([
+                        timestamp.isoformat(), action, side, price, quantity, rsi,
+                        ema_fast or 0, ema_slow or 0, ema_trend or 0, trend_direction or '',
+                        self.position['stop_loss'] if self.position else '',
+                        self.position['take_profit'] if self.position else '',
+                        reason or '', '', '', balance, '', '',
+                        "YES" if confirmation_time else "NO",
+                        confirmation_time or 0, 'optimized_entry',
+                        confidence or 0, market_regime or '', volatility or 0, volume_confirmed
+                    ])
+                else:  # CLOSE
+                    pnl_usdt = (pnl_pct / 100) * balance if pnl_pct else 0
+                    writer.writerow([
+                        timestamp.isoformat(), action, side, price, quantity, rsi,
+                        ema_fast or 0, ema_slow or 0, ema_trend or 0, trend_direction or '',
+                        '', '', reason or '', pnl_pct or 0, pnl_usdt,
+                        '', balance, duration_hours or 0, '', '', '',
+                        confidence or 0, market_regime or '', volatility or 0, ''
+                    ])
+        except Exception as e:
+            self.logger.error(f"Error guardando trade: {e}")
+        
+        # Actualizar métricas
+        if action == 'CLOSE' and pnl_pct is not None:
+            self.update_performance_metrics(pnl_pct)
+    
+    def update_performance_metrics(self, pnl_pct):
+        """Actualiza métricas de rendimiento"""
+        self.performance_metrics['total_trades'] += 1
+        self.performance_metrics['total_pnl'] += pnl_pct
+        
+        if pnl_pct > 0:
+            self.performance_metrics['winning_trades'] += 1
+            self.performance_metrics['consecutive_losses'] = 0
+        else:
+            self.performance_metrics['losing_trades'] += 1
+            self.performance_metrics['consecutive_losses'] += 1
+            
+        if self.performance_metrics['consecutive_losses'] > self.performance_metrics['max_consecutive_losses']:
+            self.performance_metrics['max_consecutive_losses'] = self.performance_metrics['consecutive_losses']
+    
+    def analyze_and_trade_optimized(self):
+        """Análisis principal optimizado y ejecución de trades"""
+        # Obtener datos del mercado
+        market_data = self.get_market_data()
+        if not market_data:
+            return
+            
+        current_rsi = market_data['rsi']
+        current_price = market_data['price']
+        ema_fast = market_data['ema_fast']
+        ema_slow = market_data['ema_slow']
+        ema_trend = market_data['ema_trend']
+        trend_direction = market_data['trend_direction']
+        market_regime = market_data['market_regime']
+        volatility = market_data['volatility']
+        
+        # Calcular separación de EMAs
+        ema_separation = abs((ema_fast - ema_slow) / ema_slow) * 100 if ema_slow > 0 else 0
+        
+        # Log información del mercado con más detalles
+        if self.in_position and self.position:
+            pnl_pct = 0
+            if self.position['side'] == 'long':
+                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
+                max_price = self.position.get('highest_price', current_price)
+                trailing_stop = self.position.get('trailing_stop', 0)
+                
+                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | {trend_direction.upper()} | {market_regime.upper()}")
+                self.logger.info(f"💰 PnL: {pnl_pct:+.2f}% | Max: ${max_price:.2f} | TS: ${trailing_stop:.2f} | Vol: {volatility:.1f}%")
+                self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f} | Sep: {ema_separation:.2f}%")
+                
+                # Mostrar información adicional de la posición
+                entry_confidence = self.position.get('entry_confidence', 0)
+                duration_hours = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
+                self.logger.info(f"🎯 Confianza entrada: {entry_confidence:.2f} | Duración: {duration_hours:.1f}h | Breakeven: {'✅' if self.position.get('breakeven_moved') else '❌'}")
+                
+            else:  # SHORT
+                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
+                min_price = self.position.get('lowest_price', current_price)
+                trailing_stop = self.position.get('trailing_stop', 0)
+                
+                self.logger.info(f"📉 BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | {trend_direction.upper()} | {market_regime.upper()}")
+                self.logger.info(f"💰 PnL: {pnl_pct:+.2f}% | Min: ${min_price:.2f} | TS: ${trailing_stop:.2f} | Vol: {volatility:.1f}%")
+                self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f} | Sep: {ema_separation:.2f}%")
+                
+                entry_confidence = self.position.get('entry_confidence', 0)
+                duration_hours = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
+                self.logger.info(f"🎯 Confianza entrada: {entry_confidence:.2f} | Duración: {duration_hours:.1f}h | Breakeven: {'✅' if self.position.get('breakeven_moved') else '❌'}")
+                
+        else:
+            # Sin posición - mostrar estado del mercado
+            ema_order = "📈" if ema_fast > ema_slow > ema_trend else "📉" if ema_fast < ema_slow < ema_trend else "🔄"
+            volume_status = "🔊" if market_data['volume'] > market_data['avg_volume'] * 1.2 else "🔇"
+            
+            self.logger.info(f"{ema_order} BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | {trend_direction.upper()} | {market_regime.upper()} {volume_status}")
+            self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f} | Sep: {ema_separation:.2f}% | Vol: {volatility:.1f}%")
+            
+            # Mostrar umbrales dinámicos
+            oversold, overbought, _, _ = self.get_dynamic_rsi_thresholds(trend_direction, ema_separation, market_regime)
+            consecutive_losses = self.performance_metrics['consecutive_losses']
+            self.logger.info(f"🎯 RSI Dinámico: OS≤{oversold:.0f} | OB≥{overbought:.0f} | Pérdidas consecutivas: {consecutive_losses}")
+        
+        # Verificar condiciones de salida si estamos en posición
+        self.check_exit_conditions_optimized(current_price, current_rsi, market_data)
+        
+        # Si estamos en posición, no buscar nuevas señales
+        if self.in_position:
+            return
+        
+        # Verificar confirmación de señales pendientes
+        confirmed, signal_type = self.check_enhanced_swing_confirmation(market_data)
+        
+        if confirmed:
+            current_time = time.time()
+            
+            # Calcular tiempo de confirmación
+            confirmation_time_hours = 0
+            if self.signal_trigger_time:
+                confirmation_time_hours = (datetime.now() - self.signal_trigger_time).total_seconds() / 3600
+            
+            if signal_type == 'long':
+                if self.open_long_position(market_data, confirmation_time_hours):
+                    self.last_signal_time = current_time
+            elif signal_type == 'short':
+                if self.open_short_position(market_data, confirmation_time_hours):
+                    self.last_signal_time = current_time
+        
+        # Solo buscar nuevas señales si no hay señales pendientes y ha pasado tiempo suficiente
+        elif not (self.pending_long_signal or self.pending_short_signal):
+            current_time = time.time()
+            if current_time - self.last_signal_time >= self.min_time_between_signals:
+                self.detect_enhanced_swing_signal(market_data)
+    
+    def run(self):
+        """Ejecuta el bot optimizado en un loop continuo"""
+        self.logger.info("🚀 Optimized RSI + EMA + Trend Filter Bot v3.0 iniciado")
+        self.logger.info(f"📊 Timeframe: {self.timeframe} | RSI({self.rsi_period}) | Dinámico: OS/OB adaptativo")
+        self.logger.info(f"📈 EMAs: Fast({self.ema_fast_period}) | Slow({self.ema_slow_period}) | Trend({self.ema_trend_period})")
+        self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.base_position_size_pct}% (dinámico) | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
+        self.logger.info(f"🎯 Swing Confirmación: {self.swing_confirmation_threshold}% | Max espera: {self.max_swing_wait} períodos")
+        self.logger.info(f"🛡️ Trailing Stop: {self.trailing_stop_distance}% (dinámico) | Breakeven: {self.breakeven_threshold}%")
+        self.logger.info(f"🧠 Confianza mínima: {self.confidence_threshold:.0%} | Max pérdidas consecutivas: {self.max_consecutive_losses}")
+        self.logger.info(f"🔊 Volumen: {self.volume_confirmation_threshold:.0%} sobre promedio | Timeframe superior: Activado")
+        self.logger.info(f"💾 Estado guardado en: {self.state_file}")
+        self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
+        
+        # Para swing trading optimizado, verificar cada 20 minutos
+        check_interval = 1200  # 20 minutos en segundos
+        iteration = 0
+        
+        try:
+            while True:
+                self.analyze_and_trade_optimized()
+                
+                # Mostrar resumen cada 3 horas (9 iteraciones de 20 min)
+                iteration += 1
+                if iteration % 9 == 0:
+                    self.log_performance_summary()
+                
+                # Guardar estado cada hora (3 iteraciones)
+                if iteration % 3 == 0:
+                    self.save_bot_state()
+                
+                time.sleep(check_interval)
+                
+        except KeyboardInterrupt:
+            self.logger.info("🛑 Bot detenido por el usuario (KeyboardInterrupt)")
+            if self.in_position:
+                self.close_position("Bot detenido")
+            self.save_bot_state()
+            self.log_performance_summary()
+                
+        except Exception as e:
+            self.logger.error(f"❌ Error en el bot: {e}")
+            if self.in_position:
+                self.close_position("Error del bot")
+            self.save_bot_state()
+            raise
+    
+    def log_performance_summary(self):
+        """Muestra resumen de performance optimizado"""
+        metrics = self.performance_metrics
+        
+        self.logger.info("="*80)
+        self.logger.info("📊 RESUMEN DE PERFORMANCE BOT OPTIMIZADO v3.0")
+        self.logger.info("="*80)
+        
+        # Estadísticas de señales y filtros mejoradas
+        signal_confirmation_rate = 0
+        if metrics['signals_detected'] > 0:
+            signal_confirmation_rate = (metrics['signals_confirmed'] / metrics['signals_detected']) * 100
+        
+        self.logger.info(f"🔔 Señales detectadas: {metrics['signals_detected']}")
+        self.logger.info(f"✅ Señales confirmadas: {metrics['signals_confirmed']}")
+        self.logger.info(f"⏰ Señales expiradas: {metrics['signals_expired']}")
+        self.logger.info(f"🔍 Señales baja confianza: {metrics['signals_low_confidence']}")
+        self.logger.info(f"📈 Tasa de confirmación: {signal_confirmation_rate:.1f}%")
+        self.logger.info(f"🎯 Filtros de tendencia: {metrics['trend_filters_applied']}")
+        self.logger.info(f"📊 Confirmaciones EMA: {metrics['ema_confirmations']}")
+        self.logger.info(f"🔊 Confirmaciones volumen: {metrics['volume_confirmations']}")
+        self.logger.info(f"🔄 Entradas por pullback: {metrics['pullback_entries']}")
+        self.logger.info(f"🔧 Recuperaciones: {metrics['recoveries_performed']}")
+        self.logger.info(f"⚙️ Ajustes adaptativos: {metrics['adaptive_adjustments']}")
+        self.logger.info(f"🔄 Cambios de régimen: {metrics['regime_changes']}")
+        self.logger.info("-" * 60)
+        
+        # Estadísticas de trading
+        if metrics['total_trades'] == 0:
+            self.logger.info("📊 Sin trades completados aún")
+        else:
+            win_rate = (metrics['winning_trades'] / metrics['total_trades']) * 100
+            avg_pnl = metrics['total_pnl'] / metrics['total_trades']
+            
+            self.logger.info(f"🔢 Total Trades: {metrics['total_trades']}")
+            self.logger.info(f"🎯 Win Rate: {win_rate:.1f}%")
+            self.logger.info(f"💰 PnL Total: {metrics['total_pnl']:+.2f}%")
+            self.logger.info(f"✅ Ganadores: {metrics['winning_trades']}")
+            self.logger.info(f"❌ Perdedores: {metrics['losing_trades']}")
+            self.logger.info(f"📉 Pérdidas consecutivas actuales: {metrics['consecutive_losses']}")
+            self.logger.info(f"📉 Max pérdidas consecutivas: {metrics['max_consecutive_losses']}")
+            
+            # Calcular métricas avanzadas
+            if metrics['winning_trades'] > 0 and metrics['losing_trades'] > 0:
+                winning_trades = [t for t in self.trades_log if t.get('pnl_pct', 0) > 0]
+                losing_trades = [t for t in self.trades_log if t.get('pnl_pct', 0) < 0]
+                
+                if winning_trades and losing_trades:
+                    avg_win = sum([t.get('pnl_pct', 0) for t in winning_trades]) / len(winning_trades)
+                    avg_loss = sum([t.get('pnl_pct', 0) for t in losing_trades]) / len(losing_trades)
+                    profit_factor = abs(avg_win / avg_loss) if avg_loss != 0 else 0
+                    
+                    self.logger.info(f"📈 Ganancia promedio: {avg_win:+.2f}%")
+                    self.logger.info(f"📉 Pérdida promedio: {avg_loss:+.2f}%")
+                    self.logger.info(f"⚖️ Factor de Ganancia: {profit_factor:.2f}")
+        
+        self.logger.info(f"💵 Balance Actual: ${self.get_account_balance():.2f}")
+        
+        # Estado actual con información optimizada
+        if self.in_position:
+            pos_type = "RECUPERADA" if self.position.get('recovered') else "ACTIVA"
+            duration = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
+            confidence = self.position.get('entry_confidence', 0)
+            regime = self.position.get('entry_market_regime', 'unknown')
+            
+            self.logger.info(f"📍 Posición {pos_type}: {self.position['side'].upper()} ({duration:.1f}h)")
+            self.logger.info(f"🎯 Confianza entrada: {confidence:.2f} | Régimen entrada: {regime}")
+            self.logger.info(f"🛡️ Breakeven movido: {'SÍ' if self.position.get('breakeven_moved') else 'NO'}")
+            
+        elif self.pending_long_signal:
+            confidence = self.signal_confidence
+            remaining = self.max_swing_wait - self.swing_wait_count
+            self.logger.info(f"⏳ Esperando confirmación SWING LONG ({self.swing_wait_count}/{self.max_swing_wait})")
+            self.logger.info(f"🎯 Confianza señal: {confidence:.2f} | Períodos restantes: {remaining}")
+            
+        elif self.pending_short_signal:
+            confidence = self.signal_confidence
+            remaining = self.max_swing_wait - self.swing_wait_count
+            self.logger.info(f"⏳ Esperando confirmación SWING SHORT ({self.swing_wait_count}/{self.max_swing_wait})")
+            self.logger.info(f"🎯 Confianza señal: {confidence:.2f} | Períodos restantes: {remaining}")
+            
+        else:
+            consecutive_losses = metrics['consecutive_losses']
+            status = "PAUSADO" if consecutive_losses >= self.max_consecutive_losses else "ACTIVO"
+            self.logger.info(f"🔍 Buscando oportunidades... | Estado: {status}")
+            self.logger.info(f"📊 Tendencia: {self.trend_direction} | Régimen: {self.market_regime} | Volatilidad: {self.current_volatility:.1f}%")
+        
+        # Información de EMAs y mercado actuales
+        if hasattr(self, 'last_ema_fast') and self.last_ema_fast > 0:
+            ema_alignment = "ALCISTA" if self.last_ema_fast > self.last_ema_slow > self.last_ema_trend else \
+                           "BAJISTA" if self.last_ema_fast < self.last_ema_slow < self.last_ema_trend else "NEUTRAL"
+            
+            self.logger.info(f"📊 Alineación EMAs: {ema_alignment}")
+            self.logger.info(f"📈 EMA21: ${self.last_ema_fast:.2f} | EMA50: ${self.last_ema_slow:.2f} | EMA200: ${self.last_ema_trend:.2f}")
+            
+            # Separación entre EMAs y umbrales dinámicos
+            if self.last_ema_slow > 0:
+                ema_separation = abs((self.last_ema_fast - self.last_ema_slow) / self.last_ema_slow) * 100
+                self.logger.info(f"📏 Separación EMA21-EMA50: {ema_separation:.2f}%")
+                
+                # Mostrar umbrales RSI dinámicos actuales
+                oversold, overbought, _, _ = self.get_dynamic_rsi_thresholds(
+                    self.trend_direction, ema_separation, self.market_regime
+                )
+                self.logger.info(f"🎯 RSI Dinámico actual: Oversold≤{oversold:.0f} | Overbought≥{overbought:.0f}")
+        
+        # Estadísticas de volumen y timeframes
+        if hasattr(self, 'avg_volume') and self.avg_volume > 0:
+            current_vol_ratio = (self.avg_volume / 1000000) if self.avg_volume > 1000000 else self.avg_volume
+            vol_status = 'Alto' if current_vol_ratio > 1.2 else 'Normal' if current_vol_ratio > 0.8 else 'Bajo'
+            self.logger.info(f"🔊 Volumen promedio: {self.avg_volume:,.0f} | Estado volumen: {vol_status}")
+        
+        self.logger.info("="*80)
+
+
+# Ejemplo de uso optimizado para swing trading
+if __name__ == "__main__":
+    
+    print("🚀 Optimized RSI + EMA + Trend Filter Swing Bot v3.0 - Docker Edition")
+    print(f"🐳 Python PID: {os.getpid()}")
+    print(f"🐳 Working Directory: {os.getcwd()}")
+    
+    # Configuración con variables de entorno
+    API_KEY = os.getenv('BINANCE_API_KEY')
+    API_SECRET = os.getenv('BINANCE_API_SECRET')
+    USE_TESTNET = os.getenv('USE_TESTNET', 'true').lower() == 'true'
+    
+    if not API_KEY or not API_SECRET:
+        print("❌ ERROR: Variables de entorno no configuradas")
+        print("🐳 En Docker, asegúrate de que el .env esté configurado correctamente")
+        print("🐳 Variables requeridas: BINANCE_API_KEY, BINANCE_API_SECRET")
+        exit(1)
+    
+    print(f"🤖 Iniciando bot optimizado en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
+    print("🔔 CARACTERÍSTICAS OPTIMIZADAS v3.0:")
+    print("  • RSI con umbrales dinámicos adaptativos")
+    print("  • Confirmación de volumen y timeframe superior")
+    print("  • Sistema de confianza para filtrar señales")
+    print("  • Tamaño de posición dinámico basado en confianza")
+    print("  • Trailing stop adaptativo a volatilidad")
+    print("  • Detección de régimen de mercado")
+    print("  • Protección contra pérdidas consecutivas")
+    print("  • Recuperación automática de estado")
+    print("🐳 DOCKER: Auto-restart + persistencia garantizada")
+    
+    if not USE_TESTNET:
+        print("⚠️  ADVERTENCIA: Vas a usar DINERO REAL")
+        print("🐳 En modo Docker, no se solicita confirmación manual")
+        print("🐳 Para cancelar, detén el contenedor: docker-compose down")
+    
+    try:
+        print("🚀 Creando instancia del bot optimizado...")
+        bot = OptimizedBinanceRSIEMABot(
+            api_key=API_KEY,
+            api_secret=API_SECRET, 
+            testnet=USE_TESTNET
+        )
+        
+        print("✅ Bot optimizado inicializado correctamente")
+        print("🔄 Iniciando loop principal optimizado...")
+        bot.run()
+        
+    except KeyboardInterrupt:
+        print("🛑 Bot detenido por señal de usuario")
+        
+    except Exception as e:
+        print(f"❌ Error crítico: {e}")
+        print("🐳 Docker reiniciará automáticamente el contenedor")
+        exit(1)import ccxt
 import pandas as pd
 import numpy as np
 import time
@@ -471,6 +1100,21 @@ class OptimizedBinanceRSIEMABot:
         
         return False, 'No_support'
     
+    def is_near_ema_resistance(self, price, ema_fast, ema_slow):
+        """Verifica si el precio está cerca de resistencia EMA para shorts"""
+        distance_to_fast = abs((price - ema_fast) / ema_fast) * 100
+        distance_to_slow = abs((price - ema_slow) / ema_slow) * 100
+        
+        # Precio dentro del 2% de EMA21 o 2.5% de EMA50 (desde arriba)
+        if price > ema_fast and distance_to_fast <= 2.0:
+            return True
+        elif price > ema_slow and distance_to_slow <= 2.5:
+            return True
+        elif min(ema_slow, ema_fast) <= price <= max(ema_slow, ema_fast):
+            return True
+        
+        return False
+    
     def detect_price_patterns(self, df):
         """Detecta patrones de precio que pueden indicar reversal"""
         try:
@@ -580,155 +1224,8 @@ class OptimizedBinanceRSIEMABot:
                     
                     self.logger.info(f"🟡 SEÑAL LONG MEJORADA - RSI: {rsi:.1f}({oversold:.0f}) | Confianza: {confidence:.2f}")
                     self.logger.info(f"📍 Precio: ${price:.2f} | Soporte: {support_type} | HTF: {htf_bias}")
-                    self.logger.info(f"🔊 Confirmaciones volumen: {metrics['volume_confirmations']}")
-        self.logger.info(f"🔄 Entradas por pullback: {metrics['pullback_entries']}")
-        self.logger.info(f"🔧 Recuperaciones: {metrics['recoveries_performed']}")
-        self.logger.info(f"⚙️ Ajustes adaptativos: {metrics['adaptive_adjustments']}")
-        self.logger.info(f"🔄 Cambios de régimen: {metrics['regime_changes']}")
-        self.logger.info("-" * 60)
-        
-        # Estadísticas de trading
-        if metrics['total_trades'] == 0:
-            self.logger.info("📊 Sin trades completados aún")
-        else:
-            win_rate = (metrics['winning_trades'] / metrics['total_trades']) * 100
-            avg_pnl = metrics['total_pnl'] / metrics['total_trades']
-            
-            self.logger.info(f"🔢 Total Trades: {metrics['total_trades']}")
-            self.logger.info(f"🎯 Win Rate: {win_rate:.1f}%")
-            self.logger.info(f"💰 PnL Promedio: {avg_pnl:+.2f}%")
-            self.logger.info(f"💰 PnL Total: {metrics['total_pnl']:+.2f}%")
-            self.logger.info(f"✅ Ganadores: {metrics['winning_trades']}")
-            self.logger.info(f"❌ Perdedores: {metrics['losing_trades']}")
-            self.logger.info(f"📉 Pérdidas consecutivas actuales: {metrics['consecutive_losses']}")
-            self.logger.info(f"📉 Max pérdidas consecutivas: {metrics['max_consecutive_losses']}")
-            
-            # Calcular métricas avanzadas
-            if metrics['winning_trades'] > 0 and metrics['losing_trades'] > 0:
-                winning_trades = [t for t in self.trades_log if t.get('pnl_pct', 0) > 0]
-                losing_trades = [t for t in self.trades_log if t.get('pnl_pct', 0) < 0]
-                
-                if winning_trades and losing_trades:
-                    avg_win = sum([t.get('pnl_pct', 0) for t in winning_trades]) / len(winning_trades)
-                    avg_loss = sum([t.get('pnl_pct', 0) for t in losing_trades]) / len(losing_trades)
-                    profit_factor = abs(avg_win / avg_loss) if avg_loss != 0 else 0
-                    
-                    self.logger.info(f"📈 Ganancia promedio: {avg_win:+.2f}%")
-                    self.logger.info(f"📉 Pérdida promedio: {avg_loss:+.2f}%")
-                    self.logger.info(f"⚖️ Factor de Ganancia: {profit_factor:.2f}")
-        
-        self.logger.info(f"💵 Balance Actual: ${self.get_account_balance():.2f}")
-        
-        # Estado actual con información optimizada
-        if self.in_position:
-            pos_type = "RECUPERADA" if self.position.get('recovered') else "ACTIVA"
-            duration = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
-            confidence = self.position.get('entry_confidence', 0)
-            regime = self.position.get('entry_market_regime', 'unknown')
-            
-            self.logger.info(f"📍 Posición {pos_type}: {self.position['side'].upper()} ({duration:.1f}h)")
-            self.logger.info(f"🎯 Confianza entrada: {confidence:.2f} | Régimen entrada: {regime}")
-            self.logger.info(f"🛡️ Breakeven movido: {'SÍ' if self.position.get('breakeven_moved') else 'NO'}")
-            
-        elif self.pending_long_signal:
-            confidence = self.signal_confidence
-            remaining = self.max_swing_wait - self.swing_wait_count
-            self.logger.info(f"⏳ Esperando confirmación SWING LONG ({self.swing_wait_count}/{self.max_swing_wait})")
-            self.logger.info(f"🎯 Confianza señal: {confidence:.2f} | Períodos restantes: {remaining}")
-            
-        elif self.pending_short_signal:
-            confidence = self.signal_confidence
-            remaining = self.max_swing_wait - self.swing_wait_count
-            self.logger.info(f"⏳ Esperando confirmación SWING SHORT ({self.swing_wait_count}/{self.max_swing_wait})")
-            self.logger.info(f"🎯 Confianza señal: {confidence:.2f} | Períodos restantes: {remaining}")
-            
-        else:
-            consecutive_losses = metrics['consecutive_losses']
-            status = "PAUSADO" if consecutive_losses >= self.max_consecutive_losses else "ACTIVO"
-            self.logger.info(f"🔍 Buscando oportunidades... | Estado: {status}")
-            self.logger.info(f"📊 Tendencia: {self.trend_direction} | Régimen: {self.market_regime} | Volatilidad: {self.current_volatility:.1f}%")
-        
-        # Información de EMAs y mercado actuales
-        if hasattr(self, 'last_ema_fast') and self.last_ema_fast > 0:
-            ema_alignment = "ALCISTA" if self.last_ema_fast > self.last_ema_slow > self.last_ema_trend else \
-                           "BAJISTA" if self.last_ema_fast < self.last_ema_slow < self.last_ema_trend else "NEUTRAL"
-            
-            self.logger.info(f"📊 Alineación EMAs: {ema_alignment}")
-            self.logger.info(f"📈 EMA21: ${self.last_ema_fast:.2f} | EMA50: ${self.last_ema_slow:.2f} | EMA200: ${self.last_ema_trend:.2f}")
-            
-            # Separación entre EMAs y umbrales dinámicos
-            if self.last_ema_slow > 0:
-                ema_separation = abs((self.last_ema_fast - self.last_ema_slow) / self.last_ema_slow) * 100
-                self.logger.info(f"📏 Separación EMA21-EMA50: {ema_separation:.2f}%")
-                
-                # Mostrar umbrales RSI dinámicos actuales
-                oversold, overbought, _, _ = self.get_dynamic_rsi_thresholds(
-                    self.trend_direction, ema_separation, self.market_regime
-                )
-                self.logger.info(f"🎯 RSI Dinámico actual: Oversold≤{oversold:.0f} | Overbought≥{overbought:.0f}")
-        
-        # Estadísticas de volumen y timeframes
-        if hasattr(self, 'avg_volume') and self.avg_volume > 0:
-            current_vol_ratio = (self.last_price / self.avg_volume) if hasattr(self, 'last_price') else 0
-            self.logger.info(f"🔊 Volumen promedio: {self.avg_volume:,.0f} | Estado actual del volumen: {'Alto' if current_vol_ratio > 1.2 else 'Normal' if current_vol_ratio > 0.8 else 'Bajo'}")
-        
-        self.logger.info("="*80)
-
-
-# Ejemplo de uso optimizado para swing trading
-if __name__ == "__main__":
-    
-    print("🚀 Optimized RSI + EMA + Trend Filter Swing Bot v3.0 - Docker Edition")
-    print(f"🐳 Python PID: {os.getpid()}")
-    print(f"🐳 Working Directory: {os.getcwd()}")
-    
-    # Configuración con variables de entorno
-    API_KEY = os.getenv('BINANCE_API_KEY')
-    API_SECRET = os.getenv('BINANCE_API_SECRET')
-    USE_TESTNET = os.getenv('USE_TESTNET', 'true').lower() == 'true'
-    
-    if not API_KEY or not API_SECRET:
-        print("❌ ERROR: Variables de entorno no configuradas")
-        print("🐳 En Docker, asegúrate de que el .env esté configurado correctamente")
-        print("🐳 Variables requeridas: BINANCE_API_KEY, BINANCE_API_SECRET")
-        exit(1)
-    
-    print(f"🤖 Iniciando bot optimizado en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
-    print("🔔 CARACTERÍSTICAS OPTIMIZADAS v3.0:")
-    print("  • RSI con umbrales dinámicos adaptativos")
-    print("  • Confirmación de volumen y timeframe superior")
-    print("  • Sistema de confianza para filtrar señales")
-    print("  • Tamaño de posición dinámico basado en confianza")
-    print("  • Trailing stop adaptativo a volatilidad")
-    print("  • Detección de régimen de mercado")
-    print("  • Protección contra pérdidas consecutivas")
-    print("  • Recuperación automática de estado")
-    print("🐳 DOCKER: Auto-restart + persistencia garantizada")
-    
-    if not USE_TESTNET:
-        print("⚠️  ADVERTENCIA: Vas a usar DINERO REAL")
-        print("🐳 En modo Docker, no se solicita confirmación manual")
-        print("🐳 Para cancelar, detén el contenedor: docker-compose down")
-    
-    try:
-        print("🚀 Creando instancia del bot optimizado...")
-        bot = OptimizedBinanceRSIEMABot(
-            api_key=API_KEY,
-            api_secret=API_SECRET, 
-            testnet=USE_TESTNET
-        )
-        
-        print("✅ Bot optimizado inicializado correctamente")
-        print("🔄 Iniciando loop principal optimizado...")
-        bot.run()
-        
-    except KeyboardInterrupt:
-        print("🛑 Bot detenido por señal de usuario")
-        
-    except Exception as e:
-        print(f"❌ Error crítico: {e}")
-        print("🐳 Docker reiniciará automáticamente el contenedor")
-        exit(1) Volumen: {'+' if volume_confirmation else '-'} | Patrón: {price_pattern_score:.2f}")
+                    volume_symbol = '+' if volume_confirmation else '-'
+                    self.logger.info(f"🔊 Volumen: {volume_symbol} | Patrón: {price_pattern_score:.2f}")
                     self.logger.info(f"🎯 Régimen: {market_regime} | EMA Sep: {ema_separation:.2f}%")
                     
                     return True
@@ -764,25 +1261,11 @@ if __name__ == "__main__":
                     
                     self.logger.info(f"🟡 SEÑAL SHORT MEJORADA - RSI: {rsi:.1f}({overbought:.0f}) | Confianza: {confidence:.2f}")
                     self.logger.info(f"📍 Precio: ${price:.2f} | HTF: {htf_bias}")
-                    self.logger.info(f"🔊 Volumen: {'+' if volume_confirmation else '-'} | Patrón: {price_pattern_score:.2f}")
+                    volume_symbol = '+' if volume_confirmation else '-'
+                    self.logger.info(f"🔊 Volumen: {volume_symbol} | Patrón: {price_pattern_score:.2f}")
                     self.logger.info(f"🎯 Régimen: {market_regime} | EMA Sep: {ema_separation:.2f}%")
                     
                     return True
-        
-        return False
-    
-    def is_near_ema_resistance(self, price, ema_fast, ema_slow):
-        """Verifica si el precio está cerca de resistencia EMA para shorts"""
-        distance_to_fast = abs((price - ema_fast) / ema_fast) * 100
-        distance_to_slow = abs((price - ema_slow) / ema_slow) * 100
-        
-        # Precio dentro del 2% de EMA21 o 2.5% de EMA50 (desde arriba)
-        if price > ema_fast and distance_to_fast <= 2.0:
-            return True
-        elif price > ema_slow and distance_to_slow <= 2.5:
-            return True
-        elif min(ema_slow, ema_fast) <= price <= max(ema_slow, ema_fast):
-            return True
         
         return False
     
@@ -828,7 +1311,7 @@ if __name__ == "__main__":
                 return False, None
                 
             elif trend_direction == 'bearish':
-                self.logger.warning(f"❌ Señal LONG CANCELADA - Tendencia cambió a bajista")
+                self.logger.warning("❌ Señal LONG CANCELADA - Tendencia cambió a bajista")
                 self.performance_metrics['signals_expired'] += 1
                 self.reset_signal_state()
                 return False, None
@@ -861,7 +1344,7 @@ if __name__ == "__main__":
                 return False, None
                 
             elif trend_direction == 'bullish':
-                self.logger.warning(f"❌ Señal SHORT CANCELADA - Tendencia cambió a alcista")
+                self.logger.warning("❌ Señal SHORT CANCELADA - Tendencia cambió a alcista")
                 self.performance_metrics['signals_expired'] += 1
                 self.reset_signal_state()
                 return False, None
@@ -1362,486 +1845,4 @@ if __name__ == "__main__":
             )
             
             if quantity <= 0:
-                self.logger.warning("⚠️ No se puede calcular tamaño de posición válido")
-                return False
-            
-            stop_price = price * (1 + self.stop_loss_pct / 100)
-            take_profit_price = price * (1 - self.take_profit_pct / 100)
-            
-            try:
-                if self.testnet:
-                    order = self.exchange.create_market_order(self.symbol, 'sell', quantity)
-                else:
-                    order = self.exchange.create_market_order(self.symbol, 'sell', quantity)
-            except Exception as order_error:
-                self.logger.warning(f"Error creando orden real: {order_error}")
-                order = self.create_test_order('sell', quantity, price)
-            
-            self.position = {
-                'side': 'short',
-                'entry_price': price,
-                'entry_time': datetime.now(),
-                'quantity': quantity,
-                'stop_loss': stop_price,
-                'take_profit': take_profit_price,
-                'order_id': order['id'],
-                'entry_rsi': rsi,
-                'entry_confidence': self.signal_confidence,
-                'entry_ema_fast': ema_fast,
-                'entry_ema_slow': ema_slow,
-                'entry_ema_trend': ema_trend,
-                'entry_trend_direction': trend_direction,
-                'entry_volatility': volatility,
-                'entry_market_regime': market_data['market_regime'],
-                'confirmation_time': confirmation_time,
-                'recovered': False,
-                'lowest_price': price,
-                'trailing_stop': stop_price,
-                'breakeven_moved': False
-            }
-            
-            self.in_position = True
-            
-            self.logger.info(f"🔴 SHORT OPTIMIZADO EJECUTADO: {quantity:.6f} BTC @ ${price:.2f}")
-            self.logger.info(f"📊 SL: ${stop_price:.2f} | TP: ${take_profit_price:.2f} | Confianza: {self.signal_confidence:.2f}")
-            self.logger.info(f"🔄 Tendencia: {trend_direction} | RSI: {rsi:.1f} | Volatilidad: {volatility:.1f}%")
-            self.logger.info(f"💰 Tamaño dinámico: {(quantity * price):.2f} USDT ({((quantity * price) / self.get_account_balance()) * 100:.1f}%)")
-            
-            self.log_trade('OPEN', 'short', price, quantity, rsi, ema_fast, ema_slow, ema_trend,
-                          trend_direction, 'Optimized Short Entry', confirmation_time=confirmation_time,
-                          confidence=self.signal_confidence, market_regime=market_data['market_regime'],
-                          volatility=volatility)
-            
-            self.save_bot_state()
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error abriendo posición SHORT: {e}")
-            return False
-    
-    def close_position(self, reason="Manual", current_rsi=None, current_price=None, market_data=None):
-        """Cierra la posición actual"""
-        if not self.in_position or not self.position:
-            return
-            
-        try:
-            side = 'sell' if self.position['side'] == 'long' else 'buy'
-            
-            # Obtener precio actual si no se proporciona
-            if current_price is None:
-                ticker = self.exchange.fetch_ticker(self.symbol)
-                current_price = ticker['last']
-            
-            # Intentar crear orden de cierre
-            try:
-                order = self.exchange.create_market_order(self.symbol, side, self.position['quantity'])
-            except Exception as order_error:
-                self.logger.warning(f"Error creando orden de cierre: {order_error}")
-                order = self.create_test_order(side, self.position['quantity'], current_price)
-            
-            # Calcular P&L
-            if self.position['side'] == 'long':
-                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-            else:
-                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-            
-            pnl_pct *= self.leverage
-            
-            # Calcular duración del swing
-            duration_hours = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
-            
-            # Determinar si fue ganancia o pérdida
-            if pnl_pct > 0:
-                result_emoji = "💚"
-                result_text = "GANANCIA"
-            else:
-                result_emoji = "💔"
-                result_text = "PÉRDIDA"
-            
-            self.logger.info(f"⭕ Posición OPTIMIZADA cerrada - {reason}")
-            self.logger.info(f"{result_emoji} {result_text}: {pnl_pct:+.2f}% | Duración: {duration_hours:.1f}h")
-            self.logger.info(f"📊 Confianza entrada: {self.position.get('entry_confidence', 0):.2f} | Régimen: {self.position.get('entry_market_regime', 'unknown')}")
-            
-            # Log detallado del cierre
-            ema_data = market_data if market_data else {}
-            self.log_trade('CLOSE', self.position['side'], current_price, 
-                          self.position['quantity'], current_rsi, 
-                          ema_data.get('ema_fast', 0), ema_data.get('ema_slow', 0), 
-                          ema_data.get('ema_trend', 0), ema_data.get('trend_direction', 'unknown'),
-                          reason, pnl_pct, duration_hours,
-                          confidence=self.position.get('entry_confidence', 0),
-                          market_regime=ema_data.get('market_regime', 'unknown'),
-                          volatility=ema_data.get('volatility', 0))
-            
-            self.position = None
-            self.in_position = False
-            
-            self.save_bot_state()
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error cerrando posición: {e}")
-            return False
-    
-    def update_trailing_stop_optimized(self, current_price, market_data):
-        """Sistema de trailing stop optimizado"""
-        if not self.in_position or not self.position:
-            return
-        
-        volatility = market_data.get('volatility', 1.0)
-        
-        # Ajustar distancia del trailing stop basado en volatilidad
-        dynamic_trailing_distance = self.trailing_stop_distance
-        if volatility > 3.0:  # Alta volatilidad
-            dynamic_trailing_distance *= 1.5
-        elif volatility < 1.0:  # Baja volatilidad
-            dynamic_trailing_distance *= 0.8
-        
-        if self.position['side'] == 'long':
-            # Actualizar precio máximo
-            if current_price > self.position['highest_price']:
-                old_high = self.position['highest_price']
-                self.position['highest_price'] = current_price
-                
-                # Mover stop loss a breakeven cuando ganemos el threshold
-                if not self.position['breakeven_moved']:
-                    gain_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-                    if gain_pct >= self.breakeven_threshold:
-                        self.position['trailing_stop'] = self.position['entry_price'] * 1.002  # Breakeven + 0.2%
-                        self.position['breakeven_moved'] = True
-                        self.logger.info(f"🔒 Stop movido a BREAKEVEN: ${self.position['trailing_stop']:.2f} (ganancia: {gain_pct:.1f}%)")
-                        return
-                
-                # Trailing stop normal (solo si ya está en breakeven)
-                if self.position['breakeven_moved']:
-                    new_trailing_stop = current_price * (1 - dynamic_trailing_distance / 100)
-                    if new_trailing_stop > self.position['trailing_stop']:
-                        old_stop = self.position['trailing_stop']
-                        self.position['trailing_stop'] = new_trailing_stop
-                        gain_from_entry = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-                        self.logger.info(f"📈 Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f} | Ganancia: {gain_from_entry:.1f}%")
-                        
-        else:  # SHORT
-            if current_price < self.position['lowest_price']:
-                old_low = self.position['lowest_price']
-                self.position['lowest_price'] = current_price
-                
-                if not self.position['breakeven_moved']:
-                    gain_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-                    if gain_pct >= self.breakeven_threshold:
-                        self.position['trailing_stop'] = self.position['entry_price'] * 0.998  # Breakeven - 0.2%
-                        self.position['breakeven_moved'] = True
-                        self.logger.info(f"🔒 Stop movido a BREAKEVEN: ${self.position['trailing_stop']:.2f} (ganancia: {gain_pct:.1f}%)")
-                        return
-                
-                if self.position['breakeven_moved']:
-                    new_trailing_stop = current_price * (1 + dynamic_trailing_distance / 100)
-                    if new_trailing_stop < self.position['trailing_stop']:
-                        old_stop = self.position['trailing_stop']
-                        self.position['trailing_stop'] = new_trailing_stop
-                        gain_from_entry = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-                        self.logger.info(f"📉 Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f} | Ganancia: {gain_from_entry:.1f}%")
-    
-    def check_exit_conditions_optimized(self, current_price, current_rsi, market_data):
-        """Condiciones de salida optimizadas"""
-        if not self.in_position or not self.position:
-            return
-        
-        # Actualizar trailing stop
-        self.update_trailing_stop_optimized(current_price, market_data)
-        
-        trend_direction = market_data.get('trend_direction', 'neutral')
-        ema_fast = market_data.get('ema_fast', 0)
-        ema_slow = market_data.get('ema_slow', 0)
-        volatility = market_data.get('volatility', 1.0)
-        market_regime = market_data.get('market_regime', 'trending')
-        
-        if self.position['side'] == 'long':
-            # 1. Stop Loss de emergencia
-            if current_price <= self.position['stop_loss']:
-                self.close_position("Stop Loss Emergencia", current_rsi, current_price, market_data)
-                return
-            
-            # 2. Take Profit objetivo
-            elif current_price >= self.position['take_profit']:
-                self.close_position("Take Profit Objetivo", current_rsi, current_price, market_data)
-                return
-            
-            # 3. Trailing stop dinámico
-            elif current_price <= self.position['trailing_stop']:
-                price_from_max = ((self.position['highest_price'] - current_price) / self.position['highest_price']) * 100
-                self.close_position(f"Trailing Stop (-{price_from_max:.1f}%)", current_rsi, current_price, market_data)
-                return
-            
-            # 4. Salida por cambio de régimen de mercado
-            elif (market_regime == 'volatile' and volatility > 4.0 and 
-                  self.position.get('entry_market_regime') != 'volatile'):
-                self.close_position("Mercado muy volátil", current_rsi, current_price, market_data)
-                return
-            
-            # 5. Cambio de tendencia a bajista (solo con confirmaciones adicionales)
-            elif trend_direction == 'bearish':
-                # Solo salir si también hay señales técnicas adversas
-                if current_rsi > 70 or current_price < ema_fast:
-                    self.close_position("Tendencia bajista + señales adversas", current_rsi, current_price, market_data)
-                    return
-                else:
-                    self.logger.warning("⚠️ Tendencia bajista detectada pero manteniendo posición (sin señales adversas)")
-            
-            # 6. RSI extremadamente overbought + precio bajo EMA21
-            elif current_rsi > 80 and current_price < ema_fast:
-                self.close_position("RSI extremo + ruptura EMA21", current_rsi, current_price, market_data)
-                return
-                
-        else:  # SHORT
-            # 1. Stop Loss de emergencia
-            if current_price >= self.position['stop_loss']:
-                self.close_position("Stop Loss Emergencia", current_rsi, current_price, market_data)
-                return
-            
-            # 2. Take Profit objetivo
-            elif current_price <= self.position['take_profit']:
-                self.close_position("Take Profit Objetivo", current_rsi, current_price, market_data)
-                return
-            
-            # 3. Trailing stop dinámico
-            elif current_price >= self.position['trailing_stop']:
-                price_from_min = ((current_price - self.position['lowest_price']) / self.position['lowest_price']) * 100
-                self.close_position(f"Trailing Stop (+{price_from_min:.1f}%)", current_rsi, current_price, market_data)
-                return
-            
-            # 4. Salida por cambio de régimen de mercado
-            elif (market_regime == 'volatile' and volatility > 4.0 and 
-                  self.position.get('entry_market_regime') != 'volatile'):
-                self.close_position("Mercado muy volátil", current_rsi, current_price, market_data)
-                return
-            
-            # 5. Cambio de tendencia a alcista
-            elif trend_direction == 'bullish':
-                if current_rsi < 30 or current_price > ema_fast:
-                    self.close_position("Tendencia alcista + señales adversas", current_rsi, current_price, market_data)
-                    return
-                else:
-                    self.logger.warning("⚠️ Tendencia alcista detectada pero manteniendo posición (sin señales adversas)")
-            
-            # 6. RSI extremadamente oversold + precio sobre EMA21
-            elif current_rsi < 20 and current_price > ema_fast:
-                self.close_position("RSI extremo + ruptura EMA21", current_rsi, current_price, market_data)
-                return
-    
-    def log_trade(self, action, side=None, price=None, quantity=None, rsi=None, 
-                  ema_fast=None, ema_slow=None, ema_trend=None, trend_direction=None,
-                  reason=None, pnl_pct=None, duration_hours=None, confirmation_time=None,
-                  confidence=None, market_regime=None, volatility=None):
-        """Registra trades con datos optimizados"""
-        timestamp = datetime.now()
-        balance = self.get_account_balance()
-        
-        try:
-            with open(self.trades_csv, 'a', newline='') as f:
-                writer = csv.writer(f)
-                
-                if action == 'OPEN':
-                    volume_confirmed = "YES" if hasattr(self, '_last_volume_confirmation') and self._last_volume_confirmation else "NO"
-                    
-                    writer.writerow([
-                        timestamp.isoformat(), action, side, price, quantity, rsi,
-                        ema_fast or 0, ema_slow or 0, ema_trend or 0, trend_direction or '',
-                        self.position['stop_loss'] if self.position else '',
-                        self.position['take_profit'] if self.position else '',
-                        reason or '', '', '', balance, '', '',
-                        "YES" if confirmation_time else "NO",
-                        confirmation_time or 0, 'optimized_entry',
-                        confidence or 0, market_regime or '', volatility or 0, volume_confirmed
-                    ])
-                else:  # CLOSE
-                    pnl_usdt = (pnl_pct / 100) * balance if pnl_pct else 0
-                    writer.writerow([
-                        timestamp.isoformat(), action, side, price, quantity, rsi,
-                        ema_fast or 0, ema_slow or 0, ema_trend or 0, trend_direction or '',
-                        '', '', reason or '', pnl_pct or 0, pnl_usdt,
-                        '', balance, duration_hours or 0, '', '', '',
-                        confidence or 0, market_regime or '', volatility or 0, ''
-                    ])
-        except Exception as e:
-            self.logger.error(f"Error guardando trade: {e}")
-        
-        # Actualizar métricas
-        if action == 'CLOSE' and pnl_pct is not None:
-            self.update_performance_metrics(pnl_pct)
-    
-    def update_performance_metrics(self, pnl_pct):
-        """Actualiza métricas de rendimiento"""
-        self.performance_metrics['total_trades'] += 1
-        self.performance_metrics['total_pnl'] += pnl_pct
-        
-        if pnl_pct > 0:
-            self.performance_metrics['winning_trades'] += 1
-            self.performance_metrics['consecutive_losses'] = 0
-        else:
-            self.performance_metrics['losing_trades'] += 1
-            self.performance_metrics['consecutive_losses'] += 1
-            
-        if self.performance_metrics['consecutive_losses'] > self.performance_metrics['max_consecutive_losses']:
-            self.performance_metrics['max_consecutive_losses'] = self.performance_metrics['consecutive_losses']
-    
-    def analyze_and_trade_optimized(self):
-        """Análisis principal optimizado y ejecución de trades"""
-        # Obtener datos del mercado
-        market_data = self.get_market_data()
-        if not market_data:
-            return
-            
-        current_rsi = market_data['rsi']
-        current_price = market_data['price']
-        ema_fast = market_data['ema_fast']
-        ema_slow = market_data['ema_slow']
-        ema_trend = market_data['ema_trend']
-        trend_direction = market_data['trend_direction']
-        market_regime = market_data['market_regime']
-        volatility = market_data['volatility']
-        
-        # Calcular separación de EMAs
-        ema_separation = abs((ema_fast - ema_slow) / ema_slow) * 100 if ema_slow > 0 else 0
-        
-        # Log información del mercado con más detalles
-        if self.in_position and self.position:
-            pnl_pct = 0
-            if self.position['side'] == 'long':
-                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-                max_price = self.position.get('highest_price', current_price)
-                trailing_stop = self.position.get('trailing_stop', 0)
-                
-                self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | {trend_direction.upper()} | {market_regime.upper()}")
-                self.logger.info(f"💰 PnL: {pnl_pct:+.2f}% | Max: ${max_price:.2f} | TS: ${trailing_stop:.2f} | Vol: {volatility:.1f}%")
-                self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f} | Sep: {ema_separation:.2f}%")
-                
-                # Mostrar información adicional de la posición
-                entry_confidence = self.position.get('entry_confidence', 0)
-                duration_hours = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
-                self.logger.info(f"🎯 Confianza entrada: {entry_confidence:.2f} | Duración: {duration_hours:.1f}h | Breakeven: {'✅' if self.position.get('breakeven_moved') else '❌'}")
-                
-            else:  # SHORT
-                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-                min_price = self.position.get('lowest_price', current_price)
-                trailing_stop = self.position.get('trailing_stop', 0)
-                
-                self.logger.info(f"📉 BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | {trend_direction.upper()} | {market_regime.upper()}")
-                self.logger.info(f"💰 PnL: {pnl_pct:+.2f}% | Min: ${min_price:.2f} | TS: ${trailing_stop:.2f} | Vol: {volatility:.1f}%")
-                self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f} | Sep: {ema_separation:.2f}%")
-                
-                entry_confidence = self.position.get('entry_confidence', 0)
-                duration_hours = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
-                self.logger.info(f"🎯 Confianza entrada: {entry_confidence:.2f} | Duración: {duration_hours:.1f}h | Breakeven: {'✅' if self.position.get('breakeven_moved') else '❌'}")
-                
-        else:
-            # Sin posición - mostrar estado del mercado
-            ema_order = "📈" if ema_fast > ema_slow > ema_trend else "📉" if ema_fast < ema_slow < ema_trend else "🔄"
-            volume_status = "🔊" if market_data['volume'] > market_data['avg_volume'] * 1.2 else "🔇"
-            
-            self.logger.info(f"{ema_order} BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | {trend_direction.upper()} | {market_regime.upper()} {volume_status}")
-            self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f} | Sep: {ema_separation:.2f}% | Vol: {volatility:.1f}%")
-            
-            # Mostrar umbrales dinámicos
-            oversold, overbought, _, _ = self.get_dynamic_rsi_thresholds(trend_direction, ema_separation, market_regime)
-            consecutive_losses = self.performance_metrics['consecutive_losses']
-            self.logger.info(f"🎯 RSI Dinámico: OS≤{oversold:.0f} | OB≥{overbought:.0f} | Pérdidas consecutivas: {consecutive_losses}")
-        
-        # Verificar condiciones de salida si estamos en posición
-        self.check_exit_conditions_optimized(current_price, current_rsi, market_data)
-        
-        # Si estamos en posición, no buscar nuevas señales
-        if self.in_position:
-            return
-        
-        # Verificar confirmación de señales pendientes
-        confirmed, signal_type = self.check_enhanced_swing_confirmation(market_data)
-        
-        if confirmed:
-            current_time = time.time()
-            
-            # Calcular tiempo de confirmación
-            confirmation_time_hours = 0
-            if self.signal_trigger_time:
-                confirmation_time_hours = (datetime.now() - self.signal_trigger_time).total_seconds() / 3600
-            
-            if signal_type == 'long':
-                if self.open_long_position(market_data, confirmation_time_hours):
-                    self.last_signal_time = current_time
-            elif signal_type == 'short':
-                if self.open_short_position(market_data, confirmation_time_hours):
-                    self.last_signal_time = current_time
-        
-        # Solo buscar nuevas señales si no hay señales pendientes y ha pasado tiempo suficiente
-        elif not (self.pending_long_signal or self.pending_short_signal):
-            current_time = time.time()
-            if current_time - self.last_signal_time >= self.min_time_between_signals:
-                self.detect_enhanced_swing_signal(market_data)
-    
-    def run(self):
-        """Ejecuta el bot optimizado en un loop continuo"""
-        self.logger.info("🚀 Optimized RSI + EMA + Trend Filter Bot v3.0 iniciado")
-        self.logger.info(f"📊 Timeframe: {self.timeframe} | RSI({self.rsi_period}) | Dinámico: OS/OB adaptativo")
-        self.logger.info(f"📈 EMAs: Fast({self.ema_fast_period}) | Slow({self.ema_slow_period}) | Trend({self.ema_trend_period})")
-        self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.base_position_size_pct}% (dinámico) | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
-        self.logger.info(f"🎯 Swing Confirmación: {self.swing_confirmation_threshold}% | Max espera: {self.max_swing_wait} períodos")
-        self.logger.info(f"🛡️ Trailing Stop: {self.trailing_stop_distance}% (dinámico) | Breakeven: {self.breakeven_threshold}%")
-        self.logger.info(f"🧠 Confianza mínima: {self.confidence_threshold:.0%} | Max pérdidas consecutivas: {self.max_consecutive_losses}")
-        self.logger.info(f"🔊 Volumen: {self.volume_confirmation_threshold:.0%} sobre promedio | Timeframe superior: Activado")
-        self.logger.info(f"💾 Estado guardado en: {self.state_file}")
-        self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
-        
-        # Para swing trading optimizado, verificar cada 20 minutos
-        check_interval = 1200  # 20 minutos en segundos
-        iteration = 0
-        
-        try:
-            while True:
-                self.analyze_and_trade_optimized()
-                
-                # Mostrar resumen cada 3 horas (9 iteraciones de 20 min)
-                iteration += 1
-                if iteration % 9 == 0:
-                    self.log_performance_summary()
-                
-                # Guardar estado cada hora (3 iteraciones)
-                if iteration % 3 == 0:
-                    self.save_bot_state()
-                
-                time.sleep(check_interval)
-                
-        except KeyboardInterrupt:
-            self.logger.info("🛑 Bot detenido por el usuario (KeyboardInterrupt)")
-            if self.in_position:
-                self.close_position("Bot detenido")
-            self.save_bot_state()
-            self.log_performance_summary()
-                
-        except Exception as e:
-            self.logger.error(f"❌ Error en el bot: {e}")
-            if self.in_position:
-                self.close_position("Error del bot")
-            self.save_bot_state()
-            raise
-    
-    def log_performance_summary(self):
-        """Muestra resumen de performance optimizado"""
-        metrics = self.performance_metrics
-        
-        self.logger.info("="*80)
-        self.logger.info("📊 RESUMEN DE PERFORMANCE BOT OPTIMIZADO v3.0")
-        self.logger.info("="*80)
-        
-        # Estadísticas de señales y filtros mejoradas
-        signal_confirmation_rate = 0
-        if metrics['signals_detected'] > 0:
-            signal_confirmation_rate = (metrics['signals_confirmed'] / metrics['signals_detected']) * 100
-        
-        self.logger.info(f"🔔 Señales detectadas: {metrics['signals_detected']}")
-        self.logger.info(f"✅ Señales confirmadas: {metrics['signals_confirmed']}")
-        self.logger.info(f"⏰ Señales expiradas: {metrics['signals_expired']}")
-        self.logger.info(f"🔍 Señales baja confianza: {metrics['signals_low_confidence']}")
-        self.logger.info(f"📈 Tasa de confirmación: {signal_confirmation_rate:.1f}%")
-        self.logger.info(f"🎯 Filtros de tendencia: {metrics['trend_filters_applied']}")
-        self.logger.info(f"📊 Confirmaciones EMA: {metrics['ema_confirmations']}")
-        self.logger.info(f"🔊
+                self.logger.warning("⚠️ No se puede calcular tama
