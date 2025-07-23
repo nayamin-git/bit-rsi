@@ -34,7 +34,7 @@ class BinanceRSIEMABot:
         
         # Configuración RSI
         self.rsi_period = 14
-        self.rsi_oversold = 30
+        self.rsi_oversold = 40
         self.rsi_overbought = 70
         self.rsi_neutral_low = 40  # RSI mínimo para confirmar señal long
         self.rsi_neutral_high = 60  # RSI máximo para confirmar señal short
