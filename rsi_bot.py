@@ -34,10 +34,10 @@ class BinanceRSIEMABot:
         
         # Configuración RSI
         self.rsi_period = 14
-        self.rsi_oversold = 40
-        self.rsi_overbought = 70
-        self.rsi_neutral_low = 40  # RSI mínimo para confirmar señal long
-        self.rsi_neutral_high = 60  # RSI máximo para confirmar señal short
+        self.rsi_oversold = 35
+        self.rsi_overbought = 75
+        self.rsi_neutral_low = 35  # RSI mínimo para confirmar señal long
+        self.rsi_neutral_high = 65  # RSI máximo para confirmar señal short
         
         # Configuración EMA
         self.ema_fast_period = 21
@@ -53,14 +53,14 @@ class BinanceRSIEMABot:
         self.min_notional_usdt = 12
         
         # NUEVAS VARIABLES PARA ESTRATEGIA EMA + RSI
-        self.ema_separation_min = 0.2  # Mínima separación % entre EMAs para confirmar tendencia
+        self.ema_separation_min = 0.1  # Mínima separación % entre EMAs para confirmar tendencia
         self.trend_confirmation_candles = 2  # Velas para confirmar cambio de tendencia
-        self.pullback_ema_touch = True  # Requerir que precio toque EMA21 en pullback
+        self.pullback_ema_touch = False  # Requerir que precio toque EMA21 en pullback
         
         # VARIABLES PARA CONFIRMACIÓN DE SWING
-        self.swing_confirmation_threshold = 0.5  # 0.5% movimiento para confirmar swing
-        self.max_swing_wait = 4  # Máximo 4 períodos de 4h para confirmación
-        self.min_time_between_signals = 14400  # 4 horas en segundos
+        self.swing_confirmation_threshold = 0.3  # 0.5% movimiento para confirmar swing
+        self.max_swing_wait = 6  # Máximo 4 períodos de 4h para confirmación
+        self.min_time_between_signals = 7200  # 4 horas en segundos
         
         # VARIABLES PARA TRAILING STOP INTELIGENTE
         self.trailing_stop_distance = 2.5  # % de distancia para trailing stop
@@ -286,20 +286,27 @@ class BinanceRSIEMABot:
             return None
     
     def determine_trend_direction(self, price, ema_fast, ema_slow, ema_trend):
-        """Determina la dirección de la tendencia basada en EMAs"""
-        # Tendencia alcista: EMA21 > EMA50 > EMA200 y precio > EMA200
+        """OPTIMIZED: More flexible trend determination"""
+        
+        # Bullish: EMA21 > EMA50 > EMA200 AND price > EMA200
         if ema_fast > ema_slow and ema_slow > ema_trend and price > ema_trend:
-            # Verificar separación mínima entre EMAs
             fast_slow_sep = ((ema_fast - ema_slow) / ema_slow) * 100
             if fast_slow_sep >= self.ema_separation_min:
                 return 'bullish'
         
-        # Tendencia bajista: EMA21 < EMA50 < EMA200 y precio < EMA200
+        # Bearish: EMA21 < EMA50 < EMA200 AND price < EMA200
         elif ema_fast < ema_slow and ema_slow < ema_trend and price < ema_trend:
-            # Verificar separación mínima entre EMAs
             slow_fast_sep = ((ema_slow - ema_fast) / ema_fast) * 100
             if slow_fast_sep >= self.ema_separation_min:
                 return 'bearish'
+        
+        # NEW: Weak bullish trend (price above EMA200, EMAs close)
+        elif price > ema_trend and ema_fast > ema_slow:
+            return 'weak_bullish'
+        
+        # NEW: Weak bearish trend (price below EMA200, EMAs close)
+        elif price < ema_trend and ema_fast < ema_slow:
+            return 'weak_bearish'
         
         return 'neutral'
     
@@ -326,134 +333,95 @@ class BinanceRSIEMABot:
         return False, 'No_pullback'
     
     def detect_swing_signal(self, price, rsi, ema_fast, ema_slow, ema_trend, trend_direction):
-        """Detecta señales de swing trading con filtros EMA"""
-        signal_detected = False
+        """OPTIMIZED: More flexible signal detection"""
         
-        # Solo buscar señales si no hay señales pendientes
         if self.pending_long_signal or self.pending_short_signal:
             return False
         
-        # SEÑAL LONG: RSI oversold + tendencia alcista + pullback a EMAs
+        # LONG Signal - More flexible conditions
         if (rsi < self.rsi_oversold and 
-            trend_direction == 'bullish' and
+            trend_direction in ['bullish', 'weak_bullish', 'neutral'] and  # Added flexibility
             not self.in_position):
             
-            # Verificar pullback a EMAs
+            # More flexible pullback check
             is_pullback, pullback_type = self.is_pullback_to_ema(price, ema_fast, ema_slow)
             
-            if is_pullback or not self.pullback_ema_touch:  # Flexible en pullback
+            # Accept signal even without perfect pullback if RSI is very low
+            if is_pullback or not self.pullback_ema_touch or rsi < 25:
                 self.pending_long_signal = True
                 self.signal_trigger_price = price
                 self.signal_trigger_time = datetime.now()
                 self.swing_wait_count = 0
-                signal_detected = True
                 
                 self.performance_metrics['signals_detected'] += 1
-                self.performance_metrics['trend_filters_applied'] += 1
-                if is_pullback:
-                    self.performance_metrics['pullback_entries'] += 1
-                
-                self.logger.info(f"🟡 Señal LONG detectada - RSI: {rsi:.2f} | Tendencia: {trend_direction}")
-                self.logger.info(f"📍 Precio: ${price:.2f} | EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f}")
-                self.logger.info(f"🎯 Pullback: {pullback_type} | Esperando confirmación swing...")
+                self.logger.info(f"🟡 FLEXIBLE LONG detected - RSI: {rsi:.2f} | Trend: {trend_direction}")
+                return True
         
-        # SEÑAL SHORT: RSI overbought + tendencia bajista + pullback a EMAs  
+        # SHORT Signal - More flexible conditions
         elif (rsi > self.rsi_overbought and 
-              trend_direction == 'bearish' and
+              trend_direction in ['bearish', 'weak_bearish', 'neutral'] and  # Added flexibility
               not self.in_position):
             
             is_pullback, pullback_type = self.is_pullback_to_ema(price, ema_fast, ema_slow)
             
-            if is_pullback or not self.pullback_ema_touch:
+            # Accept signal even without perfect pullback if RSI is very high
+            if is_pullback or not self.pullback_ema_touch or rsi > 85:
                 self.pending_short_signal = True
                 self.signal_trigger_price = price
                 self.signal_trigger_time = datetime.now()
                 self.swing_wait_count = 0
-                signal_detected = True
                 
                 self.performance_metrics['signals_detected'] += 1
-                self.performance_metrics['trend_filters_applied'] += 1
-                if is_pullback:
-                    self.performance_metrics['pullback_entries'] += 1
-                
-                self.logger.info(f"🟡 Señal SHORT detectada - RSI: {rsi:.2f} | Tendencia: {trend_direction}")
-                self.logger.info(f"📍 Precio: ${price:.2f} | EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f}")
-                self.logger.info(f"🎯 Pullback: {pullback_type} | Esperando confirmación swing...")
+                self.logger.info(f"🟡 FLEXIBLE SHORT detected - RSI: {rsi:.2f} | Trend: {trend_direction}")
+                return True
         
-        return signal_detected
+        return False
     
     def check_swing_confirmation(self, current_price, current_rsi, trend_direction):
-        """Verifica confirmación de swing con mejores filtros"""
+        """OPTIMIZED: More flexible confirmation logic"""
+        
         if not (self.pending_long_signal or self.pending_short_signal):
             return False, None
             
         self.swing_wait_count += 1
         
-        # Verificar confirmación LONG
+        # LONG Confirmation - More flexible
         if self.pending_long_signal:
             price_change_pct = ((current_price - self.signal_trigger_price) / self.signal_trigger_price) * 100
             
-            # Condiciones para confirmar LONG
-            rsi_improved = current_rsi > self.rsi_neutral_low  # RSI salió de oversold
+            # More flexible confirmation conditions
+            rsi_improved = current_rsi > self.rsi_neutral_low or current_rsi > (self.last_rsi + 5)
             price_moved_up = price_change_pct >= self.swing_confirmation_threshold
-            trend_still_good = trend_direction in ['bullish', 'neutral']  # Flexibilidad en tendencia
+            trend_not_bearish = trend_direction != 'bearish'  # Just avoid bearish
             
-            if price_moved_up and rsi_improved and trend_still_good:
-                self.logger.info(f"✅ SWING LONG CONFIRMADO! Precio: +{price_change_pct:.2f}% | RSI: {current_rsi:.2f}")
-                self.performance_metrics['signals_confirmed'] += 1
-                self.performance_metrics['ema_confirmations'] += 1
+            if price_moved_up and rsi_improved and trend_not_bearish:
+                self.logger.info(f"✅ FLEXIBLE LONG CONFIRMED! Price: +{price_change_pct:.2f}% | RSI: {current_rsi:.2f}")
                 self.reset_signal_state()
                 return True, 'long'
-                
+            
+            # Extended wait time
             elif self.swing_wait_count >= self.max_swing_wait:
-                self.logger.warning(f"⏰ Señal LONG EXPIRADA - Sin confirmación en {self.max_swing_wait} períodos")
-                self.performance_metrics['signals_expired'] += 1
-                self.reset_signal_state()
-                return False, None
-                
-            elif trend_direction == 'bearish':  # Tendencia cambió a bajista
-                self.logger.warning(f"❌ Señal LONG CANCELADA - Tendencia cambió a bajista")
-                self.performance_metrics['signals_expired'] += 1
+                self.logger.warning(f"⏰ LONG signal expired after {self.max_swing_wait} periods")
                 self.reset_signal_state()
                 return False, None
         
-        # Verificar confirmación SHORT
+        # SHORT Confirmation - More flexible
         elif self.pending_short_signal:
             price_change_pct = ((self.signal_trigger_price - current_price) / self.signal_trigger_price) * 100
             
-            rsi_improved = current_rsi < self.rsi_neutral_high
+            rsi_improved = current_rsi < self.rsi_neutral_high or current_rsi < (self.last_rsi - 5)
             price_moved_down = price_change_pct >= self.swing_confirmation_threshold
-            trend_still_good = trend_direction in ['bearish', 'neutral']
+            trend_not_bullish = trend_direction != 'bullish'
             
-            if price_moved_down and rsi_improved and trend_still_good:
-                self.logger.info(f"✅ SWING SHORT CONFIRMADO! Precio: -{price_change_pct:.2f}% | RSI: {current_rsi:.2f}")
-                self.performance_metrics['signals_confirmed'] += 1
-                self.performance_metrics['ema_confirmations'] += 1
+            if price_moved_down and rsi_improved and trend_not_bullish:
+                self.logger.info(f"✅ FLEXIBLE SHORT CONFIRMED! Price: -{price_change_pct:.2f}% | RSI: {current_rsi:.2f}")
                 self.reset_signal_state()
                 return True, 'short'
-                
+            
             elif self.swing_wait_count >= self.max_swing_wait:
-                self.logger.warning(f"⏰ Señal SHORT EXPIRADA - Sin confirmación en {self.max_swing_wait} períodos")
-                self.performance_metrics['signals_expired'] += 1
+                self.logger.warning(f"⏰ SHORT signal expired after {self.max_swing_wait} periods")
                 self.reset_signal_state()
                 return False, None
-                
-            elif trend_direction == 'bullish':
-                self.logger.warning(f"❌ Señal SHORT CANCELADA - Tendencia cambió a alcista")
-                self.performance_metrics['signals_expired'] += 1
-                self.reset_signal_state()
-                return False, None
-        
-        # Log progreso cada período
-        if self.swing_wait_count % 1 == 0:  # Cada período en timeframe 4h
-            signal_type = "LONG" if self.pending_long_signal else "SHORT"
-            remaining = self.max_swing_wait - self.swing_wait_count
-            price_change = ((current_price - self.signal_trigger_price) / self.signal_trigger_price) * 100
-            if self.pending_short_signal:
-                price_change = -price_change
-                
-            self.logger.info(f"⏳ Esperando confirmación {signal_type}: {self.swing_wait_count}/{self.max_swing_wait} | "
-                           f"Cambio: {price_change:+.2f}% | RSI: {current_rsi:.2f} | Tendencia: {trend_direction}")
         
         return False, None
     
