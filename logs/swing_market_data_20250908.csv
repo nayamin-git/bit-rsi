@@ -1,0 +1,1 @@
+timestamp,price,rsi,volume,ema_fast,ema_slow,ema_trend,trend_direction,signal,in_position,position_side,unrealized_pnl_pct,pending_signal

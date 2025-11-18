@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-09-02T02:35:22.932123",
+  "in_position": false,
+  "position": null,
+  "last_signal_time": 0,
+  "pending_long_signal": false,
+  "pending_short_signal": false,
+  "signal_trigger_price": null,
+  "signal_trigger_time": null,
+  "swing_wait_count": 0,
+  "performance_metrics": {
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "total_pnl": 0,
+    "max_drawdown": 0,
+    "consecutive_losses": 0,
+    "max_consecutive_losses": 0,
+    "signals_detected": 0,
+    "signals_confirmed": 0,
+    "signals_expired": 0,
+    "recoveries_performed": 0,
+    "trend_filters_applied": 0,
+    "ema_confirmations": 0,
+    "pullback_entries": 0
+  },
+  "last_rsi": 55.68013586695286,
+  "last_price": 109537.37,
+  "last_ema_fast": 109213.33348131203,
+  "last_ema_slow": 110406.6427636985,
+  "last_ema_trend": 114098.56295045852,
+  "trend_direction": "bearish"
+}
