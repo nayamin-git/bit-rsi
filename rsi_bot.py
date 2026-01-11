@@ -1,5 +1,6 @@
 import time
 import os
+import ccxt
 from datetime import datetime
 from dotenv import load_dotenv
 from config import BotConfig
@@ -19,7 +20,7 @@ load_dotenv()
 class BinanceRSIEMABot:
     def __init__(self, api_key, api_secret, testnet=True):
         """
-        Bot de trading RSI + EMA + Filtro de Tendencia para Binance - v2.0
+        Bot de trading RSI + EMA + Filtro de Tendencia para Binance - v2.1
 
         Args:
             api_key: Tu API key de Binance
@@ -517,31 +518,66 @@ class BinanceRSIEMABot:
         
         try:
             while True:
-                self.analyze_and_trade()
-                
-                # Mostrar resumen cada 4 horas (8 iteraciones de 30 min)
-                iteration += 1
-                if iteration % 8 == 0:
-                    self.log_performance_summary()
-                
-                # Guardar estado cada hora (2 iteraciones)
-                if iteration % 2 == 0:
-                    self.save_bot_state()
-                
-                time.sleep(check_interval)
-                
+                try:
+                    # Main trading logic with error recovery
+                    self.analyze_and_trade()
+
+                    # Mostrar resumen cada 4 horas (8 iteraciones de 30 min)
+                    iteration += 1
+                    if iteration % 8 == 0:
+                        self.log_performance_summary()
+
+                    # Guardar estado cada hora (2 iteraciones)
+                    if iteration % 2 == 0:
+                        self.save_bot_state()
+
+                    time.sleep(check_interval)
+
+                except ccxt.NetworkError as e:
+                    # Network errors: retry without crashing
+                    self.logger.error(f"🌐 Error de red: {e}")
+                    self.logger.info("♻️ Reintentando en 60 segundos...")
+                    time.sleep(60)
+                    continue
+
+                except ccxt.ExchangeError as e:
+                    # Exchange errors: log and retry
+                    self.logger.error(f"🏦 Error del exchange: {e}")
+                    self.logger.info("♻️ Reintentando en 60 segundos...")
+                    time.sleep(60)
+                    continue
+
+                except Exception as e:
+                    # Unexpected errors: log with traceback but don't crash
+                    self.logger.error(f"⚠️ Error inesperado: {e}", exc_info=True)
+                    self.logger.info("♻️ Continuando en 60 segundos...")
+                    # Save state on unexpected errors
+                    try:
+                        self.save_bot_state()
+                    except:
+                        pass
+                    time.sleep(60)
+                    continue
+
         except KeyboardInterrupt:
             self.logger.info("🛑 Bot detenido por el usuario (KeyboardInterrupt)")
             if self.in_position:
                 self.close_position("Bot detenido")
             self.save_bot_state()
             self.log_performance_summary()
-                
+
         except Exception as e:
-            self.logger.error(f"❌ Error en el bot: {e}")
+            # Fatal errors that should stop the bot
+            self.logger.error(f"❌ Error fatal en el bot: {e}", exc_info=True)
             if self.in_position:
-                self.close_position("Error del bot")
-            self.save_bot_state()
+                try:
+                    self.close_position("Error fatal del bot")
+                except:
+                    self.logger.error("No se pudo cerrar la posición")
+            try:
+                self.save_bot_state()
+            except:
+                self.logger.error("No se pudo guardar el estado")
             raise
     
     def log_performance_summary(self):
