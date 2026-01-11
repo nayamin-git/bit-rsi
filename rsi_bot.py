@@ -14,6 +14,7 @@ from indicators import TechnicalIndicators
 from market_analyzer import MarketAnalyzer
 from signal_detector import SignalDetector
 from position_manager import PositionManager
+from risk_manager import RiskManager
 
 # Cargar variables de entorno
 load_dotenv()
@@ -128,6 +129,14 @@ class BinanceRSIEMABot:
             self.logger,
             log_trade_callback=self.log_trade,
             save_state_callback=self.save_bot_state
+        )
+
+        # Inicializar módulo de gestión de riesgo
+        self.risk_manager = RiskManager(
+            self.config,
+            self.logger,
+            self.position_manager,
+            close_position_callback=self.close_position
         )
 
         # Verificar conexión después de configurar todo
@@ -601,121 +610,12 @@ class BinanceRSIEMABot:
         return self.position_manager.close_position(reason, current_rsi, current_price, market_data)
     
     def update_trailing_stop_swing(self, current_price, market_data):
-        """Actualiza trailing stop para swing trading"""
-        if not self.in_position or not self.position:
-            return
-        
-        if self.position['side'] == 'long':
-            # Actualizar precio máximo
-            if current_price > self.position['highest_price']:
-                self.position['highest_price'] = current_price
-                
-                # Mover stop loss a breakeven cuando ganemos el threshold
-                if not self.position['breakeven_moved']:
-                    gain_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-                    if gain_pct >= self.breakeven_threshold:
-                        self.position['trailing_stop'] = self.position['entry_price'] * 1.001  # Breakeven + 0.1%
-                        self.position['breakeven_moved'] = True
-                        self.logger.info(f"🔒 Stop movido a BREAKEVEN: ${self.position['trailing_stop']:.2f}")
-                        return
-                
-                # Trailing stop normal
-                if self.position['breakeven_moved']:
-                    new_trailing_stop = current_price * (1 - self.trailing_stop_distance / 100)
-                    if new_trailing_stop > self.position['trailing_stop']:
-                        old_stop = self.position['trailing_stop']
-                        self.position['trailing_stop'] = new_trailing_stop
-                        self.logger.info(f"📈 Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f}")
-                        
-        else:  # SHORT
-            if current_price < self.position['lowest_price']:
-                self.position['lowest_price'] = current_price
-                
-                if not self.position['breakeven_moved']:
-                    gain_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-                    if gain_pct >= self.breakeven_threshold:
-                        self.position['trailing_stop'] = self.position['entry_price'] * 0.999  # Breakeven - 0.1%
-                        self.position['breakeven_moved'] = True
-                        self.logger.info(f"🔒 Stop movido a BREAKEVEN: ${self.position['trailing_stop']:.2f}")
-                        return
-                
-                if self.position['breakeven_moved']:
-                    new_trailing_stop = current_price * (1 + self.trailing_stop_distance / 100)
-                    if new_trailing_stop < self.position['trailing_stop']:
-                        old_stop = self.position['trailing_stop']
-                        self.position['trailing_stop'] = new_trailing_stop
-                        self.logger.info(f"📉 Trailing Stop: ${old_stop:.2f} → ${new_trailing_stop:.2f}")
-    
+        """Actualiza trailing stop - delegado a risk_manager"""
+        self.risk_manager.update_trailing_stop_swing(current_price, market_data)
+
     def check_exit_conditions_swing(self, current_price, current_rsi, market_data):
-        """Verifica condiciones de salida para swing trading"""
-        if not self.in_position or not self.position:
-            return
-        
-        # Actualizar trailing stop
-        self.update_trailing_stop_swing(current_price, market_data)
-        
-        trend_direction = market_data.get('trend_direction', 'neutral')
-        ema_fast = market_data.get('ema_fast', 0)
-        ema_slow = market_data.get('ema_slow', 0)
-        
-        if self.position['side'] == 'long':
-            # 1. Stop Loss de emergencia
-            if current_price <= self.position['stop_loss']:
-                self.close_position("Stop Loss Emergencia", current_rsi, current_price, market_data)
-                return
-            
-            # 2. Take Profit objetivo
-            elif current_price >= self.position['take_profit']:
-                self.close_position("Take Profit Objetivo", current_rsi, current_price, market_data)
-                return
-            
-            # 3. Trailing stop dinámico
-            elif current_price <= self.position['trailing_stop']:
-                price_from_max = ((self.position['highest_price'] - current_price) / self.position['highest_price']) * 100
-                self.close_position(f"Trailing Stop (-{price_from_max:.1f}%)", current_rsi, current_price, market_data)
-                return
-            
-            # 4. Cambio de tendencia a bajista
-            elif trend_direction == 'bearish':
-                self.logger.warning("⚠️ Tendencia cambió a bajista - Evaluando salida...")
-                # Solo salir si también hay señales técnicas adversas
-                if current_rsi > 70 or current_price < ema_fast:
-                    self.close_position("Cambio Tendencia Bajista", current_rsi, current_price, market_data)
-                    return
-            
-            # 5. RSI muy overbought + precio bajo EMA21
-            elif current_rsi > 80 and current_price < ema_fast:
-                self.close_position("RSI Overbought + Bajo EMA21", current_rsi, current_price, market_data)
-                return
-                
-        else:  # SHORT
-            # 1. Stop Loss de emergencia
-            if current_price >= self.position['stop_loss']:
-                self.close_position("Stop Loss Emergencia", current_rsi, current_price, market_data)
-                return
-            
-            # 2. Take Profit objetivo
-            elif current_price <= self.position['take_profit']:
-                self.close_position("Take Profit Objetivo", current_rsi, current_price, market_data)
-                return
-            
-            # 3. Trailing stop dinámico
-            elif current_price >= self.position['trailing_stop']:
-                price_from_min = ((current_price - self.position['lowest_price']) / self.position['lowest_price']) * 100
-                self.close_position(f"Trailing Stop (+{price_from_min:.1f}%)", current_rsi, current_price, market_data)
-                return
-            
-            # 4. Cambio de tendencia a alcista
-            elif trend_direction == 'bullish':
-                self.logger.warning("⚠️ Tendencia cambió a alcista - Evaluando salida...")
-                if current_rsi < 30 or current_price > ema_fast:
-                    self.close_position("Cambio Tendencia Alcista", current_rsi, current_price, market_data)
-                    return
-            
-            # 5. RSI muy oversold + precio sobre EMA21
-            elif current_rsi < 20 and current_price > ema_fast:
-                self.close_position("RSI Oversold + Sobre EMA21", current_rsi, current_price, market_data)
-                return
+        """Verifica condiciones de salida - delegado a risk_manager"""
+        self.risk_manager.check_exit_conditions_swing(current_price, current_rsi, market_data)
     
     def log_trade(self, action, side=None, price=None, quantity=None, rsi=None, 
                   ema_fast=None, ema_slow=None, ema_trend=None, trend_direction=None,
