@@ -17,6 +17,7 @@ from position_manager import PositionManager
 from risk_manager import RiskManager
 from state_manager import StateManager
 from analytics import Analytics
+from logging_manager import LoggingManager
 
 # Cargar variables de entorno
 load_dotenv()
@@ -25,18 +26,24 @@ class BinanceRSIEMABot:
     def __init__(self, api_key, api_secret, testnet=True):
         """
         Bot de trading RSI + EMA + Filtro de Tendencia para Binance - v2.0
-        
+
         Args:
             api_key: Tu API key de Binance
-            api_secret: Tu API secret de Binance  
+            api_secret: Tu API secret de Binance
             testnet: True para usar testnet, False para trading real
         """
-        
-        # IMPORTANTE: Configurar logging PRIMERO
-        self.setup_logging()
 
         # Configuración centralizada
         self.config = BotConfig(testnet)
+
+        # IMPORTANTE: Configurar logging PRIMERO
+        self.logging_manager = LoggingManager(
+            self.config.logs_dir,
+            close_callback=lambda reason: self.close_position(reason),
+            save_state_callback=lambda: self.save_bot_state(),
+            log_summary_callback=lambda: self.log_performance_summary()
+        )
+        self.logger = self.logging_manager.setup_logging()
 
         # Backward compatibility - mantener atributos originales
         self.testnet = self.config.testnet
@@ -161,6 +168,9 @@ class BinanceRSIEMABot:
         )
         self.analytics.set_performance_metrics(self.performance_metrics)
 
+        # Configurar callback de in_position para logging_manager
+        self.logging_manager.set_in_position_callback(lambda: self.position_manager.in_position)
+
         # Verificar conexión después de configurar todo
         self.verify_connection()
 
@@ -239,52 +249,12 @@ class BinanceRSIEMABot:
         self.position_manager.in_position = value
 
     def setup_logging(self):
-        """Configura sistema de logging (compatible con Docker)"""
-        logs_dir = os.path.join(os.getcwd(), 'logs')
-        os.makedirs(logs_dir, exist_ok=True)
-            
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        
-        for handler in self.logger.handlers[:]:
-            self.logger.removeHandler(handler)
-        
-        formatter = logging.Formatter(
-            '%(asctime)s | %(levelname)s | %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        
-        log_file = os.path.join(logs_dir, f'rsi_ema_bot_{datetime.now().strftime("%Y%m%d")}.log')
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(formatter)
-        
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
-        
-        self.logger.info(f"🐳 RSI+EMA+Trend Bot iniciando - Logs en: {log_file}")
-        
-        signal.signal(signal.SIGTERM, self._signal_handler)
-        signal.signal(signal.SIGINT, self._signal_handler)
-        
+        """Configura sistema de logging - delegado a logging_manager"""
+        return self.logging_manager.setup_logging()
+
     def _signal_handler(self, signum, frame):
-        """Maneja señales de Docker (SIGTERM, SIGINT)"""
-        signal_names = {2: 'SIGINT', 15: 'SIGTERM'}
-        signal_name = signal_names.get(signum, f'Signal {signum}')
-        
-        self.logger.info(f"🐳 Recibida señal {signal_name} - Cerrando bot gracefully...")
-        
-        if self.in_position:
-            self.logger.info("💾 Cerrando posición antes de salir...")
-            self.close_position("Señal Docker")
-        
-        self.save_bot_state()
-        self.log_performance_summary()
-        
-        self.logger.info("🐳 Bot cerrado correctamente")
-        exit(0)
+        """Maneja señales de Docker - delegado a logging_manager"""
+        self.logging_manager._signal_handler(signum, frame)
         
     def verify_connection(self):
         """Verifica la conexión con Binance"""
