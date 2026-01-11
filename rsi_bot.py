@@ -13,6 +13,7 @@ from config import BotConfig
 from indicators import TechnicalIndicators
 from market_analyzer import MarketAnalyzer
 from signal_detector import SignalDetector
+from position_manager import PositionManager
 
 # Cargar variables de entorno
 load_dotenv()
@@ -69,8 +70,6 @@ class BinanceRSIEMABot:
         self.indicators = TechnicalIndicators(self.logger)
 
         # Estado del bot
-        self.position = None
-        self.in_position = False
         self.last_signal_time = 0
 
         # Variables de estado de mercado (para tracking)
@@ -122,6 +121,15 @@ class BinanceRSIEMABot:
         # Inicializar módulo de detección de señales
         self.signal_detector = SignalDetector(self.config, self.logger, self.market_analyzer, self.performance_metrics)
 
+        # Inicializar módulo de gestión de posiciones
+        self.position_manager = PositionManager(
+            self.exchange,
+            self.config,
+            self.logger,
+            log_trade_callback=self.log_trade,
+            save_state_callback=self.save_bot_state
+        )
+
         # Verificar conexión después de configurar todo
         self.verify_connection()
         
@@ -171,6 +179,23 @@ class BinanceRSIEMABot:
     @swing_wait_count.setter
     def swing_wait_count(self, value):
         self.signal_detector.swing_wait_count = value
+
+    # Propiedades para backward compatibility - delegadas a position_manager
+    @property
+    def position(self):
+        return self.position_manager.position
+
+    @position.setter
+    def position(self, value):
+        self.position_manager.position = value
+
+    @property
+    def in_position(self):
+        return self.position_manager.in_position
+
+    @in_position.setter
+    def in_position(self, value):
+        self.position_manager.in_position = value
 
     def setup_logging(self):
         """Configura sistema de logging (compatible con Docker)"""
@@ -552,228 +577,28 @@ class BinanceRSIEMABot:
                 ])
     
     def get_account_balance(self):
-        """Obtiene el balance de la cuenta"""
-        try:
-            balance = self.exchange.fetch_balance()
-            usdt_balance = float(balance.get('USDT', {}).get('free', 0))
-            return usdt_balance
-        except Exception as e:
-            self.logger.error(f"Error obteniendo balance: {e}")
-            return 0
-    
+        """Obtiene el balance de la cuenta - delegado a position_manager"""
+        return self.position_manager.get_account_balance()
+
     def calculate_position_size(self, price):
-        """Calcula el tamaño de la posición para swing trading"""
-        balance = self.get_account_balance()
-        
-        if balance < self.min_balance_usdt:
-            self.logger.warning(f"Balance insuficiente: ${balance:.2f} < ${self.min_balance_usdt}")
-            return 0, 0
-        
-        # Calcular valor de la posición (más conservador para swing)
-        position_value = balance * (self.position_size_pct / 100)
-        effective_position = position_value * self.leverage
-        
-        # Verificar mínimo notional
-        if effective_position < self.min_notional_usdt:
-            self.logger.warning(f"Posición muy pequeña: ${effective_position:.2f} < ${self.min_notional_usdt}")
-            effective_position = self.min_notional_usdt
-        
-        quantity = round(effective_position / price, 6)
-        final_notional = quantity * price
-        
-        if final_notional < self.min_notional_usdt:
-            self.logger.warning(f"Notional final insuficiente: ${final_notional:.2f}")
-            return 0, 0
-        
-        return quantity, position_value
-    
+        """Calcula el tamaño de la posición - delegado a position_manager"""
+        return self.position_manager.calculate_position_size(price)
+
     def create_test_order(self, side, quantity, price):
-        """Simula una orden para testnet"""
-        order_id = f"swing_test_{int(time.time())}"
-        
-        fake_order = {
-            'id': order_id,
-            'symbol': self.symbol,
-            'side': side,
-            'amount': quantity,
-            'price': price,
-            'status': 'closed',
-            'filled': quantity,
-            'timestamp': int(time.time() * 1000),
-            'info': {'test_order': True}
-        }
-        
-        self.logger.info(f"🧪 ORDEN SIMULADA: {side} {quantity} BTC @ ${price:.2f}")
-        return fake_order
+        """Simula una orden - delegado a position_manager"""
+        return self.position_manager.create_test_order(side, quantity, price)
     
     def open_long_position(self, price, rsi, ema_fast, ema_slow, ema_trend, trend_direction, confirmation_time=None):
-        """Abre posición LONG para swing trading"""
-        try:
-            quantity, position_value = self.calculate_position_size(price)
-            
-            if quantity <= 0:
-                self.logger.warning("⚠️ No se puede calcular tamaño de posición válido")
-                return False
-            
-            # Calcular niveles de riesgo
-            stop_price = price * (1 - self.stop_loss_pct / 100)
-            take_profit_price = price * (1 + self.take_profit_pct / 100)
-            
-            # Intentar crear orden real
-            try:
-                if self.testnet:
-                    order = self.exchange.create_market_order(self.symbol, 'buy', quantity)
-                else:
-                    order = self.exchange.create_market_order(self.symbol, 'buy', quantity)
-            except Exception as order_error:
-                self.logger.warning(f"Error creando orden real: {order_error}")
-                order = self.create_test_order('buy', quantity, price)
-            
-            self.position = {
-                'side': 'long',
-                'entry_price': price,
-                'entry_time': datetime.now(),
-                'quantity': quantity,
-                'stop_loss': stop_price,
-                'take_profit': take_profit_price,
-                'order_id': order['id'],
-                'entry_rsi': rsi,
-                'entry_ema_fast': ema_fast,
-                'entry_ema_slow': ema_slow,
-                'entry_ema_trend': ema_trend,
-                'entry_trend_direction': trend_direction,
-                'confirmation_time': confirmation_time,
-                'recovered': False,
-                'highest_price': price,
-                'trailing_stop': stop_price,
-                'breakeven_moved': False
-            }
-            
-            self.in_position = True
-            
-            self.logger.info(f"🟢 SWING LONG EJECUTADO: {quantity:.6f} BTC @ ${price:.2f}")
-            self.logger.info(f"📊 SL: ${stop_price:.2f} | TP: ${take_profit_price:.2f} | Ratio: 1:{self.take_profit_pct/self.stop_loss_pct:.1f}")
-            self.logger.info(f"🔄 Tendencia: {trend_direction} | RSI: {rsi:.2f} | EMA21: ${ema_fast:.2f}")
-            
-            # Log detallado del trade
-            self.log_trade('OPEN', 'long', price, quantity, rsi, ema_fast, ema_slow, ema_trend, 
-                          trend_direction, 'Swing Long + EMA Filter', confirmation_time=confirmation_time)
-            
-            self.save_bot_state()
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error abriendo posición LONG: {e}")
-            return False
-    
+        """Abre posición LONG - delegado a position_manager"""
+        return self.position_manager.open_long_position(price, rsi, ema_fast, ema_slow, ema_trend, trend_direction, confirmation_time)
+
     def open_short_position(self, price, rsi, ema_fast, ema_slow, ema_trend, trend_direction, confirmation_time=None):
-        """Abre posición SHORT para swing trading"""
-        try:
-            quantity, position_value = self.calculate_position_size(price)
-            
-            if quantity <= 0:
-                self.logger.warning("⚠️ No se puede calcular tamaño de posición válido")
-                return False
-            
-            stop_price = price * (1 + self.stop_loss_pct / 100)
-            take_profit_price = price * (1 - self.take_profit_pct / 100)
-            
-            try:
-                if self.testnet:
-                    order = self.exchange.create_market_order(self.symbol, 'sell', quantity)
-                else:
-                    order = self.exchange.create_market_order(self.symbol, 'sell', quantity)
-            except Exception as order_error:
-                self.logger.warning(f"Error creando orden real: {order_error}")
-                order = self.create_test_order('sell', quantity, price)
-            
-            self.position = {
-                'side': 'short',
-                'entry_price': price,
-                'entry_time': datetime.now(),
-                'quantity': quantity,
-                'stop_loss': stop_price,
-                'take_profit': take_profit_price,
-                'order_id': order['id'],
-                'entry_rsi': rsi,
-                'entry_ema_fast': ema_fast,
-                'entry_ema_slow': ema_slow,
-                'entry_ema_trend': ema_trend,
-                'entry_trend_direction': trend_direction,
-                'confirmation_time': confirmation_time,
-                'recovered': False,
-                'lowest_price': price,
-                'trailing_stop': stop_price,
-                'breakeven_moved': False
-            }
-            
-            self.in_position = True
-            
-            self.logger.info(f"🔴 SWING SHORT EJECUTADO: {quantity:.6f} BTC @ ${price:.2f}")
-            self.logger.info(f"📊 SL: ${stop_price:.2f} | TP: ${take_profit_price:.2f} | Ratio: 1:{self.take_profit_pct/self.stop_loss_pct:.1f}")
-            self.logger.info(f"🔄 Tendencia: {trend_direction} | RSI: {rsi:.2f} | EMA21: ${ema_fast:.2f}")
-            
-            self.log_trade('OPEN', 'short', price, quantity, rsi, ema_fast, ema_slow, ema_trend,
-                          trend_direction, 'Swing Short + EMA Filter', confirmation_time=confirmation_time)
-            
-            self.save_bot_state()
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error abriendo posición SHORT: {e}")
-            return False
-    
+        """Abre posición SHORT - delegado a position_manager"""
+        return self.position_manager.open_short_position(price, rsi, ema_fast, ema_slow, ema_trend, trend_direction, confirmation_time)
+
     def close_position(self, reason="Manual", current_rsi=None, current_price=None, market_data=None):
-        """Cierra la posición actual"""
-        if not self.in_position or not self.position:
-            return
-            
-        try:
-            side = 'sell' if self.position['side'] == 'long' else 'buy'
-            
-            # Obtener precio actual si no se proporciona
-            if current_price is None:
-                ticker = self.exchange.fetch_ticker(self.symbol)
-                current_price = ticker['last']
-            
-            # Intentar crear orden de cierre
-            try:
-                order = self.exchange.create_market_order(self.symbol, side, self.position['quantity'])
-            except Exception as order_error:
-                self.logger.warning(f"Error creando orden de cierre: {order_error}")
-                order = self.create_test_order(side, self.position['quantity'], current_price)
-            
-            # Calcular P&L
-            if self.position['side'] == 'long':
-                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-            else:
-                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-            
-            pnl_pct *= self.leverage
-            
-            # Calcular duración del swing
-            duration_hours = (datetime.now() - self.position['entry_time']).total_seconds() / 3600
-            
-            self.logger.info(f"⭕ Posición SWING cerrada - {reason}")
-            self.logger.info(f"💰 P&L: {pnl_pct:.2f}% | Duración: {duration_hours:.1f}h")
-            
-            # Log detallado del cierre
-            ema_data = market_data if market_data else {}
-            self.log_trade('CLOSE', self.position['side'], current_price, 
-                          self.position['quantity'], current_rsi, 
-                          ema_data.get('ema_fast', 0), ema_data.get('ema_slow', 0), 
-                          ema_data.get('ema_trend', 0), ema_data.get('trend_direction', 'unknown'),
-                          reason, pnl_pct, duration_hours)
-            
-            self.position = None
-            self.in_position = False
-            
-            self.save_bot_state()
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error cerrando posición: {e}")
-            return False
+        """Cierra la posición actual - delegado a position_manager"""
+        return self.position_manager.close_position(reason, current_rsi, current_price, market_data)
     
     def update_trailing_stop_swing(self, current_price, market_data):
         """Actualiza trailing stop para swing trading"""
