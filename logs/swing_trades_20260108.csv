@@ -1,2 +1,0 @@
-timestamp,action,side,price,quantity,rsi,ema_fast,ema_slow,ema_trend,trend_direction,stop_loss,take_profit,reason,pnl_pct,pnl_usdt,balance_before,balance_after,trade_duration_hours,signal_confirmed,confirmation_time_hours,pullback_type
-2026-01-08T18:04:49.152288,OPEN,long,91404.0,0.000215,35.771327238445906,91636.74754326182,91026.01003573622,89774.65677229354,bullish,88661.88,96888.24,Swing Long + EMA Filter,,,634.49690175,,,NO,0,Unknown
