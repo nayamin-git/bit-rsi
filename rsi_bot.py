@@ -1,12 +1,6 @@
-import pandas as pd
-import numpy as np
 import time
-import logging
-import signal
-from datetime import datetime
-import json
-import csv
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from config import BotConfig
 from indicators import TechnicalIndicators
