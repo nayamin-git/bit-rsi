@@ -1,4 +1,3 @@
-import ccxt
 import pandas as pd
 import numpy as np
 import time
@@ -18,6 +17,7 @@ from risk_manager import RiskManager
 from state_manager import StateManager
 from analytics import Analytics
 from logging_manager import LoggingManager
+from exchange_client import ExchangeClient
 
 # Cargar variables de entorno
 load_dotenv()
@@ -115,15 +115,8 @@ class BinanceRSIEMABot:
         }
         
         # Configuración del exchange DESPUÉS de definir variables
-        self.exchange = ccxt.binance({
-            'apiKey': api_key,
-            'secret': api_secret,
-            'sandbox': testnet,
-            'enableRateLimit': True,
-            'options': {
-                'adjustForTimeDifference': True,
-            }
-        })
+        self.exchange_client = ExchangeClient(api_key, api_secret, self.config, self.logger)
+        self.exchange = self.exchange_client.exchange  # Backward compatibility
 
         # Inicializar módulo de análisis de mercado
         self.market_analyzer = MarketAnalyzer(self.exchange, self.config, self.indicators, self.logger)
@@ -257,23 +250,8 @@ class BinanceRSIEMABot:
         self.logging_manager._signal_handler(signum, frame)
         
     def verify_connection(self):
-        """Verifica la conexión con Binance"""
-        try:
-            self.exchange.load_markets()
-            
-            if self.symbol not in self.exchange.markets:
-                available_symbols = [s for s in self.exchange.markets.keys() if 'BTC' in s and 'USDT' in s]
-                self.logger.warning(f"Símbolo {self.symbol} no encontrado. Disponibles: {available_symbols[:5]}")
-                
-            balance = self.exchange.fetch_balance()
-            self.logger.info(f"✅ Conexión exitosa con Binance {'Testnet' if self.testnet else 'Mainnet'}")
-            
-            usdt_balance = balance.get('USDT', {}).get('free', 0)
-            self.logger.info(f"💰 Balance USDT disponible: ${usdt_balance:.2f}")
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error de conexión: {e}")
-            raise
+        """Verifica la conexión con Binance - delegado a exchange_client"""
+        return self.exchange_client.verify_connection()
     
     def calculate_ema(self, prices, period):
         """Calcula EMA (Exponential Moving Average) - delegado a indicators"""
