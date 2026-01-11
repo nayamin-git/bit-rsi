@@ -423,7 +423,25 @@ class BinanceRSIEMABot:
         ema_slow = market_data['ema_slow']
         ema_trend = market_data['ema_trend']
         trend_direction = market_data['trend_direction']
-        
+
+        # Guardar datos de mercado para análisis (CSV)
+        signal_status = None
+        if self.pending_long_signal:
+            signal_status = 'LONG_PENDING'
+        elif self.pending_short_signal:
+            signal_status = 'SHORT_PENDING'
+
+        self.log_market_data(
+            price=current_price,
+            rsi=current_rsi,
+            volume=market_data.get('volume', 0),
+            ema_fast=ema_fast,
+            ema_slow=ema_slow,
+            ema_trend=ema_trend,
+            trend_direction=trend_direction,
+            signal=signal_status
+        )
+
         # Log información del mercado
         if self.in_position and self.position:
             pnl_pct = 0
