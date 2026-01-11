@@ -66,26 +66,52 @@ class MarketAnalyzer:
             return None
 
     def determine_trend_direction(self, price, ema_fast, ema_slow, ema_trend):
-        """OPTIMIZED: More flexible trend determination"""
+        """ENHANCED: Trend detection with price position validation"""
 
-        # Bullish: EMA21 > EMA50 > EMA200 AND price > EMA200
-        if ema_fast > ema_slow and ema_slow > ema_trend and price > ema_trend:
-            fast_slow_sep = ((ema_fast - ema_slow) / ema_slow) * 100
-            if fast_slow_sep >= self.config.ema_separation_min:
+        # Calculate separations
+        fast_slow_sep = ((ema_fast - ema_slow) / ema_slow) * 100 if ema_slow > 0 else 0
+
+        # BULLISH TREND: EMA21 > EMA50 > EMA200
+        if ema_fast > ema_slow > ema_trend:
+            # Check price position relative to EMAs
+            price_vs_slow = ((price - ema_slow) / ema_slow) * 100
+
+            # Strong bullish: Price above EMA50, good EMA separation
+            if price > ema_slow * 0.995 and fast_slow_sep >= self.config.ema_separation_min:
                 return 'bullish'
 
-        # Bearish: EMA21 < EMA50 < EMA200 AND price < EMA200
-        elif ema_fast < ema_slow and ema_slow < ema_trend and price < ema_trend:
-            slow_fast_sep = ((ema_slow - ema_fast) / ema_fast) * 100
-            if slow_fast_sep >= self.config.ema_separation_min:
+            # Weak bullish: EMAs aligned but price lagging below EMA50
+            elif price > ema_trend:  # At least above EMA200
+                return 'weak_bullish'
+
+            # Price far below EMAs = neutral (not bullish!)
+            else:
+                return 'neutral'
+
+        # BEARISH TREND: EMA21 < EMA50 < EMA200
+        elif ema_fast < ema_slow < ema_trend:
+            price_vs_slow = ((ema_slow - price) / price) * 100
+            slow_fast_sep = abs(fast_slow_sep)  # Make positive for comparison
+
+            # Strong bearish: Price below EMA50, good EMA separation
+            if price < ema_slow * 1.005 and slow_fast_sep >= self.config.ema_separation_min:
                 return 'bearish'
 
-        # NEW: Weak bullish trend (price above EMA200, EMAs close)
+            # Weak bearish: EMAs aligned but price leading above EMA50
+            elif price < ema_trend:  # At least below EMA200
+                return 'weak_bearish'
+
+            # Price far above EMAs = neutral (not bearish!)
+            else:
+                return 'neutral'
+
+        # MIXED SIGNALS: EMAs not aligned
         elif price > ema_trend and ema_fast > ema_slow:
+            # Price above EMA200 with some bullish EMA structure
             return 'weak_bullish'
 
-        # NEW: Weak bearish trend (price below EMA200, EMAs close)
         elif price < ema_trend and ema_fast < ema_slow:
+            # Price below EMA200 with some bearish EMA structure
             return 'weak_bearish'
 
         return 'neutral'
