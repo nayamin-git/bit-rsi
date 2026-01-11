@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-07-10T08:47:45.489879",
+  "in_position": true,
+  "position": {
+    "side": "long",
+    "entry_price": 111245.3,
+    "entry_time": "2025-07-10T08:16:29.097237",
+    "quantity": 0.000276,
+    "stop_loss": 109020.394,
+    "take_profit": 115695.11200000001,
+    "order_id": "test_1752135389",
+    "entry_rsi": 33.01939862449581,
+    "confirmation_time": 0,
+    "recovered": false,
+    "highest_price": 111398.96,
+    "trailing_stop": 109393.77872,
+    "consecutive_down_periods": 0
+  },
+  "last_signal_time": 1752135388.8504531,
+  "pending_long_signal": false,
+  "pending_short_signal": false,
+  "signal_trigger_price": null,
+  "signal_trigger_time": null,
+  "confirmation_wait_count": 0,
+  "performance_metrics": {
+    "total_trades": 18,
+    "winning_trades": 8,
+    "losing_trades": 10,
+    "total_pnl": 0.10330476364225508,
+    "max_drawdown": 0,
+    "consecutive_losses": 2,
+    "max_consecutive_losses": 3,
+    "start_balance": 0,
+    "peak_balance": 0,
+    "signals_detected": 197,
+    "signals_confirmed": 19,
+    "signals_expired": 178,
+    "recoveries_performed": 0
+  },
+  "last_rsi": 33.01939862449581,
+  "last_price": 111245.3
+}

@@ -1,0 +1,7 @@
+timestamp,action,side,price,quantity,rsi,stop_loss,take_profit,reason,pnl_pct,pnl_usdt,balance_before,balance_after,trade_duration_mins,signal_confirmed,confirmation_time_mins,recovered
+2025-07-08T15:06:05.877641,OPEN,long,108512.22,0.000119,32.585026302981035,106341.9756,112852.70880000001,RSI Oversold + Confirmación,,,128.66515345,,,YES,0,NO
+2025-07-08T15:06:37.484762,CLOSE,long,108460.0,0.000119,30.15314898349692,,,"Cambio de Tendencia: Tendencia bajista: 1 períodos, -0.05%, drop desde max: 0.05%",-0.04812361225307266,-0.06191831955109894,,128.66515345,0.52678535,,0,
+2025-07-08T16:21:54.228061,OPEN,long,108304.59,0.000119,40.32082809104347,106138.4982,112636.7736,RSI Oversold + Confirmación,,,128.66515345,,,YES,0,NO
+2025-07-08T16:27:27.988428,CLOSE,long,108450.65,0.000119,50.813094983737955,,,"Cambio de Tendencia: Tendencia bajista: 1 períodos, -0.08%, drop desde max: 0.08%",0.13486039696008975,0.1735183366919786,,128.66515345,5.5626727833333325,,0,
+2025-07-08T17:18:29.142490,OPEN,short,108731.02,0.000118,75.90683392768688,110905.6404,104381.7792,RSI Overbought + Confirmación,,,128.66515345,,,YES,0,NO
+2025-07-08T17:20:30.562993,CLOSE,short,108792.37,0.000118,80.21382805054066,,,"Cambio de Tendencia: Tendencia alcista: 1 períodos, 0.06%, rise desde min: 0.07%",-0.05642364065010267,-0.06584525545448282,,116.69799165,2.02367505,,0,

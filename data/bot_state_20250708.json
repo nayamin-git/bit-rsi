@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-07-09T02:29:35.589184",
+  "in_position": false,
+  "position": null,
+  "last_signal_time": 1751995108.6724622,
+  "pending_long_signal": true,
+  "pending_short_signal": false,
+  "signal_trigger_price": 108720.09,
+  "signal_trigger_time": "2025-07-09T02:27:34.208155",
+  "confirmation_wait_count": 3,
+  "performance_metrics": {
+    "total_trades": 3,
+    "winning_trades": 1,
+    "losing_trades": 2,
+    "total_pnl": 0.030313144056914425,
+    "max_drawdown": 0,
+    "consecutive_losses": 1,
+    "max_consecutive_losses": 1,
+    "start_balance": 0,
+    "peak_balance": 0,
+    "signals_detected": 91,
+    "signals_confirmed": 3,
+    "signals_expired": 87,
+    "recoveries_performed": 0
+  },
+  "last_rsi": 27.238746302070396,
+  "last_price": 108722.27
+}
