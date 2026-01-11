@@ -1,2 +1,0 @@
-timestamp,action,side,price,quantity,rsi,ema_fast,ema_slow,ema_trend,trend_direction,stop_loss,take_profit,reason,pnl_pct,pnl_usdt,balance_before,balance_after,trade_duration_hours,signal_confirmed,confirmation_time_hours,pullback_type
-2025-10-30T16:22:17.574192,CLOSE,long,107946.62,0.00104936,23.828379820398254,111416.61426779845,111655.84784532193,113066.12325525962,bearish,,,Cambio Tendencia Bajista,-2.294861888399411,-15.00132269722715,,653.69174385,15.169355099444443,,,
