@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from config import BotConfig
 from indicators import TechnicalIndicators
 from market_analyzer import MarketAnalyzer
+from signal_detector import SignalDetector
 
 # Cargar variables de entorno
 load_dotenv()
@@ -71,13 +72,8 @@ class BinanceRSIEMABot:
         self.position = None
         self.in_position = False
         self.last_signal_time = 0
-        
-        # NUEVOS ESTADOS PARA ESTRATEGIA EMA
-        self.pending_long_signal = False
-        self.pending_short_signal = False
-        self.signal_trigger_price = None
-        self.signal_trigger_time = None
-        self.swing_wait_count = 0
+
+        # Variables de estado de mercado (para tracking)
         self.last_rsi = 50
         self.last_price = 0
         self.last_ema_fast = 0
@@ -123,6 +119,9 @@ class BinanceRSIEMABot:
         # Inicializar módulo de análisis de mercado
         self.market_analyzer = MarketAnalyzer(self.exchange, self.config, self.indicators, self.logger)
 
+        # Inicializar módulo de detección de señales
+        self.signal_detector = SignalDetector(self.config, self.logger, self.market_analyzer, self.performance_metrics)
+
         # Verificar conexión después de configurar todo
         self.verify_connection()
         
@@ -131,7 +130,48 @@ class BinanceRSIEMABot:
         
         # Recuperar estado y posiciones al iniciar
         self.recover_bot_state()
-        
+
+    # Propiedades para backward compatibility - delegadas a signal_detector
+    @property
+    def pending_long_signal(self):
+        return self.signal_detector.pending_long_signal
+
+    @pending_long_signal.setter
+    def pending_long_signal(self, value):
+        self.signal_detector.pending_long_signal = value
+
+    @property
+    def pending_short_signal(self):
+        return self.signal_detector.pending_short_signal
+
+    @pending_short_signal.setter
+    def pending_short_signal(self, value):
+        self.signal_detector.pending_short_signal = value
+
+    @property
+    def signal_trigger_price(self):
+        return self.signal_detector.signal_trigger_price
+
+    @signal_trigger_price.setter
+    def signal_trigger_price(self, value):
+        self.signal_detector.signal_trigger_price = value
+
+    @property
+    def signal_trigger_time(self):
+        return self.signal_detector.signal_trigger_time
+
+    @signal_trigger_time.setter
+    def signal_trigger_time(self, value):
+        self.signal_detector.signal_trigger_time = value
+
+    @property
+    def swing_wait_count(self):
+        return self.signal_detector.swing_wait_count
+
+    @swing_wait_count.setter
+    def swing_wait_count(self, value):
+        self.signal_detector.swing_wait_count = value
+
     def setup_logging(self):
         """Configura sistema de logging (compatible con Docker)"""
         logs_dir = os.path.join(os.getcwd(), 'logs')
@@ -220,105 +260,16 @@ class BinanceRSIEMABot:
         return self.market_analyzer.is_pullback_to_ema(price, ema_fast, ema_slow)
     
     def detect_swing_signal(self, price, rsi, ema_fast, ema_slow, ema_trend, trend_direction):
-        """OPTIMIZED: More flexible signal detection"""
-        
-        if self.pending_long_signal or self.pending_short_signal:
-            return False
-        
-        # LONG Signal - More flexible conditions
-        if (rsi < self.rsi_oversold and 
-            trend_direction in ['bullish', 'weak_bullish', 'neutral'] and  # Added flexibility
-            not self.in_position):
-            
-            # More flexible pullback check
-            is_pullback, pullback_type = self.is_pullback_to_ema(price, ema_fast, ema_slow)
-            
-            # Accept signal even without perfect pullback if RSI is very low
-            if is_pullback or not self.pullback_ema_touch or rsi < 25:
-                self.pending_long_signal = True
-                self.signal_trigger_price = price
-                self.signal_trigger_time = datetime.now()
-                self.swing_wait_count = 0
-                
-                self.performance_metrics['signals_detected'] += 1
-                self.logger.info(f"🟡 FLEXIBLE LONG detected - RSI: {rsi:.2f} | Trend: {trend_direction}")
-                return True
-        
-        # SHORT Signal - More flexible conditions
-        elif (rsi > self.rsi_overbought and 
-              trend_direction in ['bearish', 'weak_bearish', 'neutral'] and  # Added flexibility
-              not self.in_position):
-            
-            is_pullback, pullback_type = self.is_pullback_to_ema(price, ema_fast, ema_slow)
-            
-            # Accept signal even without perfect pullback if RSI is very high
-            if is_pullback or not self.pullback_ema_touch or rsi > 85:
-                self.pending_short_signal = True
-                self.signal_trigger_price = price
-                self.signal_trigger_time = datetime.now()
-                self.swing_wait_count = 0
-                
-                self.performance_metrics['signals_detected'] += 1
-                self.logger.info(f"🟡 FLEXIBLE SHORT detected - RSI: {rsi:.2f} | Trend: {trend_direction}")
-                return True
-        
-        return False
-    
+        """Detecta señales de swing - delegado a signal_detector"""
+        return self.signal_detector.detect_swing_signal(price, rsi, ema_fast, ema_slow, ema_trend, trend_direction, self.in_position)
+
     def check_swing_confirmation(self, current_price, current_rsi, trend_direction):
-        """OPTIMIZED: More flexible confirmation logic"""
-        
-        if not (self.pending_long_signal or self.pending_short_signal):
-            return False, None
-            
-        self.swing_wait_count += 1
-        
-        # LONG Confirmation - More flexible
-        if self.pending_long_signal:
-            price_change_pct = ((current_price - self.signal_trigger_price) / self.signal_trigger_price) * 100
-            
-            # More flexible confirmation conditions
-            rsi_improved = current_rsi > self.rsi_neutral_low or current_rsi > (self.last_rsi + 5)
-            price_moved_up = price_change_pct >= self.swing_confirmation_threshold
-            trend_not_bearish = trend_direction != 'bearish'  # Just avoid bearish
-            
-            if price_moved_up and rsi_improved and trend_not_bearish:
-                self.logger.info(f"✅ FLEXIBLE LONG CONFIRMED! Price: +{price_change_pct:.2f}% | RSI: {current_rsi:.2f}")
-                self.reset_signal_state()
-                return True, 'long'
-            
-            # Extended wait time
-            elif self.swing_wait_count >= self.max_swing_wait:
-                self.logger.warning(f"⏰ LONG signal expired after {self.max_swing_wait} periods")
-                self.reset_signal_state()
-                return False, None
-        
-        # SHORT Confirmation - More flexible
-        elif self.pending_short_signal:
-            price_change_pct = ((self.signal_trigger_price - current_price) / self.signal_trigger_price) * 100
-            
-            rsi_improved = current_rsi < self.rsi_neutral_high or current_rsi < (self.last_rsi - 5)
-            price_moved_down = price_change_pct >= self.swing_confirmation_threshold
-            trend_not_bullish = trend_direction != 'bullish'
-            
-            if price_moved_down and rsi_improved and trend_not_bullish:
-                self.logger.info(f"✅ FLEXIBLE SHORT CONFIRMED! Price: -{price_change_pct:.2f}% | RSI: {current_rsi:.2f}")
-                self.reset_signal_state()
-                return True, 'short'
-            
-            elif self.swing_wait_count >= self.max_swing_wait:
-                self.logger.warning(f"⏰ SHORT signal expired after {self.max_swing_wait} periods")
-                self.reset_signal_state()
-                return False, None
-        
-        return False, None
-    
+        """Confirma señales de swing - delegado a signal_detector"""
+        return self.signal_detector.check_swing_confirmation(current_price, current_rsi, trend_direction)
+
     def reset_signal_state(self):
-        """Resetea el estado de señales pendientes"""
-        self.pending_long_signal = False
-        self.pending_short_signal = False
-        self.signal_trigger_price = None
-        self.signal_trigger_time = None
-        self.swing_wait_count = 0
+        """Resetea el estado de señales pendientes - delegado a signal_detector"""
+        self.signal_detector.reset_signal_state()
     
     def log_market_data(self, price, rsi, volume, ema_fast, ema_slow, ema_trend, trend_direction, signal=None):
         """Registra datos de mercado con EMAs"""
@@ -346,6 +297,9 @@ class BinanceRSIEMABot:
         self.last_ema_slow = ema_slow
         self.last_ema_trend = ema_trend
         self.trend_direction = trend_direction
+
+        # Actualizar signal_detector también
+        self.signal_detector.update_last_rsi(rsi)
         
         # Actualizar historiales
         self.price_history.append(price)
