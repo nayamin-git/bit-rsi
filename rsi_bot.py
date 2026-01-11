@@ -15,6 +15,7 @@ from market_analyzer import MarketAnalyzer
 from signal_detector import SignalDetector
 from position_manager import PositionManager
 from risk_manager import RiskManager
+from state_manager import StateManager
 
 # Cargar variables de entorno
 load_dotenv()
@@ -139,14 +140,34 @@ class BinanceRSIEMABot:
             close_position_callback=self.close_position
         )
 
+        # Inicializar módulo de gestión de estado
+        self.state_manager = StateManager(
+            self.config,
+            self.logger,
+            self.exchange,
+            self.position_manager,
+            self.signal_detector,
+            self.performance_metrics
+        )
+
         # Verificar conexión después de configurar todo
         self.verify_connection()
-        
+
         # Inicializar archivos de logs al final
         self.init_log_files()
-        
+
         # Recuperar estado y posiciones al iniciar
         self.recover_bot_state()
+
+        # Restaurar variables de estado de mercado desde state_manager
+        loaded_state = self.state_manager.get_loaded_market_state()
+        self.last_signal_time = loaded_state['last_signal_time']
+        self.last_rsi = loaded_state['last_rsi']
+        self.last_price = loaded_state['last_price']
+        self.last_ema_fast = loaded_state['last_ema_fast']
+        self.last_ema_slow = loaded_state['last_ema_slow']
+        self.last_ema_trend = loaded_state['last_ema_trend']
+        self.trend_direction = loaded_state['trend_direction']
 
     # Propiedades para backward compatibility - delegadas a signal_detector
     @property
@@ -334,6 +355,13 @@ class BinanceRSIEMABot:
 
         # Actualizar signal_detector también
         self.signal_detector.update_last_rsi(rsi)
+
+        # Actualizar state_manager con el estado de mercado actual
+        self.state_manager.set_market_state(
+            self.last_signal_time, self.last_rsi, self.last_price,
+            self.last_ema_fast, self.last_ema_slow, self.last_ema_trend,
+            self.trend_direction
+        )
         
         # Actualizar historiales
         self.price_history.append(price)
@@ -348,215 +376,30 @@ class BinanceRSIEMABot:
                 self.ema_history[key] = self.ema_history[key][-50:]
     
     def save_bot_state(self):
-        """Guarda el estado actual del bot en archivo JSON"""
-        try:
-            def serialize_datetime(obj):
-                if isinstance(obj, datetime):
-                    return obj.isoformat()
-                elif isinstance(obj, dict):
-                    return {k: serialize_datetime(v) for k, v in obj.items()}
-                elif isinstance(obj, list):
-                    return [serialize_datetime(item) for item in obj]
-                else:
-                    return obj
-            
-            state_data = {
-                'timestamp': datetime.now().isoformat(),
-                'in_position': self.in_position,
-                'position': serialize_datetime(self.position) if self.position else None,
-                'last_signal_time': self.last_signal_time,
-                'pending_long_signal': self.pending_long_signal,
-                'pending_short_signal': self.pending_short_signal,
-                'signal_trigger_price': self.signal_trigger_price,
-                'signal_trigger_time': self.signal_trigger_time.isoformat() if self.signal_trigger_time else None,
-                'swing_wait_count': self.swing_wait_count,
-                'performance_metrics': self.performance_metrics,
-                'last_rsi': self.last_rsi,
-                'last_price': self.last_price,
-                'last_ema_fast': self.last_ema_fast,
-                'last_ema_slow': self.last_ema_slow,
-                'last_ema_trend': self.last_ema_trend,
-                'trend_direction': self.trend_direction
-            }
-            
-            with open(self.state_file, 'w') as f:
-                json.dump(state_data, f, indent=2, default=str)
-                
-        except Exception as e:
-            self.logger.error(f"Error guardando estado del bot: {e}")
-    
+        """Guarda el estado del bot - delegado a state_manager"""
+        # Actualizar estado de mercado antes de guardar
+        self.state_manager.set_market_state(
+            self.last_signal_time, self.last_rsi, self.last_price,
+            self.last_ema_fast, self.last_ema_slow, self.last_ema_trend,
+            self.trend_direction
+        )
+        self.state_manager.save_bot_state()
+
     def load_bot_state(self):
-        """Carga el estado previo del bot desde archivo JSON"""
-        try:
-            if not os.path.exists(self.state_file):
-                self.logger.info("📄 No hay archivo de estado previo")
-                return False
-                
-            with open(self.state_file, 'r') as f:
-                state_data = json.load(f)
-            
-            # Verificar que el estado no sea muy antiguo (máximo 48 horas para swing trading)
-            state_time = datetime.fromisoformat(state_data['timestamp'])
-            time_diff = datetime.now() - state_time
-            
-            if time_diff.total_seconds() > 172800:  # 48 horas
-                self.logger.warning(f"⏰ Estado muy antiguo ({time_diff}), no se cargará")
-                return False
-            
-            # Restaurar estado
-            self.in_position = state_data.get('in_position', False)
-            self.last_signal_time = state_data.get('last_signal_time', 0)
-            self.pending_long_signal = state_data.get('pending_long_signal', False)
-            self.pending_short_signal = state_data.get('pending_short_signal', False)
-            self.signal_trigger_price = state_data.get('signal_trigger_price')
-            self.swing_wait_count = state_data.get('swing_wait_count', 0)
-            self.last_rsi = state_data.get('last_rsi', 50)
-            self.last_price = state_data.get('last_price', 0)
-            self.last_ema_fast = state_data.get('last_ema_fast', 0)
-            self.last_ema_slow = state_data.get('last_ema_slow', 0)
-            self.last_ema_trend = state_data.get('last_ema_trend', 0)
-            self.trend_direction = state_data.get('trend_direction', 'neutral')
-            
-            # Restaurar signal_trigger_time
-            if state_data.get('signal_trigger_time'):
-                self.signal_trigger_time = datetime.fromisoformat(state_data['signal_trigger_time'])
-            
-            # Restaurar posición si existe
-            if state_data.get('position'):
-                self.position = state_data['position'].copy()
-                if 'entry_time' in self.position:
-                    self.position['entry_time'] = datetime.fromisoformat(self.position['entry_time'])
-            
-            # Restaurar métricas
-            if state_data.get('performance_metrics'):
-                self.performance_metrics.update(state_data['performance_metrics'])
-            
-            self.logger.info(f"📥 Estado del bot cargado desde {state_time.strftime('%H:%M:%S')}")
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error cargando estado del bot: {e}")
-            return False
-    
+        """Carga el estado del bot - delegado a state_manager"""
+        return self.state_manager.load_bot_state()
+
     def recover_bot_state(self):
-        """Proceso completo de recuperación del estado del bot"""
-        self.logger.info("🔄 Iniciando recuperación de estado...")
-        
-        # Intentar cargar estado desde archivo
-        state_loaded = self.load_bot_state()
-        
-        # Verificar posiciones reales en el exchange
-        exchange_position = self.check_exchange_positions()
-        
-        # Reconciliar estado
-        if state_loaded and self.in_position and exchange_position:
-            self.logger.info("✅ Estado y posición recuperados correctamente")
-            
-        elif not state_loaded and exchange_position:
-            self.logger.warning("⚠️ Posición encontrada sin estado guardado - Recuperando...")
-            self.recover_position_from_exchange(exchange_position)
-            
-        elif state_loaded and self.in_position and not exchange_position:
-            self.logger.error("❌ Estado dice posición abierta pero no existe en exchange")
-            self.logger.error("🔧 Limpiando estado inconsistente...")
-            self.position = None
-            self.in_position = False
-            
-        elif not state_loaded and not exchange_position:
-            self.logger.info("✅ Bot limpio - Sin estado previo ni posiciones")
-        
-        # Guardar estado actualizado
-        self.save_bot_state()
-        
-        self.logger.info("🔄 Recuperación completada")
-    
+        """Recuperación completa de estado - delegado a state_manager"""
+        self.state_manager.recover_bot_state()
+
     def check_exchange_positions(self):
-        """Verifica posiciones reales en el exchange"""
-        try:
-            # Para futuros con apalancamiento
-            try:
-                if not self.testnet and self.leverage > 1:
-                    self.exchange.set_sandbox_mode(False)
-                    positions = self.exchange.fetch_positions([self.symbol])
-                    
-                    for pos in positions:
-                        if pos['size'] > 0:
-                            self.logger.warning(f"🔍 Posición detectada en exchange: {pos['side']} {pos['size']} @ {pos['entryPrice']}")
-                            return pos
-            except:
-                pass
-            
-            # Para spot trading
-            balance = self.exchange.fetch_balance()
-            btc_balance = float(balance.get('BTC', {}).get('free', 0))
-            
-            if btc_balance > 0.001:
-                ticker = self.exchange.fetch_ticker(self.symbol)
-                current_price = ticker['last']
-                
-                self.logger.warning(f"🔍 Balance BTC detectado: {btc_balance:.6f} BTC (≈${btc_balance * current_price:.2f})")
-                
-                return {
-                    'side': 'long',
-                    'size': btc_balance,
-                    'entryPrice': current_price,
-                    'symbol': self.symbol
-                }
-            
-            return None
-            
-        except Exception as e:
-            self.logger.error(f"Error verificando posiciones en exchange: {e}")
-            return None
-    
+        """Verifica posiciones en el exchange - delegado a state_manager"""
+        return self.state_manager.check_exchange_positions()
+
     def recover_position_from_exchange(self, exchange_position):
-        """Recupera una posición desde datos del exchange"""
-        try:
-            current_price = exchange_position.get('entryPrice', 0)
-            quantity = exchange_position.get('size', 0)
-            side = exchange_position.get('side', 'long')
-            
-            # Calcular stop loss y take profit basado en precio actual
-            if side == 'long':
-                stop_price = current_price * (1 - self.stop_loss_pct / 100)
-                take_profit_price = current_price * (1 + self.take_profit_pct / 100)
-            else:
-                stop_price = current_price * (1 + self.stop_loss_pct / 100)
-                take_profit_price = current_price * (1 - self.take_profit_pct / 100)
-            
-            # Crear posición para monitoreo
-            self.position = {
-                'side': side,
-                'entry_price': current_price,
-                'entry_time': datetime.now(),
-                'quantity': quantity,
-                'stop_loss': stop_price,
-                'take_profit': take_profit_price,
-                'order_id': f"recovered_{int(time.time())}",
-                'entry_rsi': 50,
-                'recovered': True,
-                'highest_price': current_price if side == 'long' else None,
-                'lowest_price': current_price if side == 'short' else None,
-                'trailing_stop': stop_price,
-                'breakeven_moved': False
-            }
-            
-            self.in_position = True
-            
-            # Log de recuperación
-            with open(self.recovery_file, 'a') as f:
-                f.write(f"{datetime.now().isoformat()} - Posición recuperada: {side} {quantity} @ ${current_price:.2f}\n")
-            
-            self.logger.warning(f"🔄 POSICIÓN RECUPERADA: {side.upper()} {quantity:.6f} BTC @ ${current_price:.2f}")
-            self.logger.warning(f"📊 Nuevos niveles - SL: ${stop_price:.2f} | TP: ${take_profit_price:.2f}")
-            
-            self.performance_metrics['recoveries_performed'] += 1
-            
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error recuperando posición: {e}")
-            return False
+        """Recupera posición desde el exchange - delegado a state_manager"""
+        return self.state_manager.recover_position_from_exchange(exchange_position)
     
     def init_log_files(self):
         """Inicializa archivos CSV para análisis"""
