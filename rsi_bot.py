@@ -609,7 +609,7 @@ if __name__ == "__main__":
         exit(1)
     
     print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
-    print("🔔 CARACTERÍSTICAS SWING TRADING v2.0:")
+    print("🔔 CARACTERÍSTICAS SWING TRADING v2.1:")
     print("  • Timeframe 4H para swing trading")
     print("  • Filtro de tendencia con EMA200")
     print("  • Confirmación de señales con EMAs 21/50")
