@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-11-19T02:24:03.453391",
+  "timestamp": "2025-12-23T02:10:28.617289",
   "in_position": false,
   "position": null,
-  "last_signal_time": 0,
+  "last_signal_time": 1766418121.0072253,
   "pending_long_signal": false,
   "pending_short_signal": false,
   "signal_trigger_price": null,
@@ -16,7 +16,7 @@
     "max_drawdown": 0,
     "consecutive_losses": 0,
     "max_consecutive_losses": 0,
-    "signals_detected": 0,
+    "signals_detected": 1,
     "signals_confirmed": 0,
     "signals_expired": 0,
     "recoveries_performed": 0,
@@ -24,10 +24,10 @@
     "ema_confirmations": 0,
     "pullback_entries": 0
   },
-  "last_rsi": 42.6604682069646,
-  "last_price": 92349.96,
-  "last_ema_fast": 93886.12244619844,
-  "last_ema_slow": 96843.73482968501,
-  "last_ema_trend": 104887.41304146977,
-  "trend_direction": "bearish"
+  "last_rsi": 52.94223971379896,
+  "last_price": 88578.01,
+  "last_ema_fast": 88475.59322761872,
+  "last_ema_slow": 88427.24824909461,
+  "last_ema_trend": 90641.05247823508,
+  "trend_direction": "neutral"
 }

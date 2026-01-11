@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-19T02:24:03.453391",
+  "timestamp": "2025-11-27T06:08:03.314858",
   "in_position": false,
   "position": null,
   "last_signal_time": 0,
@@ -24,10 +24,10 @@
     "ema_confirmations": 0,
     "pullback_entries": 0
   },
-  "last_rsi": 42.6604682069646,
-  "last_price": 92349.96,
-  "last_ema_fast": 93886.12244619844,
-  "last_ema_slow": 96843.73482968501,
-  "last_ema_trend": 104887.41304146977,
+  "last_rsi": 66.97930734260378,
+  "last_price": 91045.89,
+  "last_ema_fast": 88271.3210883503,
+  "last_ema_slow": 88898.48279799441,
+  "last_ema_trend": 97219.04239464641,
   "trend_direction": "bearish"
 }

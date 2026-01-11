@@ -1,13 +1,13 @@
 {
-  "timestamp": "2025-11-19T02:24:03.453391",
+  "timestamp": "2026-01-08T03:50:24.164684",
   "in_position": false,
   "position": null,
   "last_signal_time": 0,
-  "pending_long_signal": false,
+  "pending_long_signal": true,
   "pending_short_signal": false,
-  "signal_trigger_price": null,
-  "signal_trigger_time": null,
-  "swing_wait_count": 0,
+  "signal_trigger_price": 91361.45,
+  "signal_trigger_time": "2026-01-08T02:20:22.860821",
+  "swing_wait_count": 3,
   "performance_metrics": {
     "total_trades": 0,
     "winning_trades": 0,
@@ -16,7 +16,7 @@
     "max_drawdown": 0,
     "consecutive_losses": 0,
     "max_consecutive_losses": 0,
-    "signals_detected": 0,
+    "signals_detected": 3,
     "signals_confirmed": 0,
     "signals_expired": 0,
     "recoveries_performed": 0,
@@ -24,10 +24,10 @@
     "ema_confirmations": 0,
     "pullback_entries": 0
   },
-  "last_rsi": 42.6604682069646,
-  "last_price": 92349.96,
-  "last_ema_fast": 93886.12244619844,
-  "last_ema_slow": 96843.73482968501,
-  "last_ema_trend": 104887.41304146977,
-  "trend_direction": "bearish"
+  "last_rsi": 29.364074432075597,
+  "last_price": 90832.07,
+  "last_ema_fast": 92036.87028082636,
+  "last_ema_slow": 91073.62318586529,
+  "last_ema_trend": 89740.3384671563,
+  "trend_direction": "bullish"
 }
