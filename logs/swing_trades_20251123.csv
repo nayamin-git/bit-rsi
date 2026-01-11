@@ -1,0 +1,2 @@
+timestamp,action,side,price,quantity,rsi,ema_fast,ema_slow,ema_trend,trend_direction,stop_loss,take_profit,reason,pnl_pct,pnl_usdt,balance_before,balance_after,trade_duration_hours,signal_confirmed,confirmation_time_hours,pullback_type
+2025-11-24T00:27:58.290930,OPEN,short,86416.9,0.000227,64.88266987385195,86592.42773027795,89613.75553351217,99694.45399807012,bearish,89009.40699999999,81231.88599999998,Swing Short + EMA Filter,,,653.69174385,,,NO,0,Unknown

@@ -1,0 +1,98 @@
+2026-01-04 17:05:53 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260104.log
+2026-01-04 17:06:05 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260104.log
+2026-01-04 17:06:11 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-01-04 17:06:11 | INFO | 💰 Balance USDT disponible: $653.69
+2026-01-04 17:06:11 | INFO | 🔄 Iniciando recuperación de estado...
+2026-01-04 17:06:11 | INFO | 📄 No hay archivo de estado previo
+2026-01-04 17:06:11 | INFO | ✅ Bot limpio - Sin estado previo ni posiciones
+2026-01-04 17:06:11 | INFO | 🔄 Recuperación completada
+2026-01-04 17:06:11 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado
+2026-01-04 17:06:11 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 35 | OB: 75
+2026-01-04 17:06:11 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-01-04 17:06:11 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 3% | TP: 6%
+2026-01-04 17:06:11 | INFO | 🎯 Swing Confirmación: 0.3% | Max espera: 6 períodos
+2026-01-04 17:06:11 | INFO | 🛡️ Trailing Stop: 2.5% | Breakeven: 1.5%
+2026-01-04 17:06:11 | INFO | 💾 Estado guardado en: /app/data/bot_state_20260104.json
+2026-01-04 17:06:11 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-01-04 17:06:12 | INFO | 📈 BTC: $91,359.01 | RSI: 73.3 | Tendencia: bullish
+2026-01-04 17:06:12 | INFO | 📊 EMA21: $90089.73 | EMA50: $89197.75 | EMA200: $88712.93
+2026-01-04 17:36:12 | INFO | 📈 BTC: $91,422.57 | RSI: 73.7 | Tendencia: bullish
+2026-01-04 17:36:12 | INFO | 📊 EMA21: $90095.51 | EMA50: $89200.24 | EMA200: $88713.56
+2026-01-04 18:06:13 | INFO | 📈 BTC: $91,256.34 | RSI: 71.7 | Tendencia: bullish
+2026-01-04 18:06:13 | INFO | 📊 EMA21: $90080.40 | EMA50: $89193.72 | EMA200: $88711.91
+2026-01-04 18:36:13 | INFO | 📈 BTC: $91,131.60 | RSI: 69.6 | Tendencia: bullish
+2026-01-04 18:36:13 | INFO | 📊 EMA21: $90069.06 | EMA50: $89188.83 | EMA200: $88710.67
+2026-01-04 19:06:13 | INFO | 📈 BTC: $91,037.02 | RSI: 68.0 | Tendencia: bullish
+2026-01-04 19:06:13 | INFO | 📊 EMA21: $90060.46 | EMA50: $89185.12 | EMA200: $88709.73
+2026-01-04 19:36:13 | INFO | 📈 BTC: $91,146.01 | RSI: 69.8 | Tendencia: bullish
+2026-01-04 19:36:13 | INFO | 📊 EMA21: $90070.37 | EMA50: $89189.39 | EMA200: $88710.81
+2026-01-04 20:06:14 | INFO | 📈 BTC: $91,134.48 | RSI: 71.1 | Tendencia: bullish
+2026-01-04 20:06:14 | INFO | 📊 EMA21: $90166.45 | EMA50: $89265.34 | EMA200: $88670.36
+2026-01-04 20:36:14 | INFO | 📈 BTC: $91,320.00 | RSI: 72.4 | Tendencia: bullish
+2026-01-04 20:36:14 | INFO | 📊 EMA21: $90183.31 | EMA50: $89272.61 | EMA200: $88672.20
+2026-01-04 20:36:14 | INFO | ======================================================================
+2026-01-04 20:36:14 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-01-04 20:36:14 | INFO | ======================================================================
+2026-01-04 20:36:14 | INFO | 🔔 Señales detectadas: 0
+2026-01-04 20:36:14 | INFO | ✅ Señales confirmadas: 0
+2026-01-04 20:36:14 | INFO | ⏰ Señales expiradas: 0
+2026-01-04 20:36:14 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-01-04 20:36:14 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-01-04 20:36:14 | INFO | 📊 Confirmaciones EMA: 0
+2026-01-04 20:36:14 | INFO | 🔄 Entradas por pullback: 0
+2026-01-04 20:36:14 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-01-04 20:36:14 | INFO | --------------------------------------------------
+2026-01-04 20:36:14 | INFO | 📊 Sin trades completados aún
+2026-01-04 20:36:14 | INFO | 💵 Balance Actual: $653.69
+2026-01-04 20:36:14 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: bullish
+2026-01-04 20:36:14 | INFO | 📊 Alineación EMAs: ALCISTA
+2026-01-04 20:36:14 | INFO | 📈 EMA21: $90183.31 | EMA50: $89272.61 | EMA200: $88672.20
+2026-01-04 20:36:14 | INFO | 📏 Separación EMA21-EMA50: 1.02%
+2026-01-04 20:36:14 | INFO | ======================================================================
+2026-01-04 21:06:15 | INFO | 📈 BTC: $91,356.93 | RSI: 72.6 | Tendencia: bullish
+2026-01-04 21:06:15 | INFO | 📊 EMA21: $90186.67 | EMA50: $89274.06 | EMA200: $88672.57
+2026-01-04 21:36:15 | INFO | 📈 BTC: $91,331.99 | RSI: 72.5 | Tendencia: bullish
+2026-01-04 21:36:15 | INFO | 📊 EMA21: $90184.40 | EMA50: $89273.08 | EMA200: $88672.32
+2026-01-04 22:06:15 | INFO | 📈 BTC: $91,362.00 | RSI: 72.7 | Tendencia: bullish
+2026-01-04 22:06:15 | INFO | 📊 EMA21: $90187.13 | EMA50: $89274.26 | EMA200: $88672.62
+2026-01-04 22:36:16 | INFO | 📈 BTC: $91,250.12 | RSI: 71.9 | Tendencia: bullish
+2026-01-04 22:36:16 | INFO | 📊 EMA21: $90176.96 | EMA50: $89269.87 | EMA200: $88671.51
+2026-01-04 23:06:16 | INFO | 📈 BTC: $91,406.01 | RSI: 72.9 | Tendencia: bullish
+2026-01-04 23:06:16 | INFO | 📊 EMA21: $90191.13 | EMA50: $89275.98 | EMA200: $88673.06
+2026-01-04 23:36:16 | INFO | 📈 BTC: $91,384.24 | RSI: 72.8 | Tendencia: bullish
+2026-01-04 23:36:16 | INFO | 📊 EMA21: $90189.15 | EMA50: $89275.13 | EMA200: $88672.84
+2026-01-05 00:06:16 | INFO | 📈 BTC: $91,700.01 | RSI: 71.7 | Tendencia: bullish
+2026-01-05 00:06:16 | INFO | 📊 EMA21: $90338.53 | EMA50: $89375.72 | EMA200: $88733.27
+2026-01-05 00:36:17 | INFO | 📈 BTC: $91,827.95 | RSI: 72.6 | Tendencia: bullish
+2026-01-05 00:36:17 | INFO | 📊 EMA21: $90350.16 | EMA50: $89380.74 | EMA200: $88734.54
+2026-01-05 00:36:17 | INFO | ======================================================================
+2026-01-05 00:36:17 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-01-05 00:36:17 | INFO | ======================================================================
+2026-01-05 00:36:17 | INFO | 🔔 Señales detectadas: 0
+2026-01-05 00:36:17 | INFO | ✅ Señales confirmadas: 0
+2026-01-05 00:36:17 | INFO | ⏰ Señales expiradas: 0
+2026-01-05 00:36:17 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-01-05 00:36:17 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-01-05 00:36:17 | INFO | 📊 Confirmaciones EMA: 0
+2026-01-05 00:36:17 | INFO | 🔄 Entradas por pullback: 0
+2026-01-05 00:36:17 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-01-05 00:36:17 | INFO | --------------------------------------------------
+2026-01-05 00:36:17 | INFO | 📊 Sin trades completados aún
+2026-01-05 00:36:17 | INFO | 💵 Balance Actual: $653.69
+2026-01-05 00:36:17 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: bullish
+2026-01-05 00:36:17 | INFO | 📊 Alineación EMAs: ALCISTA
+2026-01-05 00:36:17 | INFO | 📈 EMA21: $90350.16 | EMA50: $89380.74 | EMA200: $88734.54
+2026-01-05 00:36:17 | INFO | 📏 Separación EMA21-EMA50: 1.08%
+2026-01-05 00:36:17 | INFO | ======================================================================
+2026-01-05 01:06:17 | INFO | 📈 BTC: $92,493.88 | RSI: 76.3 | Tendencia: bullish
+2026-01-05 01:06:17 | INFO | 📊 EMA21: $90410.70 | EMA50: $89406.85 | EMA200: $88741.17
+2026-01-05 01:36:18 | INFO | 📈 BTC: $93,039.23 | RSI: 78.6 | Tendencia: bullish
+2026-01-05 01:36:18 | INFO | 📊 EMA21: $90460.27 | EMA50: $89428.24 | EMA200: $88746.59
+2026-01-05 02:06:18 | INFO | 📈 BTC: $93,013.11 | RSI: 78.5 | Tendencia: bullish
+2026-01-05 02:06:18 | INFO | 📊 EMA21: $90457.90 | EMA50: $89427.22 | EMA200: $88746.33
+2026-01-05 02:36:18 | INFO | 📈 BTC: $92,990.43 | RSI: 78.4 | Tendencia: bullish
+2026-01-05 02:36:18 | INFO | 📊 EMA21: $90455.84 | EMA50: $89426.33 | EMA200: $88746.11
+2026-01-05 03:06:19 | INFO | 📈 BTC: $93,194.35 | RSI: 79.2 | Tendencia: bullish
+2026-01-05 03:06:19 | INFO | 📊 EMA21: $90474.38 | EMA50: $89434.32 | EMA200: $88748.14
+2026-01-05 03:36:19 | INFO | 📈 BTC: $92,995.00 | RSI: 78.5 | Tendencia: bullish
+2026-01-05 03:36:19 | INFO | 📊 EMA21: $90456.25 | EMA50: $89426.51 | EMA200: $88746.15

@@ -1,0 +1,172 @@
+2025-09-06 11:32:55 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20250906.log
+2025-09-06 11:33:06 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2025-09-06 11:33:06 | INFO | 💰 Balance USDT disponible: $609.02
+2025-09-06 11:33:06 | INFO | 🔄 Iniciando recuperación de estado...
+2025-09-06 11:33:06 | INFO | 📄 No hay archivo de estado previo
+2025-09-06 11:33:06 | INFO | ✅ Bot limpio - Sin estado previo ni posiciones
+2025-09-06 11:33:06 | INFO | 🔄 Recuperación completada
+2025-09-06 11:33:06 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado
+2025-09-06 11:33:06 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 35 | OB: 75
+2025-09-06 11:33:06 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2025-09-06 11:33:06 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 3% | TP: 6%
+2025-09-06 11:33:06 | INFO | 🎯 Swing Confirmación: 0.3% | Max espera: 6 períodos
+2025-09-06 11:33:06 | INFO | 🛡️ Trailing Stop: 2.5% | Breakeven: 1.5%
+2025-09-06 11:33:06 | INFO | 💾 Estado guardado en: /app/data/bot_state_20250906.json
+2025-09-06 11:33:06 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2025-09-06 11:33:07 | INFO | 🔄 BTC: $110,696.00 | RSI: 47.9 | Tendencia: neutral
+2025-09-06 11:33:07 | INFO | 📊 EMA21: $110928.33 | EMA50: $110846.99 | EMA200: $113344.71
+2025-09-06 12:03:07 | INFO | 🔄 BTC: $110,771.22 | RSI: 51.6 | Tendencia: neutral
+2025-09-06 12:03:07 | INFO | 📊 EMA21: $110921.07 | EMA50: $110847.24 | EMA200: $113341.51
+2025-09-06 12:33:07 | INFO | 🔄 BTC: $110,833.31 | RSI: 51.9 | Tendencia: neutral
+2025-09-06 12:33:07 | INFO | 📊 EMA21: $110926.71 | EMA50: $110849.67 | EMA200: $113342.13
+2025-09-06 13:03:07 | INFO | 🔄 BTC: $110,895.55 | RSI: 52.2 | Tendencia: neutral
+2025-09-06 13:03:07 | INFO | 📊 EMA21: $110932.37 | EMA50: $110852.11 | EMA200: $113342.75
+2025-09-06 13:33:08 | INFO | 🔄 BTC: $110,863.54 | RSI: 52.0 | Tendencia: neutral
+2025-09-06 13:33:08 | INFO | 📊 EMA21: $110929.46 | EMA50: $110850.86 | EMA200: $113342.43
+2025-09-06 14:03:08 | INFO | 🔄 BTC: $110,989.99 | RSI: 52.6 | Tendencia: neutral
+2025-09-06 14:03:08 | INFO | 📊 EMA21: $110940.96 | EMA50: $110855.82 | EMA200: $113343.69
+2025-09-06 14:12:39 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20250906.log
+2025-09-06 14:12:46 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2025-09-06 14:12:46 | INFO | 💰 Balance USDT disponible: $609.02
+2025-09-06 14:12:46 | INFO | 🔄 Iniciando recuperación de estado...
+2025-09-06 14:12:47 | INFO | 📥 Estado del bot cargado desde 14:03:08
+2025-09-06 14:12:49 | INFO | 🔄 Recuperación completada
+2025-09-06 14:12:49 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado
+2025-09-06 14:12:49 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 35 | OB: 75
+2025-09-06 14:12:49 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2025-09-06 14:12:49 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 3% | TP: 6%
+2025-09-06 14:12:49 | INFO | 🎯 Swing Confirmación: 0.3% | Max espera: 6 períodos
+2025-09-06 14:12:49 | INFO | 🛡️ Trailing Stop: 2.5% | Breakeven: 1.5%
+2025-09-06 14:12:49 | INFO | 💾 Estado guardado en: /app/data/bot_state_20250906.json
+2025-09-06 14:12:50 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2025-09-06 14:12:58 | INFO | 🔄 BTC: $110,898.94 | RSI: 52.2 | Tendencia: neutral
+2025-09-06 14:12:58 | INFO | 📊 EMA21: $110932.68 | EMA50: $110852.25 | EMA200: $113342.78
+2025-09-06 14:15:01 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20250906.log
+2025-09-06 14:15:07 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2025-09-06 14:15:07 | INFO | 💰 Balance USDT disponible: $609.02
+2025-09-06 14:15:07 | INFO | 🔄 Iniciando recuperación de estado...
+2025-09-06 14:15:07 | INFO | 📥 Estado del bot cargado desde 14:12:48
+2025-09-06 14:15:07 | INFO | 🔄 Recuperación completada
+2025-09-06 14:15:07 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado
+2025-09-06 14:15:07 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 35 | OB: 75
+2025-09-06 14:15:07 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2025-09-06 14:15:07 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 3% | TP: 6%
+2025-09-06 14:15:07 | INFO | 🎯 Swing Confirmación: 0.3% | Max espera: 6 períodos
+2025-09-06 14:15:07 | INFO | 🛡️ Trailing Stop: 2.5% | Breakeven: 1.5%
+2025-09-06 14:15:07 | INFO | 💾 Estado guardado en: /app/data/bot_state_20250906.json
+2025-09-06 14:15:07 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2025-09-06 14:15:07 | INFO | 🔄 BTC: $110,898.94 | RSI: 52.2 | Tendencia: neutral
+2025-09-06 14:15:07 | INFO | 📊 EMA21: $110932.68 | EMA50: $110852.25 | EMA200: $113342.78
+2025-09-06 14:45:07 | INFO | 🔄 BTC: $110,864.00 | RSI: 52.0 | Tendencia: neutral
+2025-09-06 14:45:07 | INFO | 📊 EMA21: $110929.50 | EMA50: $110850.88 | EMA200: $113342.43
+2025-09-06 15:15:08 | INFO | 🔄 BTC: $110,700.00 | RSI: 51.2 | Tendencia: neutral
+2025-09-06 15:15:08 | INFO | 📊 EMA21: $110914.60 | EMA50: $110844.44 | EMA200: $113340.80
+2025-09-06 15:45:08 | INFO | 🔄 BTC: $110,581.01 | RSI: 50.6 | Tendencia: neutral
+2025-09-06 15:45:08 | INFO | 📊 EMA21: $110903.78 | EMA50: $110839.78 | EMA200: $113339.62
+2025-09-06 16:15:09 | INFO | 🔄 BTC: $110,312.00 | RSI: 47.5 | Tendencia: neutral
+2025-09-06 16:15:09 | INFO | 📊 EMA21: $110833.71 | EMA50: $110811.66 | EMA200: $113300.42
+2025-09-06 16:45:09 | INFO | 🔄 BTC: $110,233.45 | RSI: 47.1 | Tendencia: neutral
+2025-09-06 16:45:09 | INFO | 📊 EMA21: $110826.57 | EMA50: $110808.58 | EMA200: $113299.64
+2025-09-06 17:15:09 | INFO | 🔄 BTC: $110,217.58 | RSI: 47.1 | Tendencia: neutral
+2025-09-06 17:15:09 | INFO | 📊 EMA21: $110825.13 | EMA50: $110807.96 | EMA200: $113299.48
+2025-09-06 17:45:09 | INFO | 🔄 BTC: $110,000.01 | RSI: 46.1 | Tendencia: neutral
+2025-09-06 17:45:09 | INFO | 📊 EMA21: $110805.35 | EMA50: $110799.42 | EMA200: $113297.32
+2025-09-06 17:45:09 | INFO | ======================================================================
+2025-09-06 17:45:09 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2025-09-06 17:45:09 | INFO | ======================================================================
+2025-09-06 17:45:09 | INFO | 🔔 Señales detectadas: 0
+2025-09-06 17:45:09 | INFO | ✅ Señales confirmadas: 0
+2025-09-06 17:45:09 | INFO | ⏰ Señales expiradas: 0
+2025-09-06 17:45:09 | INFO | 📈 Tasa de confirmación: 0.0%
+2025-09-06 17:45:09 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2025-09-06 17:45:09 | INFO | 📊 Confirmaciones EMA: 0
+2025-09-06 17:45:09 | INFO | 🔄 Entradas por pullback: 0
+2025-09-06 17:45:09 | INFO | 🔧 Recuperaciones realizadas: 0
+2025-09-06 17:45:09 | INFO | --------------------------------------------------
+2025-09-06 17:45:09 | INFO | 📊 Sin trades completados aún
+2025-09-06 17:45:10 | INFO | 💵 Balance Actual: $609.02
+2025-09-06 17:45:10 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: neutral
+2025-09-06 17:45:10 | INFO | 📊 Alineación EMAs: NEUTRAL
+2025-09-06 17:45:10 | INFO | 📈 EMA21: $110805.35 | EMA50: $110799.42 | EMA200: $113297.32
+2025-09-06 17:45:10 | INFO | 📏 Separación EMA21-EMA50: 0.01%
+2025-09-06 17:45:10 | INFO | ======================================================================
+2025-09-06 18:15:10 | INFO | 🔄 BTC: $110,228.29 | RSI: 47.1 | Tendencia: neutral
+2025-09-06 18:15:10 | INFO | 📊 EMA21: $110826.10 | EMA50: $110808.38 | EMA200: $113299.59
+2025-09-06 18:45:10 | INFO | 🔄 BTC: $110,087.91 | RSI: 46.5 | Tendencia: neutral
+2025-09-06 18:45:10 | INFO | 📊 EMA21: $110813.34 | EMA50: $110802.87 | EMA200: $113298.19
+2025-09-06 19:15:11 | INFO | 🔄 BTC: $110,168.26 | RSI: 46.8 | Tendencia: neutral
+2025-09-06 19:15:11 | INFO | 📊 EMA21: $110820.64 | EMA50: $110806.02 | EMA200: $113298.99
+2025-09-06 19:45:11 | INFO | 🔄 BTC: $110,052.01 | RSI: 46.3 | Tendencia: neutral
+2025-09-06 19:45:11 | INFO | 📊 EMA21: $110810.08 | EMA50: $110801.46 | EMA200: $113297.83
+2025-09-06 20:15:11 | INFO | 📉 BTC: $110,068.58 | RSI: 53.1 | Tendencia: neutral
+2025-09-06 20:15:11 | INFO | 📊 EMA21: $110741.54 | EMA50: $110772.21 | EMA200: $113263.66
+2025-09-06 20:45:12 | INFO | 📉 BTC: $110,128.14 | RSI: 53.4 | Tendencia: neutral
+2025-09-06 20:45:12 | INFO | 📊 EMA21: $110746.96 | EMA50: $110774.55 | EMA200: $113264.25
+2025-09-06 21:15:12 | INFO | 📉 BTC: $110,200.32 | RSI: 53.8 | Tendencia: neutral
+2025-09-06 21:15:12 | INFO | 📊 EMA21: $110753.52 | EMA50: $110777.38 | EMA200: $113264.97
+2025-09-06 21:45:12 | INFO | 📉 BTC: $110,165.25 | RSI: 53.6 | Tendencia: neutral
+2025-09-06 21:45:12 | INFO | 📊 EMA21: $110750.33 | EMA50: $110776.00 | EMA200: $113264.62
+2025-09-06 21:45:12 | INFO | ======================================================================
+2025-09-06 21:45:12 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2025-09-06 21:45:12 | INFO | ======================================================================
+2025-09-06 21:45:12 | INFO | 🔔 Señales detectadas: 0
+2025-09-06 21:45:12 | INFO | ✅ Señales confirmadas: 0
+2025-09-06 21:45:12 | INFO | ⏰ Señales expiradas: 0
+2025-09-06 21:45:12 | INFO | 📈 Tasa de confirmación: 0.0%
+2025-09-06 21:45:12 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2025-09-06 21:45:12 | INFO | 📊 Confirmaciones EMA: 0
+2025-09-06 21:45:12 | INFO | 🔄 Entradas por pullback: 0
+2025-09-06 21:45:12 | INFO | 🔧 Recuperaciones realizadas: 0
+2025-09-06 21:45:12 | INFO | --------------------------------------------------
+2025-09-06 21:45:12 | INFO | 📊 Sin trades completados aún
+2025-09-06 21:45:12 | INFO | 💵 Balance Actual: $609.02
+2025-09-06 21:45:12 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: neutral
+2025-09-06 21:45:12 | INFO | 📊 Alineación EMAs: BAJISTA
+2025-09-06 21:45:12 | INFO | 📈 EMA21: $110750.33 | EMA50: $110776.00 | EMA200: $113264.62
+2025-09-06 21:45:12 | INFO | 📏 Separación EMA21-EMA50: 0.02%
+2025-09-06 21:45:12 | INFO | ======================================================================
+2025-09-06 22:15:13 | INFO | 📉 BTC: $110,204.55 | RSI: 53.8 | Tendencia: neutral
+2025-09-06 22:15:13 | INFO | 📊 EMA21: $110753.90 | EMA50: $110777.54 | EMA200: $113265.01
+2025-09-06 22:45:13 | INFO | 📉 BTC: $110,123.08 | RSI: 53.4 | Tendencia: neutral
+2025-09-06 22:45:13 | INFO | 📊 EMA21: $110746.50 | EMA50: $110774.35 | EMA200: $113264.20
+2025-09-06 23:15:14 | INFO | 📉 BTC: $110,173.59 | RSI: 53.6 | Tendencia: neutral
+2025-09-06 23:15:14 | INFO | 📊 EMA21: $110751.09 | EMA50: $110776.33 | EMA200: $113264.71
+2025-09-06 23:45:14 | INFO | 📉 BTC: $110,232.01 | RSI: 53.9 | Tendencia: neutral
+2025-09-06 23:45:14 | INFO | 📊 EMA21: $110756.40 | EMA50: $110778.62 | EMA200: $113265.29
+2025-09-07 00:15:14 | INFO | 📉 BTC: $110,254.63 | RSI: 52.5 | Tendencia: neutral
+2025-09-07 00:15:14 | INFO | 📊 EMA21: $110707.14 | EMA50: $110756.43 | EMA200: $113277.01
+2025-09-07 00:45:15 | INFO | 📉 BTC: $110,292.19 | RSI: 52.7 | Tendencia: neutral
+2025-09-07 00:45:15 | INFO | 📊 EMA21: $110710.56 | EMA50: $110757.91 | EMA200: $113277.38
+2025-09-07 01:15:15 | INFO | 📉 BTC: $110,393.84 | RSI: 53.3 | Tendencia: neutral
+2025-09-07 01:15:15 | INFO | 📊 EMA21: $110719.80 | EMA50: $110761.89 | EMA200: $113278.39
+2025-09-07 01:45:15 | INFO | 📉 BTC: $110,498.64 | RSI: 53.8 | Tendencia: neutral
+2025-09-07 01:45:15 | INFO | 📊 EMA21: $110729.33 | EMA50: $110766.00 | EMA200: $113279.44
+2025-09-07 01:45:15 | INFO | ======================================================================
+2025-09-07 01:45:15 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2025-09-07 01:45:15 | INFO | ======================================================================
+2025-09-07 01:45:15 | INFO | 🔔 Señales detectadas: 0
+2025-09-07 01:45:15 | INFO | ✅ Señales confirmadas: 0
+2025-09-07 01:45:15 | INFO | ⏰ Señales expiradas: 0
+2025-09-07 01:45:15 | INFO | 📈 Tasa de confirmación: 0.0%
+2025-09-07 01:45:15 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2025-09-07 01:45:15 | INFO | 📊 Confirmaciones EMA: 0
+2025-09-07 01:45:15 | INFO | 🔄 Entradas por pullback: 0
+2025-09-07 01:45:15 | INFO | 🔧 Recuperaciones realizadas: 0
+2025-09-07 01:45:15 | INFO | --------------------------------------------------
+2025-09-07 01:45:15 | INFO | 📊 Sin trades completados aún
+2025-09-07 01:45:15 | INFO | 💵 Balance Actual: $609.02
+2025-09-07 01:45:15 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: neutral
+2025-09-07 01:45:15 | INFO | 📊 Alineación EMAs: BAJISTA
+2025-09-07 01:45:15 | INFO | 📈 EMA21: $110729.33 | EMA50: $110766.00 | EMA200: $113279.44
+2025-09-07 01:45:15 | INFO | 📏 Separación EMA21-EMA50: 0.03%
+2025-09-07 01:45:15 | INFO | ======================================================================
+2025-09-07 02:15:16 | INFO | 📉 BTC: $110,529.57 | RSI: 54.0 | Tendencia: neutral
+2025-09-07 02:15:16 | INFO | 📊 EMA21: $110732.14 | EMA50: $110767.22 | EMA200: $113279.74
+2025-09-07 02:45:16 | INFO | 📉 BTC: $110,517.99 | RSI: 53.9 | Tendencia: neutral
+2025-09-07 02:45:16 | INFO | 📊 EMA21: $110731.09 | EMA50: $110766.76 | EMA200: $113279.63
+2025-09-07 03:15:16 | INFO | 📉 BTC: $110,596.72 | RSI: 54.3 | Tendencia: neutral
+2025-09-07 03:15:16 | INFO | 📊 EMA21: $110738.24 | EMA50: $110769.85 | EMA200: $113280.41
+2025-09-07 03:45:17 | INFO | 📉 BTC: $110,623.30 | RSI: 54.4 | Tendencia: neutral
+2025-09-07 03:45:17 | INFO | 📊 EMA21: $110740.66 | EMA50: $110770.89 | EMA200: $113280.68
+2025-09-07 04:15:17 | INFO | 📉 BTC: $110,540.00 | RSI: 48.9 | Tendencia: neutral
+2025-09-07 04:15:17 | INFO | 📊 EMA21: $110722.90 | EMA50: $110762.07 | EMA200: $113284.18
