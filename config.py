@@ -37,6 +37,9 @@ class BotConfig:
         self.min_balance_usdt = 50
         self.min_notional_usdt = 12
 
+        # INTEGRACIÓN CLAUDE API
+        self.use_claude_advisor = True  # Activar validación de señales con Claude Opus
+
         # NUEVAS VARIABLES PARA ESTRATEGIA EMA + RSI
         self.ema_separation_min = 0.1  # Mínima separación % entre EMAs para confirmar tendencia
         self.ema_touch_threshold = 0.5  # Distancia máxima % al EMA para considerar pullback

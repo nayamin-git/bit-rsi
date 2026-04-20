@@ -4,6 +4,7 @@ import ccxt
 from datetime import datetime
 from dotenv import load_dotenv
 from config import BotConfig
+from claude_advisor import ClaudeAdvisor
 from indicators import TechnicalIndicators
 from market_analyzer import MarketAnalyzer
 from signal_detector import SignalDetector
@@ -124,6 +125,15 @@ class BinanceRSIEMABot:
             get_balance_callback=self.get_account_balance
         )
         self.analytics.set_performance_metrics(self.performance_metrics)
+
+        # Inicializar Claude Advisor (opcional — requiere ANTHROPIC_API_KEY)
+        self.claude_advisor = None
+        if self.config.use_claude_advisor and os.getenv('ANTHROPIC_API_KEY'):
+            try:
+                self.claude_advisor = ClaudeAdvisor(self.logger)
+                self.logger.info("🤖 Claude Advisor activo — validación de señales habilitada")
+            except Exception as e:
+                self.logger.warning(f"Claude Advisor no disponible: {e}")
 
         # Configurar callback de in_position para logging_manager
         self.logging_manager.set_in_position_callback(lambda: self.position_manager.in_position)
@@ -360,6 +370,21 @@ class BinanceRSIEMABot:
         ema_slow = market_data['ema_slow']
         ema_trend = market_data['ema_trend']
         trend_direction = market_data['trend_direction']
+
+        if self.claude_advisor:
+            decision = self.claude_advisor.validate_signal(signal_type, market_data)
+            if decision and decision.action == "REJECT":
+                self.logger.warning(
+                    f"🤖 Claude RECHAZÓ señal {signal_type.upper()} "
+                    f"(confianza: {decision.confidence}%): {decision.reasoning}"
+                )
+                self.signal_detector.reset_signal_state()
+                return
+            elif decision:
+                self.logger.info(
+                    f"🤖 Claude CONFIRMÓ señal {signal_type.upper()} "
+                    f"(confianza: {decision.confidence}%): {decision.reasoning[:120]}"
+                )
 
         confirmation_time_hours = 0
         if self.signal_detector.signal_trigger_time:
