@@ -39,6 +39,7 @@ class BotConfig:
 
         # NUEVAS VARIABLES PARA ESTRATEGIA EMA + RSI
         self.ema_separation_min = 0.1  # Mínima separación % entre EMAs para confirmar tendencia
+        self.ema_touch_threshold = 0.5  # Distancia máxima % al EMA para considerar pullback
         self.trend_confirmation_candles = 2  # Velas para confirmar cambio de tendencia
         self.pullback_ema_touch = False  # Requerir que precio toque EMA21 en pullback
 

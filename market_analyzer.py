@@ -118,8 +118,7 @@ class MarketAnalyzer:
 
     def is_pullback_to_ema(self, price, ema_fast, ema_slow):
         """Verifica si el precio está haciendo pullback a las EMAs"""
-        # Para entrada long: precio cerca de EMA21 después de estar arriba
-        ema_touch_threshold = 0.5  # 0.5% de distancia máxima
+        ema_touch_threshold = self.config.ema_touch_threshold
 
         distance_to_fast = abs((price - ema_fast) / ema_fast) * 100
         distance_to_slow = abs((price - ema_slow) / ema_slow) * 100
