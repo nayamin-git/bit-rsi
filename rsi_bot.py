@@ -46,6 +46,7 @@ class BinanceRSIEMABot:
 
         # Estado del bot
         self.last_signal_time = 0
+        self.last_claude_scan_time = 0  # Último escaneo proactivo de mercado con Claude
 
         # Variables de estado de mercado (para tracking)
         self.last_rsi = 50
@@ -407,6 +408,20 @@ class BinanceRSIEMABot:
                 market_data['ema_fast'], market_data['ema_slow'],
                 market_data['ema_trend'], market_data['trend_direction']
             )
+
+        if (self.claude_advisor and
+                current_time - self.last_claude_scan_time >= self.config.claude_scan_interval):
+            self.last_claude_scan_time = current_time
+            context = self.claude_advisor.analyze_market_context(market_data)
+            if context:
+                icon = "📈" if context.bias == "long" else "📉" if context.bias == "short" else "➡️"
+                forming = " — SETUP FORMÁNDOSE" if context.setup_forming else ""
+                self.logger.info(
+                    f"🤖 Claude [{icon} {context.bias.upper()} {context.confidence}%]{forming}: "
+                    f"{context.reasoning[:150]}"
+                )
+                if context.key_levels:
+                    self.logger.info(f"🤖 Niveles clave: {context.key_levels}")
 
     def analyze_and_trade(self):
         """Análisis principal y ejecución de trades para swing"""

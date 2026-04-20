@@ -38,7 +38,8 @@ class BotConfig:
         self.min_notional_usdt = 12
 
         # INTEGRACIÓN CLAUDE API
-        self.use_claude_advisor = True  # Activar validación de señales con Claude Opus
+        self.use_claude_advisor = True      # Activar validación de señales con Claude Opus
+        self.claude_scan_interval = 14400   # Escaneo proactivo cada 4h (1 vela 4h en segundos)
 
         # NUEVAS VARIABLES PARA ESTRATEGIA EMA + RSI
         self.ema_separation_min = 0.1  # Mínima separación % entre EMAs para confirmar tendencia
