@@ -37,8 +37,13 @@ class BotConfig:
         self.min_balance_usdt = 50
         self.min_notional_usdt = 12
 
+        # INTEGRACIÓN CLAUDE API
+        self.use_claude_advisor = True      # Activar validación de señales con Claude Opus
+        self.claude_scan_interval = 14400   # Escaneo proactivo cada 4h (1 vela 4h en segundos)
+
         # NUEVAS VARIABLES PARA ESTRATEGIA EMA + RSI
         self.ema_separation_min = 0.1  # Mínima separación % entre EMAs para confirmar tendencia
+        self.ema_touch_threshold = 0.5  # Distancia máxima % al EMA para considerar pullback
         self.trend_confirmation_candles = 2  # Velas para confirmar cambio de tendencia
         self.pullback_ema_touch = False  # Requerir que precio toque EMA21 en pullback
 

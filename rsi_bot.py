@@ -4,6 +4,7 @@ import ccxt
 from datetime import datetime
 from dotenv import load_dotenv
 from config import BotConfig
+from claude_advisor import ClaudeAdvisor, ParamAdjustments
 from indicators import TechnicalIndicators
 from market_analyzer import MarketAnalyzer
 from signal_detector import SignalDetector
@@ -16,6 +17,17 @@ from exchange_client import ExchangeClient
 
 # Cargar variables de entorno
 load_dotenv()
+
+# Límites seguros para ajuste dinámico de parámetros por Claude
+_PARAM_BOUNDS = {
+    'rsi_oversold':                  (30,  45),
+    'rsi_overbought':                (60,  75),
+    'stop_loss_pct':                 (1.0, 3.5),
+    'take_profit_pct':               (2.5, 7.0),
+    'swing_confirmation_threshold':  (0.10, 0.40),
+    'trailing_stop_distance':        (0.8, 3.0),
+    'breakeven_threshold':           (0.5, 2.0),
+}
 
 class BinanceRSIEMABot:
     def __init__(self, api_key, api_secret, testnet=True):
@@ -40,42 +52,12 @@ class BinanceRSIEMABot:
         )
         self.logger = self.logging_manager.setup_logging()
 
-        # Backward compatibility - mantener atributos originales
-        self.testnet = self.config.testnet
-        self.symbol = self.config.symbol
-        self.timeframe = self.config.timeframe
-        self.rsi_period = self.config.rsi_period
-        self.rsi_oversold = self.config.rsi_oversold
-        self.rsi_overbought = self.config.rsi_overbought
-        self.rsi_neutral_low = self.config.rsi_neutral_low
-        self.rsi_neutral_high = self.config.rsi_neutral_high
-        self.ema_fast_period = self.config.ema_fast_period
-        self.ema_slow_period = self.config.ema_slow_period
-        self.ema_trend_period = self.config.ema_trend_period
-        self.leverage = self.config.leverage
-        self.position_size_pct = self.config.position_size_pct
-        self.stop_loss_pct = self.config.stop_loss_pct
-        self.take_profit_pct = self.config.take_profit_pct
-        self.min_balance_usdt = self.config.min_balance_usdt
-        self.min_notional_usdt = self.config.min_notional_usdt
-        self.ema_separation_min = self.config.ema_separation_min
-        self.trend_confirmation_candles = self.config.trend_confirmation_candles
-        self.pullback_ema_touch = self.config.pullback_ema_touch
-        self.swing_confirmation_threshold = self.config.swing_confirmation_threshold
-        self.max_swing_wait = self.config.max_swing_wait
-        self.min_time_between_signals = self.config.min_time_between_signals
-        self.trailing_stop_distance = self.config.trailing_stop_distance
-        self.breakeven_threshold = self.config.breakeven_threshold
-        self.logs_dir = self.config.logs_dir
-        self.data_dir = self.config.data_dir
-        self.state_file = self.config.state_file
-        self.recovery_file = self.config.recovery_file
-
         # Inicializar módulo de indicadores técnicos
         self.indicators = TechnicalIndicators(self.logger)
 
         # Estado del bot
         self.last_signal_time = 0
+        self.last_claude_scan_time = 0  # Último escaneo proactivo de mercado con Claude
 
         # Variables de estado de mercado (para tracking)
         self.last_rsi = 50
@@ -156,6 +138,15 @@ class BinanceRSIEMABot:
         )
         self.analytics.set_performance_metrics(self.performance_metrics)
 
+        # Inicializar Claude Advisor (opcional — requiere ANTHROPIC_API_KEY)
+        self.claude_advisor = None
+        if self.config.use_claude_advisor and os.getenv('ANTHROPIC_API_KEY'):
+            try:
+                self.claude_advisor = ClaudeAdvisor(self.logger)
+                self.logger.info("🤖 Claude Advisor activo — validación de señales habilitada")
+            except Exception as e:
+                self.logger.warning(f"Claude Advisor no disponible: {e}")
+
         # Configurar callback de in_position para logging_manager
         self.logging_manager.set_in_position_callback(lambda: self.position_manager.in_position)
 
@@ -177,64 +168,6 @@ class BinanceRSIEMABot:
         self.last_ema_slow = loaded_state['last_ema_slow']
         self.last_ema_trend = loaded_state['last_ema_trend']
         self.trend_direction = loaded_state['trend_direction']
-
-    # Propiedades para backward compatibility - delegadas a signal_detector
-    @property
-    def pending_long_signal(self):
-        return self.signal_detector.pending_long_signal
-
-    @pending_long_signal.setter
-    def pending_long_signal(self, value):
-        self.signal_detector.pending_long_signal = value
-
-    @property
-    def pending_short_signal(self):
-        return self.signal_detector.pending_short_signal
-
-    @pending_short_signal.setter
-    def pending_short_signal(self, value):
-        self.signal_detector.pending_short_signal = value
-
-    @property
-    def signal_trigger_price(self):
-        return self.signal_detector.signal_trigger_price
-
-    @signal_trigger_price.setter
-    def signal_trigger_price(self, value):
-        self.signal_detector.signal_trigger_price = value
-
-    @property
-    def signal_trigger_time(self):
-        return self.signal_detector.signal_trigger_time
-
-    @signal_trigger_time.setter
-    def signal_trigger_time(self, value):
-        self.signal_detector.signal_trigger_time = value
-
-    @property
-    def swing_wait_count(self):
-        return self.signal_detector.swing_wait_count
-
-    @swing_wait_count.setter
-    def swing_wait_count(self, value):
-        self.signal_detector.swing_wait_count = value
-
-    # Propiedades para backward compatibility - delegadas a position_manager
-    @property
-    def position(self):
-        return self.position_manager.position
-
-    @position.setter
-    def position(self, value):
-        self.position_manager.position = value
-
-    @property
-    def in_position(self):
-        return self.position_manager.in_position
-
-    @in_position.setter
-    def in_position(self, value):
-        self.position_manager.in_position = value
 
     def setup_logging(self):
         """Configura sistema de logging - delegado a logging_manager"""
@@ -270,7 +203,7 @@ class BinanceRSIEMABot:
     
     def detect_swing_signal(self, price, rsi, ema_fast, ema_slow, ema_trend, trend_direction):
         """Detecta señales de swing - delegado a signal_detector"""
-        return self.signal_detector.detect_swing_signal(price, rsi, ema_fast, ema_slow, ema_trend, trend_direction, self.in_position)
+        return self.signal_detector.detect_swing_signal(price, rsi, ema_fast, ema_slow, ema_trend, trend_direction, self.position_manager.in_position)
 
     def check_swing_confirmation(self, current_price, current_rsi, trend_direction):
         """Confirma señales de swing - delegado a signal_detector"""
@@ -286,18 +219,19 @@ class BinanceRSIEMABot:
         
         # Calcular PnL no realizado si estamos en posición
         unrealized_pnl = 0
-        if self.in_position and self.position:
-            if self.position['side'] == 'long':
-                unrealized_pnl = ((price - self.position['entry_price']) / self.position['entry_price']) * 100 * self.leverage
+        if self.position_manager.in_position and self.position_manager.position:
+            pos = self.position_manager.position
+            if pos['side'] == 'long':
+                unrealized_pnl = ((price - pos['entry_price']) / pos['entry_price']) * 100 * self.config.leverage
             else:
-                unrealized_pnl = ((self.position['entry_price'] - price) / self.position['entry_price']) * 100 * self.leverage
-        
+                unrealized_pnl = ((pos['entry_price'] - price) / pos['entry_price']) * 100 * self.config.leverage
+
         # Estado de señal pendiente
         pending_signal = ""
-        if self.pending_long_signal:
-            pending_signal = f"LONG_WAIT_{self.swing_wait_count}/{self.max_swing_wait}"
-        elif self.pending_short_signal:
-            pending_signal = f"SHORT_WAIT_{self.swing_wait_count}/{self.max_swing_wait}"
+        if self.signal_detector.pending_long_signal:
+            pending_signal = f"LONG_WAIT_{self.signal_detector.swing_wait_count}/{self.config.max_swing_wait}"
+        elif self.signal_detector.pending_short_signal:
+            pending_signal = f"SHORT_WAIT_{self.signal_detector.swing_wait_count}/{self.config.max_swing_wait}"
         
         # Actualizar variables de estado
         self.last_rsi = rsi
@@ -411,105 +345,154 @@ class BinanceRSIEMABot:
         """Actualiza métricas de rendimiento - delegado a analytics"""
         self.analytics.update_performance_metrics(pnl_pct)
     
-    def analyze_and_trade(self):
-        """Análisis principal y ejecución de trades para swing"""
-        # Obtener datos del mercado
-        market_data = self.get_market_data()
-        if not market_data:
-            return
-            
-        current_rsi = market_data['rsi']
+    def _log_position_status(self, market_data):
+        """Registra en consola el estado de mercado o posición abierta"""
         current_price = market_data['price']
+        current_rsi = market_data['rsi']
         ema_fast = market_data['ema_fast']
         ema_slow = market_data['ema_slow']
         ema_trend = market_data['ema_trend']
         trend_direction = market_data['trend_direction']
 
-        # Guardar datos de mercado para análisis (CSV)
-        signal_status = None
-        if self.pending_long_signal:
-            signal_status = 'LONG_PENDING'
-        elif self.pending_short_signal:
-            signal_status = 'SHORT_PENDING'
-
-        self.log_market_data(
-            price=current_price,
-            rsi=current_rsi,
-            volume=market_data.get('volume', 0),
-            ema_fast=ema_fast,
-            ema_slow=ema_slow,
-            ema_trend=ema_trend,
-            trend_direction=trend_direction,
-            signal=signal_status
-        )
-
-        # Log información del mercado
-        if self.in_position and self.position:
-            pnl_pct = 0
-            if self.position['side'] == 'long':
-                pnl_pct = ((current_price - self.position['entry_price']) / self.position['entry_price']) * 100
-                max_price = self.position.get('highest_price', current_price)
-                trailing_stop = self.position.get('trailing_stop', 0)
-                
+        if self.position_manager.in_position and self.position_manager.position:
+            position = self.position_manager.position
+            if position['side'] == 'long':
+                pnl_pct = ((current_price - position['entry_price']) / position['entry_price']) * 100
+                max_price = position.get('highest_price', current_price)
+                trailing_stop = position.get('trailing_stop', 0)
                 self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | Tendencia: {trend_direction}")
                 self.logger.info(f"💰 PnL: {pnl_pct:+.2f}% | Max: ${max_price:.2f} | TS: ${trailing_stop:.2f}")
-                self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f}")
             else:
-                pnl_pct = ((self.position['entry_price'] - current_price) / self.position['entry_price']) * 100
-                min_price = self.position.get('lowest_price', current_price)
-                trailing_stop = self.position.get('trailing_stop', 0)
-                
+                pnl_pct = ((position['entry_price'] - current_price) / position['entry_price']) * 100
+                min_price = position.get('lowest_price', current_price)
+                trailing_stop = position.get('trailing_stop', 0)
                 self.logger.info(f"📈 BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | Tendencia: {trend_direction}")
                 self.logger.info(f"💰 PnL: {pnl_pct:+.2f}% | Min: ${min_price:.2f} | TS: ${trailing_stop:.2f}")
-                self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f}")
         else:
             ema_order = "📈" if ema_fast > ema_slow > ema_trend else "📉" if ema_fast < ema_slow < ema_trend else "🔄"
             self.logger.info(f"{ema_order} BTC: ${current_price:,.2f} | RSI: {current_rsi:.1f} | Tendencia: {trend_direction}")
-            self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f}")
-        
-        # Verificar condiciones de salida si estamos en posición
-        self.check_exit_conditions_swing(current_price, current_rsi, market_data)
-        
-        # Si estamos en posición, no buscar nuevas señales
-        if self.in_position:
+
+        self.logger.info(f"📊 EMA21: ${ema_fast:.2f} | EMA50: ${ema_slow:.2f} | EMA200: ${ema_trend:.2f}")
+
+    def _handle_confirmed_signal(self, signal_type, market_data, current_time):
+        """Abre posición cuando una señal pendiente es confirmada"""
+        current_price = market_data['price']
+        current_rsi = market_data['rsi']
+        ema_fast = market_data['ema_fast']
+        ema_slow = market_data['ema_slow']
+        ema_trend = market_data['ema_trend']
+        trend_direction = market_data['trend_direction']
+
+        if self.claude_advisor:
+            decision = self.claude_advisor.validate_signal(signal_type, market_data)
+            if decision and decision.action == "REJECT":
+                self.logger.warning(
+                    f"🤖 Claude RECHAZÓ señal {signal_type.upper()} "
+                    f"(confianza: {decision.confidence}%): {decision.reasoning}"
+                )
+                self.signal_detector.reset_signal_state()
+                return
+            elif decision:
+                self.logger.info(
+                    f"🤖 Claude CONFIRMÓ señal {signal_type.upper()} "
+                    f"(confianza: {decision.confidence}%): {decision.reasoning[:120]}"
+                )
+
+        confirmation_time_hours = 0
+        if self.signal_detector.signal_trigger_time:
+            confirmation_time_hours = (datetime.now() - self.signal_detector.signal_trigger_time).total_seconds() / 3600
+
+        if signal_type == 'long':
+            if self.open_long_position(current_price, current_rsi, ema_fast, ema_slow,
+                                       ema_trend, trend_direction, confirmation_time_hours):
+                self.last_signal_time = current_time
+        elif signal_type == 'short':
+            if self.open_short_position(current_price, current_rsi, ema_fast, ema_slow,
+                                        ema_trend, trend_direction, confirmation_time_hours):
+                self.last_signal_time = current_time
+
+    def _scan_for_new_signal(self, market_data, current_time):
+        """Busca nuevas señales si ha pasado el tiempo mínimo entre señales"""
+        if current_time - self.last_signal_time >= self.config.min_time_between_signals:
+            self.detect_swing_signal(
+                market_data['price'], market_data['rsi'],
+                market_data['ema_fast'], market_data['ema_slow'],
+                market_data['ema_trend'], market_data['trend_direction']
+            )
+
+        if (self.claude_advisor and
+                current_time - self.last_claude_scan_time >= self.config.claude_scan_interval):
+            self.last_claude_scan_time = current_time
+            context = self.claude_advisor.analyze_market_context(market_data)
+            if context:
+                icon = "📈" if context.bias == "long" else "📉" if context.bias == "short" else "➡️"
+                forming = " — SETUP FORMÁNDOSE" if context.setup_forming else ""
+                self.logger.info(
+                    f"🤖 Claude [{icon} {context.bias.upper()} {context.confidence}%]{forming}: "
+                    f"{context.reasoning[:150]}"
+                )
+                if context.key_levels:
+                    self.logger.info(f"🤖 Niveles clave: {context.key_levels}")
+
+            adjustments = self.claude_advisor.suggest_param_adjustments(
+                market_data, self._current_params()
+            )
+            if adjustments:
+                self._apply_param_adjustments(adjustments)
+
+    def _current_params(self) -> dict:
+        return {param: getattr(self.config, param) for param in _PARAM_BOUNDS}
+
+    def _apply_param_adjustments(self, adjustments: ParamAdjustments) -> None:
+        changes = []
+        for param, (lo, hi) in _PARAM_BOUNDS.items():
+            suggested = getattr(adjustments, param)
+            clamped = max(lo, min(hi, suggested))
+            current = getattr(self.config, param)
+            if abs(clamped - current) > 1e-9:
+                setattr(self.config, param, type(current)(clamped))
+                changes.append(f"{param}: {current} → {type(current)(clamped)}")
+        if changes:
+            self.logger.info(
+                f"🤖 Claude ajustó parámetros [{adjustments.regime}]: {', '.join(changes)}"
+            )
+            self.logger.info(f"🤖 Motivo: {adjustments.reasoning}")
+        else:
+            self.logger.debug(f"🤖 Claude evaluó parámetros [{adjustments.regime}]: sin cambios necesarios")
+
+    def analyze_and_trade(self):
+        """Análisis principal y ejecución de trades para swing"""
+        market_data = self.get_market_data()
+        if not market_data:
             return
-        
-        # Verificar confirmación de señales pendientes
+
+        current_price = market_data['price']
+        current_rsi = market_data['rsi']
+        trend_direction = market_data['trend_direction']
+
+        self._log_position_status(market_data)
+        self.check_exit_conditions_swing(current_price, current_rsi, market_data)
+
+        if self.position_manager.in_position:
+            return
+
+        current_time = time.time()
         confirmed, signal_type = self.check_swing_confirmation(current_price, current_rsi, trend_direction)
-        
+
         if confirmed:
-            current_time = time.time()
-            
-            # Calcular tiempo de confirmación
-            confirmation_time_hours = 0
-            if self.signal_trigger_time:
-                confirmation_time_hours = (datetime.now() - self.signal_trigger_time).total_seconds() / 3600
-            
-            if signal_type == 'long':
-                if self.open_long_position(current_price, current_rsi, ema_fast, ema_slow, 
-                                         ema_trend, trend_direction, confirmation_time_hours):
-                    self.last_signal_time = current_time
-            elif signal_type == 'short':
-                if self.open_short_position(current_price, current_rsi, ema_fast, ema_slow,
-                                          ema_trend, trend_direction, confirmation_time_hours):
-                    self.last_signal_time = current_time
-        
-        # Solo buscar nuevas señales si no hay señales pendientes y ha pasado tiempo suficiente
-        elif not (self.pending_long_signal or self.pending_short_signal):
-            current_time = time.time()
-            if current_time - self.last_signal_time >= self.min_time_between_signals:
-                self.detect_swing_signal(current_price, current_rsi, ema_fast, ema_slow, 
-                                       ema_trend, trend_direction)
+            self._handle_confirmed_signal(signal_type, market_data, current_time)
+        elif not (self.signal_detector.pending_long_signal or self.signal_detector.pending_short_signal):
+            self._scan_for_new_signal(market_data, current_time)
     
     def run(self):
         """Ejecuta el bot en un loop continuo optimizado para swing trading"""
         self.logger.info("🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado")
-        self.logger.info(f"📊 Timeframe: {self.timeframe} | RSI({self.rsi_period}) | OS: {self.rsi_oversold} | OB: {self.rsi_overbought}")
-        self.logger.info(f"📈 EMAs: Fast({self.ema_fast_period}) | Slow({self.ema_slow_period}) | Trend({self.ema_trend_period})")
-        self.logger.info(f"⚡ Leverage: {self.leverage}x | Risk: {self.position_size_pct}% | SL: {self.stop_loss_pct}% | TP: {self.take_profit_pct}%")
-        self.logger.info(f"🎯 Swing Confirmación: {self.swing_confirmation_threshold}% | Max espera: {self.max_swing_wait} períodos")
-        self.logger.info(f"🛡️ Trailing Stop: {self.trailing_stop_distance}% | Breakeven: {self.breakeven_threshold}%")
-        self.logger.info(f"💾 Estado guardado en: {self.state_file}")
+        self.logger.info(f"📊 Timeframe: {self.config.timeframe} | RSI({self.config.rsi_period}) | OS: {self.config.rsi_oversold} | OB: {self.config.rsi_overbought}")
+        self.logger.info(f"📈 EMAs: Fast({self.config.ema_fast_period}) | Slow({self.config.ema_slow_period}) | Trend({self.config.ema_trend_period})")
+        self.logger.info(f"⚡ Leverage: {self.config.leverage}x | Risk: {self.config.position_size_pct}% | SL: {self.config.stop_loss_pct}% | TP: {self.config.take_profit_pct}%")
+        self.logger.info(f"🎯 Swing Confirmación: {self.config.swing_confirmation_threshold}% | Max espera: {self.config.max_swing_wait} períodos")
+        self.logger.info(f"🛡️ Trailing Stop: {self.config.trailing_stop_distance}% | Breakeven: {self.config.breakeven_threshold}%")
+        self.logger.info(f"💾 Estado guardado en: {self.config.state_file}")
         self.logger.info(f"🐳 Ejecutándose en Docker - PID: {os.getpid()}")
         
         # Para swing trading, verificar cada 30 minutos (timeframe 4h)
@@ -561,7 +544,7 @@ class BinanceRSIEMABot:
 
         except KeyboardInterrupt:
             self.logger.info("🛑 Bot detenido por el usuario (KeyboardInterrupt)")
-            if self.in_position:
+            if self.position_manager.in_position:
                 self.close_position("Bot detenido")
             self.save_bot_state()
             self.log_performance_summary()
@@ -569,7 +552,7 @@ class BinanceRSIEMABot:
         except Exception as e:
             # Fatal errors that should stop the bot
             self.logger.error(f"❌ Error fatal en el bot: {e}", exc_info=True)
-            if self.in_position:
+            if self.position_manager.in_position:
                 try:
                     self.close_position("Error fatal del bot")
                 except:

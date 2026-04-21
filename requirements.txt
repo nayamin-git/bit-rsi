@@ -8,3 +8,5 @@ flask==3.0.3
 requests==2.32.3
 Werkzeug==3.0.3
 markupsafe==2.1.5
+pytest==8.2.0
+anthropic>=0.40.0
