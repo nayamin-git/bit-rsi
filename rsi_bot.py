@@ -4,7 +4,7 @@ import ccxt
 from datetime import datetime
 from dotenv import load_dotenv
 from config import BotConfig
-from claude_advisor import ClaudeAdvisor
+from claude_advisor import ClaudeAdvisor, ParamAdjustments
 from indicators import TechnicalIndicators
 from market_analyzer import MarketAnalyzer
 from signal_detector import SignalDetector
@@ -17,6 +17,17 @@ from exchange_client import ExchangeClient
 
 # Cargar variables de entorno
 load_dotenv()
+
+# Límites seguros para ajuste dinámico de parámetros por Claude
+_PARAM_BOUNDS = {
+    'rsi_oversold':                  (30,  45),
+    'rsi_overbought':                (60,  75),
+    'stop_loss_pct':                 (1.0, 3.5),
+    'take_profit_pct':               (2.5, 7.0),
+    'swing_confirmation_threshold':  (0.10, 0.40),
+    'trailing_stop_distance':        (0.8, 3.0),
+    'breakeven_threshold':           (0.5, 2.0),
+}
 
 class BinanceRSIEMABot:
     def __init__(self, api_key, api_secret, testnet=True):
@@ -422,6 +433,32 @@ class BinanceRSIEMABot:
                 )
                 if context.key_levels:
                     self.logger.info(f"🤖 Niveles clave: {context.key_levels}")
+
+            adjustments = self.claude_advisor.suggest_param_adjustments(
+                market_data, self._current_params()
+            )
+            if adjustments:
+                self._apply_param_adjustments(adjustments)
+
+    def _current_params(self) -> dict:
+        return {param: getattr(self.config, param) for param in _PARAM_BOUNDS}
+
+    def _apply_param_adjustments(self, adjustments: ParamAdjustments) -> None:
+        changes = []
+        for param, (lo, hi) in _PARAM_BOUNDS.items():
+            suggested = getattr(adjustments, param)
+            clamped = max(lo, min(hi, suggested))
+            current = getattr(self.config, param)
+            if abs(clamped - current) > 1e-9:
+                setattr(self.config, param, type(current)(clamped))
+                changes.append(f"{param}: {current} → {type(current)(clamped)}")
+        if changes:
+            self.logger.info(
+                f"🤖 Claude ajustó parámetros [{adjustments.regime}]: {', '.join(changes)}"
+            )
+            self.logger.info(f"🤖 Motivo: {adjustments.reasoning}")
+        else:
+            self.logger.debug(f"🤖 Claude evaluó parámetros [{adjustments.regime}]: sin cambios necesarios")
 
     def analyze_and_trade(self):
         """Análisis principal y ejecución de trades para swing"""

@@ -212,6 +212,98 @@ class TestMarketContext:
         assert call_kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
 
 
+CURRENT_PARAMS = {
+    'rsi_oversold': 40,
+    'rsi_overbought': 65,
+    'stop_loss_pct': 2.0,
+    'take_profit_pct': 4.0,
+    'swing_confirmation_threshold': 0.15,
+    'trailing_stop_distance': 1.5,
+    'breakeven_threshold': 1.0,
+}
+
+
+class TestParamAdjustments:
+    def _make_params_response(self, regime, rsi_os, rsi_ob, sl, tp, sct, ts, be, reasoning):
+        text_block = MagicMock()
+        text_block.type = "text"
+        text_block.text = json.dumps({
+            "regime": regime,
+            "rsi_oversold": rsi_os,
+            "rsi_overbought": rsi_ob,
+            "stop_loss_pct": sl,
+            "take_profit_pct": tp,
+            "swing_confirmation_threshold": sct,
+            "trailing_stop_distance": ts,
+            "breakeven_threshold": be,
+            "reasoning": reasoning,
+        })
+        response = MagicMock()
+        response.content = [text_block]
+        return response
+
+    def test_returns_param_adjustments_for_trending(self, advisor):
+        advisor.client.messages.create.return_value = self._make_params_response(
+            "trending", 35, 70, 2.5, 6.0, 0.15, 1.2, 0.8, "Mercado en tendencia alcista."
+        )
+        from claude_advisor import ParamAdjustments
+        result = advisor.suggest_param_adjustments(MARKET_DATA, CURRENT_PARAMS)
+        assert result is not None
+        assert isinstance(result, ParamAdjustments)
+        assert result.regime == "trending"
+        assert result.rsi_oversold == 35
+        assert result.take_profit_pct == 6.0
+
+    def test_returns_param_adjustments_for_ranging(self, advisor):
+        advisor.client.messages.create.return_value = self._make_params_response(
+            "ranging", 42, 62, 1.5, 3.0, 0.25, 2.0, 0.6, "Mercado lateral sin dirección."
+        )
+        result = advisor.suggest_param_adjustments(MARKET_DATA, CURRENT_PARAMS)
+        assert result is not None
+        assert result.regime == "ranging"
+        assert result.rsi_oversold == 42
+        assert result.stop_loss_pct == 1.5
+
+    def test_returns_none_on_api_error(self, advisor):
+        advisor.client.messages.create.side_effect = Exception("api error")
+        result = advisor.suggest_param_adjustments(MARKET_DATA, CURRENT_PARAMS)
+        assert result is None
+
+    def test_warning_logged_on_error(self, advisor):
+        advisor.client.messages.create.side_effect = Exception("timeout")
+        advisor.suggest_param_adjustments(MARKET_DATA, CURRENT_PARAMS)
+        advisor.logger.warning.assert_called_once()
+
+    def test_prompt_includes_current_params(self, advisor):
+        prompt = advisor._build_params_prompt(MARKET_DATA, CURRENT_PARAMS)
+        assert "rsi_oversold: 40" in prompt
+        assert "stop_loss_pct: 2.0" in prompt
+        assert "take_profit_pct: 4.0" in prompt
+
+    def test_prompt_includes_regime_descriptions(self, advisor):
+        prompt = advisor._build_params_prompt(MARKET_DATA, CURRENT_PARAMS)
+        assert "trending" in prompt
+        assert "ranging" in prompt
+        assert "volatile" in prompt
+
+    def test_uses_cached_system_prompt(self, advisor):
+        advisor.client.messages.create.return_value = self._make_params_response(
+            "volatile", 38, 68, 3.0, 3.5, 0.30, 2.5, 0.5, "Alta volatilidad."
+        )
+        advisor.suggest_param_adjustments(MARKET_DATA, CURRENT_PARAMS)
+        call_kwargs = advisor.client.messages.create.call_args[1]
+        assert call_kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_volatile_regime_returns_adjustments(self, advisor):
+        advisor.client.messages.create.return_value = self._make_params_response(
+            "volatile", 38, 68, 3.0, 3.5, 0.30, 2.5, 0.5, "Volatilidad elevada."
+        )
+        result = advisor.suggest_param_adjustments(MARKET_DATA, CURRENT_PARAMS)
+        assert result.regime == "volatile"
+        assert result.swing_confirmation_threshold == 0.30
+        assert result.trailing_stop_distance == 2.5
+
+
 class TestClaudeAdvisorInit:
     def test_init_creates_anthropic_client(self):
         from claude_advisor import ClaudeAdvisor

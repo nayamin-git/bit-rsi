@@ -41,9 +41,10 @@ _SYSTEM_PROMPT = """Eres un experto en trading técnico de criptomonedas, especi
 
 ## Tu rol
 
-Puedes ser consultado en dos modos:
+Puedes ser consultado en tres modos:
 1. **Validar señal confirmada** — evalúa si CONFIRMAR o RECHAZAR una señal que el bot ya activó.
 2. **Escanear mercado** — analiza el estado actual y detecta si se está formando una oportunidad aunque los indicadores técnicos aún no hayan disparado señal.
+3. **Ajustar parámetros** — detecta el régimen de mercado (trending/ranging/volatile) y devuelve los valores óptimos para cada parámetro de la estrategia dentro de los rangos permitidos.
 
 **Evalúa basándote en:**
 - ¿La alineación de EMAs es sólida o marginal?
@@ -59,6 +60,19 @@ Puedes ser consultado en dos modos:
 class TradeDecision:
     action: str       # "CONFIRM" | "REJECT"
     confidence: int   # 0-100
+    reasoning: str
+
+
+@dataclass
+class ParamAdjustments:
+    regime: str                         # "trending" | "ranging" | "volatile"
+    rsi_oversold: int                   # 30-45
+    rsi_overbought: int                 # 60-75
+    stop_loss_pct: float                # 1.0-3.5
+    take_profit_pct: float              # 2.5-7.0
+    swing_confirmation_threshold: float # 0.10-0.40
+    trailing_stop_distance: float       # 0.8-3.0
+    breakeven_threshold: float          # 0.5-2.0
     reasoning: str
 
 
@@ -157,6 +171,57 @@ class ClaudeAdvisor:
             self.logger.warning(f"ClaudeAdvisor contexto no disponible (bot continúa normalmente): {e}")
             return None
 
+    def suggest_param_adjustments(self, market_data: dict, current_params: dict) -> Optional[ParamAdjustments]:
+        """Sugiere ajustes de parámetros según el régimen de mercado actual."""
+        try:
+            user_message = self._build_params_prompt(market_data, current_params)
+            response = self.client.messages.create(
+                model="claude-opus-4-7",
+                max_tokens=512,
+                thinking={"type": "adaptive"},
+                system=[{
+                    "type": "text",
+                    "text": _SYSTEM_PROMPT,
+                    "cache_control": {"type": "ephemeral"}
+                }],
+                messages=[{"role": "user", "content": user_message}],
+                output_config={
+                    "format": {
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "param_adjustments",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "regime": {"type": "string", "enum": ["trending", "ranging", "volatile"]},
+                                    "rsi_oversold": {"type": "integer", "minimum": 30, "maximum": 45},
+                                    "rsi_overbought": {"type": "integer", "minimum": 60, "maximum": 75},
+                                    "stop_loss_pct": {"type": "number", "minimum": 1.0, "maximum": 3.5},
+                                    "take_profit_pct": {"type": "number", "minimum": 2.5, "maximum": 7.0},
+                                    "swing_confirmation_threshold": {"type": "number", "minimum": 0.10, "maximum": 0.40},
+                                    "trailing_stop_distance": {"type": "number", "minimum": 0.8, "maximum": 3.0},
+                                    "breakeven_threshold": {"type": "number", "minimum": 0.5, "maximum": 2.0},
+                                    "reasoning": {"type": "string"}
+                                },
+                                "required": [
+                                    "regime", "rsi_oversold", "rsi_overbought",
+                                    "stop_loss_pct", "take_profit_pct",
+                                    "swing_confirmation_threshold", "trailing_stop_distance",
+                                    "breakeven_threshold", "reasoning"
+                                ],
+                                "additionalProperties": False
+                            }
+                        }
+                    }
+                }
+            )
+            text = next(b.text for b in response.content if b.type == "text")
+            data = json.loads(text)
+            return ParamAdjustments(**data)
+        except Exception as e:
+            self.logger.warning(f"ClaudeAdvisor ajuste de parámetros no disponible: {e}")
+            return None
+
     def _build_prompt(self, signal_type: str, market_data: dict) -> str:
         direction = "LONG (compra)" if signal_type == "long" else "SHORT (venta)"
         ema_fast = market_data.get('ema_fast', 0)
@@ -222,3 +287,36 @@ Responde:
 - `setup_forming`: ¿se está construyendo una oportunidad de entrada próxima? (true/false)
 - `key_levels`: niveles clave a vigilar (EMAs, zonas de precio) en una línea corta
 - `reasoning`: explicación breve de tu análisis (máx 2 oraciones)"""
+
+    def _build_params_prompt(self, market_data: dict, current_params: dict) -> str:
+        ema_fast = market_data.get('ema_fast', 0)
+        ema_slow = market_data.get('ema_slow', 0)
+        ema_trend = market_data.get('ema_trend', 0)
+        price = market_data.get('price', 0)
+
+        fast_slow_sep = ((ema_fast - ema_slow) / ema_slow * 100) if ema_slow > 0 else 0
+        slow_trend_sep = ((ema_slow - ema_trend) / ema_trend * 100) if ema_trend > 0 else 0
+
+        return f"""Analiza el régimen de mercado actual y sugiere los parámetros óptimos para el bot.
+
+**Snapshot BTC/USDT 4h:**
+- Precio: ${price:,.2f}
+- RSI(14): {market_data.get('rsi', 0):.1f}
+- Tendencia: {market_data.get('trend_direction', 'unknown')}
+- EMA21 vs EMA50: {fast_slow_sep:+.3f}% | EMA50 vs EMA200: {slow_trend_sep:+.3f}%
+
+**Parámetros actuales del bot:**
+- rsi_oversold: {current_params.get('rsi_oversold')} (rango 30-45)
+- rsi_overbought: {current_params.get('rsi_overbought')} (rango 60-75)
+- stop_loss_pct: {current_params.get('stop_loss_pct')} (rango 1.0-3.5)
+- take_profit_pct: {current_params.get('take_profit_pct')} (rango 2.5-7.0)
+- swing_confirmation_threshold: {current_params.get('swing_confirmation_threshold')} (rango 0.10-0.40)
+- trailing_stop_distance: {current_params.get('trailing_stop_distance')} (rango 0.8-3.0)
+- breakeven_threshold: {current_params.get('breakeven_threshold')} (rango 0.5-2.0)
+
+**Regímenes y lógica esperada:**
+- `trending`: EMAs bien alineadas, precio con momentum claro → RSI más laxo, TP mayor, SL ligeramente mayor
+- `ranging`: Mercado lateral, precio rebota entre niveles → RSI más estricto, TP ajustado, confirmación más exigente
+- `volatile`: Alta volatilidad, movimientos bruscos → Confirmación alta, SL más amplio, breakeven rápido
+
+Devuelve los valores ideales para cada parámetro según el régimen actual. Si un parámetro ya es óptimo, devuelve el valor actual."""
