@@ -1,0 +1,17 @@
+2026-04-29 20:50:11 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260429.log
+2026-04-29 20:50:16 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-04-29 20:50:16 | INFO | 💰 Balance USDT disponible: $596.31
+2026-04-29 20:50:16 | INFO | 🔄 Iniciando recuperación de estado...
+2026-04-29 20:50:16 | INFO | 📄 No hay archivo de estado previo
+2026-04-29 20:50:16 | INFO | ✅ Bot limpio - Sin estado previo ni posiciones
+2026-04-29 20:50:16 | INFO | 🔄 Recuperación completada
+2026-04-29 20:50:16 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado
+2026-04-29 20:50:16 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 40 | OB: 65
+2026-04-29 20:50:16 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-04-29 20:50:16 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 2.0% | TP: 4.0%
+2026-04-29 20:50:16 | INFO | 🎯 Swing Confirmación: 0.15% | Max espera: 12 períodos
+2026-04-29 20:50:16 | INFO | 🛡️ Trailing Stop: 1.5% | Breakeven: 1.0%
+2026-04-29 20:50:16 | INFO | 💾 Estado guardado en: /app/data/bot_state_20260429.json
+2026-04-29 20:50:16 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-04-29 20:50:16 | INFO | 🔄 BTC: $75,793.05 | RSI: 41.4 | Tendencia: neutral
+2026-04-29 20:50:16 | INFO | 📊 EMA21: $76803.14 | EMA50: $76863.73 | EMA200: $74013.51
