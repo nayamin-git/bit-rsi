@@ -79,6 +79,24 @@ class Analytics:
                     'position_side', 'unrealized_pnl_pct', 'pending_signal'
                 ])
 
+    def log_market_data(self, timestamp, price, rsi, volume, ema_fast, ema_slow,
+                        ema_trend, trend_direction, signal, in_position,
+                        position_side, unrealized_pnl_pct, pending_signal):
+        """Escribe una fila de datos de mercado al CSV."""
+        if not self.market_csv:
+            return
+        try:
+            with open(self.market_csv, 'a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    timestamp.isoformat(), price, f"{rsi:.2f}", f"{volume:.6f}",
+                    f"{ema_fast:.2f}", f"{ema_slow:.2f}", f"{ema_trend:.2f}",
+                    trend_direction, signal or '', in_position,
+                    position_side or '', f"{unrealized_pnl_pct:.4f}", pending_signal
+                ])
+        except Exception as e:
+            self.logger.error(f"Error guardando market data: {e}")
+
     def log_trade(self, action, side=None, price=None, quantity=None, rsi=None,
                   ema_fast=None, ema_slow=None, ema_trend=None, trend_direction=None,
                   reason=None, pnl_pct=None, duration_hours=None, confirmation_time=None):
