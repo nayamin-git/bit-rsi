@@ -150,8 +150,21 @@ class BinanceRSIEMABot:
         # Configurar callback de in_position para logging_manager
         self.logging_manager.set_in_position_callback(lambda: self.position_manager.in_position)
 
-        # Verificar conexión después de configurar todo
-        self.verify_connection()
+        # Verificar conexión con retry para tolerar fallos de red al arrancar
+        for _attempt in range(1, 4):
+            try:
+                self.verify_connection()
+                break
+            except Exception as e:
+                if _attempt < 3:
+                    self.logger.warning(
+                        f"⚠️ Intento {_attempt}/3 fallido al conectar con Binance: {e}. "
+                        f"Reintentando en 10s..."
+                    )
+                    time.sleep(10)
+                else:
+                    self.logger.error("❌ No se pudo conectar con Binance tras 3 intentos")
+                    raise
 
         # Inicializar archivos de logs al final
         self.init_log_files()
@@ -262,12 +275,23 @@ class BinanceRSIEMABot:
         self.ema_history['fast'].append(ema_fast)
         self.ema_history['slow'].append(ema_slow)
         self.ema_history['trend'].append(ema_trend)
-        
+
         # Mantener solo los últimos 50 registros
         if len(self.price_history) > 50:
             self.price_history = self.price_history[-50:]
             for key in self.ema_history:
                 self.ema_history[key] = self.ema_history[key][-50:]
+
+        # Escribir al CSV de datos de mercado
+        position_side = None
+        if self.position_manager.in_position and self.position_manager.position:
+            position_side = self.position_manager.position['side']
+        self.analytics.log_market_data(
+            timestamp, price, rsi, volume, ema_fast, ema_slow, ema_trend,
+            trend_direction, signal,
+            self.position_manager.in_position, position_side,
+            unrealized_pnl, pending_signal
+        )
     
     def save_bot_state(self):
         """Guarda el estado del bot - delegado a state_manager"""
