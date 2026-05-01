@@ -129,56 +129,126 @@ bit-rsi/
 - Cuenta en Binance (o Binance Testnet para pruebas)
 - API Key de Anthropic (opcional, para Claude AI)
 
-### 1. Configurar credenciales
+### 1. Clonar el repositorio
 
-Crea el archivo `.env` en la raíz del proyecto:
+```bash
+git clone https://github.com/nayamin-git/bit-rsi.git
+cd bit-rsi
+```
+
+### 2. Configurar credenciales
+
+```bash
+cp .env.example .env
+nano .env   # o cualquier editor
+```
+
+Contenido del `.env`:
 
 ```env
-# Binance
+# Binance — claves de la cuenta real o testnet
 BINANCE_API_KEY=tu_api_key
-BINANCE_SECRET_KEY=tu_secret_key
+BINANCE_API_SECRET=tu_api_secret
 
-# Claude AI (opcional)
+# Modo de operación: true = testnet (sin dinero real), false = mainnet
+USE_TESTNET=true
+
+# Claude AI — opcional, el bot funciona sin ella
 ANTHROPIC_API_KEY=sk-ant-...
-
-# Modo testnet (True/False)
-TESTNET=True
 ```
 
-Para obtener claves de testnet: https://testnet.binancefuture.com
+> Claves de testnet gratuitas: https://testnet.binancefuture.com
 
-### 2. Construir y arrancar
+### 3. Construir la imagen
 
 ```bash
-make build    # Construye la imagen Docker
-make up       # Inicia el bot en segundo plano
-make logs     # Sigue los logs en tiempo real
+docker-compose build
 ```
 
-### 3. Verificar que funciona
+### 4. Iniciar el bot
 
 ```bash
-make status   # Estado del contenedor
-make health   # Health check
+docker-compose up -d
+```
+
+El contenedor arranca en segundo plano con reinicio automático (`restart: unless-stopped`).
+
+### 5. Verificar que funciona
+
+```bash
+docker-compose ps                        # Estado del contenedor
+docker-compose logs -f rsi-bot           # Logs en tiempo real (Ctrl+C para salir)
+docker-compose logs --tail=50 rsi-bot    # Últimos 50 mensajes
+```
+
+Deberías ver algo como:
+
+```
+✅ Conexión exitosa con Binance Testnet
+💰 Balance USDT disponible: $xxx.xx
+🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado
 ```
 
 ---
 
-## Comandos
+## Operación diaria
 
 ```bash
-make build        # Construir imagen
-make up           # Iniciar bot (background)
-make down         # Detener bot
-make restart      # Reiniciar bot
-make logs         # Logs en tiempo real
-make logs-tail    # Últimos 100 logs
-make status       # Estado del contenedor
-make health       # Health check
-make monitor      # Uso de CPU/RAM
-make shell        # Acceder al contenedor
-make backup       # Backup de logs, datos y .env
-make clean        # Eliminar contenedores e imágenes
+# Ver logs en tiempo real
+docker-compose logs -f rsi-bot
+
+# Detener el bot
+docker-compose down
+
+# Reiniciar el bot (tras cambios en .env o config.py)
+docker-compose restart rsi-bot
+
+# Reconstruir la imagen (tras cambios en el código)
+docker-compose build && docker-compose up -d
+
+# Ver uso de CPU y memoria
+docker stats rsi-trading-bot
+
+# Acceder al contenedor para debug
+docker-compose exec rsi-bot /bin/bash
+
+# Ver estado de salud
+docker inspect --format='{{.State.Health.Status}}' rsi-trading-bot
+```
+
+### Backup manual
+
+```bash
+mkdir -p backups
+tar -czf backups/bot-backup-$(date +%Y%m%d-%H%M%S).tar.gz logs data .env
+```
+
+### Limpiar todo (⚠️ borra contenedores e imágenes)
+
+```bash
+docker-compose down -v
+docker system prune -f
+```
+
+---
+
+## Comandos rápidos con Make
+
+Si tienes `make` instalado, los comandos anteriores tienen alias:
+
+```bash
+make build        # docker-compose build
+make up           # docker-compose up -d
+make down         # docker-compose down
+make restart      # docker-compose restart
+make logs         # docker-compose logs -f rsi-bot
+make logs-tail    # docker-compose logs --tail=100 -f rsi-bot
+make status       # docker-compose ps
+make health       # docker inspect health status
+make monitor      # docker stats
+make shell        # docker-compose exec rsi-bot /bin/bash
+make backup       # crear .tar.gz en backups/
+make clean        # down -v + docker system prune
 ```
 
 ---
