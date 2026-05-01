@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-30T00:20:19.620549",
+  "timestamp": "2026-05-01T03:47:14.357415",
   "in_position": false,
   "position": null,
   "last_signal_time": 0,
@@ -16,7 +16,7 @@
     "max_drawdown": 0,
     "consecutive_losses": 0,
     "max_consecutive_losses": 0,
-    "signals_detected": 0,
+    "signals_detected": 1,
     "signals_confirmed": 0,
     "signals_expired": 0,
     "recoveries_performed": 0,
@@ -24,10 +24,10 @@
     "ema_confirmations": 0,
     "pullback_entries": 0
   },
-  "last_rsi": 40.12051138745279,
-  "last_price": 75746.75,
-  "last_ema_fast": 76706.02480911616,
-  "last_ema_slow": 76819.41010648996,
-  "last_ema_trend": 73986.28223895731,
+  "last_rsi": 57.84153378281128,
+  "last_price": 77170.0,
+  "last_ema_fast": 76619.02228399474,
+  "last_ema_slow": 76747.68847189691,
+  "last_ema_trend": 74163.5685134541,
   "trend_direction": "neutral"
 }
