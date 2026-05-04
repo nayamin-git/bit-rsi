@@ -1,9 +1,19 @@
 import json
 import os
+import re
 from dataclasses import dataclass
 from typing import Optional
 
 import anthropic
+
+
+def _parse_json_response(text: str) -> dict:
+    """Parse JSON from a response that may be wrapped in markdown code fences."""
+    text = text.strip()
+    # Strip ```json ... ``` or ``` ... ``` wrappers
+    text = re.sub(r'^```(?:json)?\s*', '', text)
+    text = re.sub(r'\s*```$', '', text.strip())
+    return json.loads(text.strip())
 
 _SYSTEM_PROMPT = """Eres un experto en trading técnico de criptomonedas, especializado en análisis de BTC/USDT en timeframe 4h usando la estrategia RSI + EMA.
 
@@ -108,7 +118,7 @@ class ClaudeAdvisor:
             if not text:
                 types = [b.type for b in response.content]
                 raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
-            data = json.loads(text)
+            data = _parse_json_response(text)
             return TradeDecision(**data)
         except Exception as e:
             self.logger.warning(f"ClaudeAdvisor no disponible (bot continúa normalmente): {e}")
@@ -132,7 +142,7 @@ class ClaudeAdvisor:
             if not text:
                 types = [b.type for b in response.content]
                 raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
-            data = json.loads(text)
+            data = _parse_json_response(text)
             return MarketContext(**data)
         except Exception as e:
             self.logger.warning(f"ClaudeAdvisor contexto no disponible (bot continúa normalmente): {e}")
@@ -156,7 +166,7 @@ class ClaudeAdvisor:
             if not text:
                 types = [b.type for b in response.content]
                 raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
-            data = json.loads(text)
+            data = _parse_json_response(text)
             return ParamAdjustments(**data)
         except Exception as e:
             self.logger.warning(f"ClaudeAdvisor ajuste de parámetros no disponible: {e}")
