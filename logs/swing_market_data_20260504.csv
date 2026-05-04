@@ -1,2 +1,3 @@
 timestamp,price,rsi,volume,ema_fast,ema_slow,ema_trend,trend_direction,signal,in_position,position_side,unrealized_pnl_pct,pending_signal
 2026-05-04T19:26:15.024152,79916.95,63.86,3498.784930,78706.12,77944.49,75175.30,bullish,,False,,0.0000,
+2026-05-04T19:30:12.623003,79930.01,63.99,3533.466430,78707.30,77945.01,75175.43,bullish,,False,,0.0000,
