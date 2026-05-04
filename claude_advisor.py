@@ -95,7 +95,7 @@ class ClaudeAdvisor:
             user_message = self._build_prompt(signal_type, market_data)
             response = self.client.messages.create(
                 model="claude-opus-4-7",
-                max_tokens=512,
+                max_tokens=2048,
                 thinking={"type": "adaptive"},
                 system=[{
                     "type": "text",
@@ -120,7 +120,6 @@ class ClaudeAdvisor:
             response = self.client.messages.create(
                 model="claude-sonnet-4-6",
                 max_tokens=512,
-                thinking={"type": "adaptive"},
                 system=[{
                     "type": "text",
                     "text": _SYSTEM_PROMPT,
@@ -144,7 +143,6 @@ class ClaudeAdvisor:
             response = self.client.messages.create(
                 model="claude-sonnet-4-6",
                 max_tokens=512,
-                thinking={"type": "adaptive"},
                 system=[{
                     "type": "text",
                     "text": _SYSTEM_PROMPT,
