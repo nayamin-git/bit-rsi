@@ -134,7 +134,7 @@ class ClaudeAdvisor:
         try:
             user_message = self._build_context_prompt(market_data)
             response = self.client.messages.create(
-                model="claude-opus-4-7",
+                model="claude-sonnet-4-6",
                 max_tokens=512,
                 thinking={"type": "adaptive"},
                 system=[{
@@ -176,7 +176,7 @@ class ClaudeAdvisor:
         try:
             user_message = self._build_params_prompt(market_data, current_params)
             response = self.client.messages.create(
-                model="claude-opus-4-7",
+                model="claude-sonnet-4-6",
                 max_tokens=512,
                 thinking={"type": "adaptive"},
                 system=[{

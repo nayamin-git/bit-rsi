@@ -72,6 +72,41 @@ class SignalDetector:
                 self.logger.info(f"🟡 FLEXIBLE SHORT detected - RSI: {rsi:.2f} | Trend: {trend_direction}")
                 return True
 
+        # NEUTRAL ZONE LONG: RSI 45-55 + bullish trend + price near EMA (pullback)
+        elif (self.config.rsi_neutral_low <= rsi <= self.config.rsi_neutral_high and
+              trend_direction == 'bullish' and
+              not in_position):
+
+            is_pullback, pullback_type = self.market_analyzer.is_pullback_to_ema(price, ema_fast, ema_slow)
+
+            if is_pullback:
+                self.pending_long_signal = True
+                self.signal_trigger_price = price
+                self.signal_trigger_time = datetime.now()
+                self.swing_wait_count = 0
+
+                self.performance_metrics['signals_detected'] += 1
+                self.logger.info(f"🟡 NEUTRAL ZONE LONG detected - RSI: {rsi:.2f} | Pullback: {pullback_type} | Trend: {trend_direction}")
+                return True
+
+        # TREND CONTINUATION LONG: RSI 55-68 + strong bullish trend + price near EMA21
+        elif (self.config.rsi_neutral_high < rsi <= self.config.rsi_trend_continuation_max and
+              trend_direction == 'bullish' and
+              not in_position):
+
+            ema_sep = abs((ema_fast - ema_slow) / ema_slow) * 100 if ema_slow > 0 else 0
+            is_pullback, pullback_type = self.market_analyzer.is_pullback_to_ema(price, ema_fast, ema_slow)
+
+            if is_pullback and ema_sep >= self.config.trend_continuation_ema_sep:
+                self.pending_long_signal = True
+                self.signal_trigger_price = price
+                self.signal_trigger_time = datetime.now()
+                self.swing_wait_count = 0
+
+                self.performance_metrics['signals_detected'] += 1
+                self.logger.info(f"🟡 TREND CONTINUATION LONG - RSI: {rsi:.2f} | EMA sep: {ema_sep:.2f}% | Pullback: {pullback_type}")
+                return True
+
         return False
 
     def check_swing_confirmation(self, current_price, current_rsi, trend_direction):

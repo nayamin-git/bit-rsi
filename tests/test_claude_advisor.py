@@ -195,13 +195,13 @@ class TestMarketContext:
         assert "65,000" in prompt or "65000" in prompt
         assert "60,000" in prompt or "60000" in prompt
 
-    def test_uses_same_model_as_validate(self, advisor):
+    def test_uses_sonnet_model(self, advisor):
         advisor.client.messages.create.return_value = self._make_context_response(
             "short", 60, False, "EMA resistance", "Bearish structure."
         )
         advisor.analyze_market_context(MARKET_DATA)
         call_kwargs = advisor.client.messages.create.call_args[1]
-        assert call_kwargs["model"] == "claude-opus-4-7"
+        assert call_kwargs["model"] == "claude-sonnet-4-6"
 
     def test_context_uses_cached_system_prompt(self, advisor):
         advisor.client.messages.create.return_value = self._make_context_response(
@@ -285,6 +285,14 @@ class TestParamAdjustments:
         assert "trending" in prompt
         assert "ranging" in prompt
         assert "volatile" in prompt
+
+    def test_uses_sonnet_model(self, advisor):
+        advisor.client.messages.create.return_value = self._make_params_response(
+            "volatile", 38, 68, 3.0, 3.5, 0.30, 2.5, 0.5, "Alta volatilidad."
+        )
+        advisor.suggest_param_adjustments(MARKET_DATA, CURRENT_PARAMS)
+        call_kwargs = advisor.client.messages.create.call_args[1]
+        assert call_kwargs["model"] == "claude-sonnet-4-6"
 
     def test_uses_cached_system_prompt(self, advisor):
         advisor.client.messages.create.return_value = self._make_params_response(
