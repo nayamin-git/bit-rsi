@@ -47,6 +47,10 @@ class BotConfig:
         self.trend_confirmation_candles = 2  # Velas para confirmar cambio de tendencia
         self.pullback_ema_touch = False  # Requerir que precio toque EMA21 en pullback
 
+        # ENTRADA POR ZONA NEUTRAL Y CONTINUACIÓN DE TENDENCIA
+        self.rsi_trend_continuation_max = 68   # RSI máximo para entrada trend continuation
+        self.trend_continuation_ema_sep = 0.3  # Separación EMA21-EMA50 mínima para trend continuation
+
         # VARIABLES PARA CONFIRMACIÓN DE SWING (optimizado para tasa confirmación)
         self.swing_confirmation_threshold = 0.15  # Reducido de 0.3% - más confirmaciones
         self.max_swing_wait = 12  # Aumentado de 6 - más paciencia (2 velas de 4h)
@@ -64,5 +68,5 @@ class BotConfig:
         os.makedirs(self.logs_dir, exist_ok=True)
         os.makedirs(self.data_dir, exist_ok=True)
 
-        self.state_file = os.path.join(self.data_dir, f'bot_state_{datetime.now().strftime("%Y%m%d")}.json')
+        self.state_file = os.path.join(self.data_dir, 'bot_state.json')
         self.recovery_file = os.path.join(self.logs_dir, f'recovery_log_{datetime.now().strftime("%Y%m%d")}.txt')

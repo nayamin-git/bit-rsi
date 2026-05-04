@@ -14,6 +14,8 @@ def config():
     cfg.rsi_overbought = 65
     cfg.rsi_neutral_low = 45
     cfg.rsi_neutral_high = 55
+    cfg.rsi_trend_continuation_max = 68
+    cfg.trend_continuation_ema_sep = 0.3
     cfg.swing_confirmation_threshold = 0.15
     cfg.max_swing_wait = 12
     cfg.pullback_ema_touch = False
@@ -66,12 +68,14 @@ class TestDetectSwingSignal:
         assert result is False
         assert detector.pending_long_signal is False
 
-    def test_no_signal_when_rsi_neutral(self, detector):
+    def test_detects_neutral_zone_long_with_pullback(self, detector):
+        # RSI in 45-55 + bullish + pullback → new neutral zone LONG entry
         result = detector.detect_swing_signal(
             price=100.0, rsi=50.0, ema_fast=101.0, ema_slow=99.0,
             ema_trend=95.0, trend_direction='bullish', in_position=False
         )
-        assert result is False
+        assert result is True
+        assert detector.pending_long_signal is True
 
     def test_no_long_when_trend_bearish(self, detector):
         result = detector.detect_swing_signal(
@@ -203,3 +207,119 @@ class TestResetSignalState:
     def test_update_last_rsi(self, detector):
         detector.update_last_rsi(42.5)
         assert detector.last_rsi == 42.5
+
+
+class TestNeutralZoneLong:
+    """Neutral zone entry: RSI 45-55 + bullish trend + pullback to EMA."""
+
+    def test_detects_signal_when_pullback_present(self, detector):
+        result = detector.detect_swing_signal(
+            price=78704.0, rsi=52.8,
+            ema_fast=78432.0, ema_slow=77000.0, ema_trend=74000.0,
+            trend_direction='bullish', in_position=False
+        )
+        assert result is True
+        assert detector.pending_long_signal is True
+
+    def test_no_signal_without_pullback(self, config, performance_metrics):
+        ma = MagicMock()
+        ma.is_pullback_to_ema.return_value = (False, 'No_pullback')
+        det = SignalDetector(config, MagicMock(), ma, performance_metrics)
+        result = det.detect_swing_signal(
+            price=80000.0, rsi=50.0,
+            ema_fast=78000.0, ema_slow=76000.0, ema_trend=72000.0,
+            trend_direction='bullish', in_position=False
+        )
+        assert result is False
+
+    def test_no_signal_in_weak_bullish_trend(self, detector):
+        # Neutral zone only fires on strict 'bullish', not weak_bullish
+        result = detector.detect_swing_signal(
+            price=100.0, rsi=50.0, ema_fast=101.0, ema_slow=99.0,
+            ema_trend=95.0, trend_direction='weak_bullish', in_position=False
+        )
+        assert result is False
+
+    def test_no_signal_when_rsi_below_neutral_low(self, detector):
+        # RSI 44 falls into oversold path (not neutral zone)
+        result = detector.detect_swing_signal(
+            price=100.0, rsi=44.0, ema_fast=101.0, ema_slow=99.0,
+            ema_trend=95.0, trend_direction='bullish', in_position=False
+        )
+        # RSI 44 < rsi_oversold(40)? No. Not in neutral zone either (44 < 45).
+        # So no signal fires.
+        assert result is False
+
+    def test_increments_signals_detected(self, detector, performance_metrics):
+        detector.detect_swing_signal(
+            price=100.0, rsi=50.0, ema_fast=100.4, ema_slow=99.0,
+            ema_trend=95.0, trend_direction='bullish', in_position=False
+        )
+        assert performance_metrics['signals_detected'] == 1
+
+
+class TestTrendContinuationLong:
+    """Trend continuation: RSI 55-68 + bullish + price near EMA21 + EMA sep > 0.3%."""
+
+    def _detector_with_ma(self, config, performance_metrics, pullback=True, pullback_type='EMA21'):
+        ma = MagicMock()
+        ma.is_pullback_to_ema.return_value = (pullback, pullback_type)
+        return SignalDetector(config, MagicMock(), ma, performance_metrics)
+
+    def test_detects_signal_with_strong_separation(self, config, performance_metrics):
+        # EMA sep = (78900-77600)/77600 * 100 = 1.68% > 0.3%
+        det = self._detector_with_ma(config, performance_metrics)
+        result = det.detect_swing_signal(
+            price=78900.0, rsi=61.0,
+            ema_fast=78900.0, ema_slow=77600.0, ema_trend=74000.0,
+            trend_direction='bullish', in_position=False
+        )
+        assert result is True
+        assert det.pending_long_signal is True
+
+    def test_no_signal_without_pullback(self, config, performance_metrics):
+        det = self._detector_with_ma(config, performance_metrics, pullback=False)
+        result = det.detect_swing_signal(
+            price=82000.0, rsi=61.0,
+            ema_fast=78900.0, ema_slow=77600.0, ema_trend=74000.0,
+            trend_direction='bullish', in_position=False
+        )
+        assert result is False
+
+    def test_no_signal_when_ema_separation_too_small(self, config, performance_metrics):
+        # EMA sep = (78900-78800)/78800 * 100 = 0.13% < 0.3%
+        det = self._detector_with_ma(config, performance_metrics)
+        result = det.detect_swing_signal(
+            price=78900.0, rsi=61.0,
+            ema_fast=78900.0, ema_slow=78800.0, ema_trend=74000.0,
+            trend_direction='bullish', in_position=False
+        )
+        assert result is False
+
+    def test_no_signal_when_rsi_exceeds_max(self, config, performance_metrics):
+        # RSI 69 > rsi_trend_continuation_max(68)
+        det = self._detector_with_ma(config, performance_metrics)
+        result = det.detect_swing_signal(
+            price=78900.0, rsi=69.0,
+            ema_fast=78900.0, ema_slow=77600.0, ema_trend=74000.0,
+            trend_direction='bullish', in_position=False
+        )
+        assert result is False
+
+    def test_no_signal_in_non_bullish_trend(self, config, performance_metrics):
+        det = self._detector_with_ma(config, performance_metrics)
+        result = det.detect_swing_signal(
+            price=78900.0, rsi=61.0,
+            ema_fast=78900.0, ema_slow=77600.0, ema_trend=74000.0,
+            trend_direction='weak_bullish', in_position=False
+        )
+        assert result is False
+
+    def test_increments_signals_detected(self, config, performance_metrics):
+        det = self._detector_with_ma(config, performance_metrics)
+        det.detect_swing_signal(
+            price=78900.0, rsi=61.0,
+            ema_fast=78900.0, ema_slow=77600.0, ema_trend=74000.0,
+            trend_direction='bullish', in_position=False
+        )
+        assert performance_metrics['signals_detected'] == 1

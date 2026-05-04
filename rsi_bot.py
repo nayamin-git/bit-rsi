@@ -146,6 +146,11 @@ class BinanceRSIEMABot:
                 self.logger.info("🤖 Claude Advisor activo — validación de señales habilitada")
             except Exception as e:
                 self.logger.warning(f"Claude Advisor no disponible: {e}")
+        elif self.config.use_claude_advisor:
+            self.logger.warning(
+                "⚠️  ANTHROPIC_API_KEY no configurada — Claude Advisor desactivado. "
+                "El bot opera sin validación AI. Configura la variable en .env para activarlo."
+            )
 
         # Configurar callback de in_position para logging_manager
         self.logging_manager.set_in_position_callback(lambda: self.position_manager.in_position)
