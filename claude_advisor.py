@@ -110,7 +110,7 @@ class ClaudeAdvisor:
                             "type": "object",
                             "properties": {
                                 "action": {"type": "string", "enum": ["CONFIRM", "REJECT"]},
-                                "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+                                "confidence": {"type": "integer"},
                                 "reasoning": {"type": "string"}
                             },
                             "required": ["action", "confidence", "reasoning"],
@@ -147,7 +147,7 @@ class ClaudeAdvisor:
                             "type": "object",
                             "properties": {
                                 "bias": {"type": "string", "enum": ["long", "short", "neutral"]},
-                                "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+                                "confidence": {"type": "integer"},
                                 "setup_forming": {"type": "boolean"},
                                 "key_levels": {"type": "string"},
                                 "reasoning": {"type": "string"}
@@ -186,13 +186,13 @@ class ClaudeAdvisor:
                             "type": "object",
                             "properties": {
                                 "regime": {"type": "string", "enum": ["trending", "ranging", "volatile"]},
-                                "rsi_oversold": {"type": "integer", "minimum": 30, "maximum": 45},
-                                "rsi_overbought": {"type": "integer", "minimum": 60, "maximum": 75},
-                                "stop_loss_pct": {"type": "number", "minimum": 1.0, "maximum": 3.5},
-                                "take_profit_pct": {"type": "number", "minimum": 2.5, "maximum": 7.0},
-                                "swing_confirmation_threshold": {"type": "number", "minimum": 0.10, "maximum": 0.40},
-                                "trailing_stop_distance": {"type": "number", "minimum": 0.8, "maximum": 3.0},
-                                "breakeven_threshold": {"type": "number", "minimum": 0.5, "maximum": 2.0},
+                                "rsi_oversold": {"type": "integer"},
+                                "rsi_overbought": {"type": "integer"},
+                                "stop_loss_pct": {"type": "number"},
+                                "take_profit_pct": {"type": "number"},
+                                "swing_confirmation_threshold": {"type": "number"},
+                                "trailing_stop_distance": {"type": "number"},
+                                "breakeven_threshold": {"type": "number"},
                                 "reasoning": {"type": "string"}
                             },
                             "required": [
