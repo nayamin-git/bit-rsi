@@ -130,7 +130,7 @@ class ClaudeAdvisor:
             user_message = self._build_context_prompt(market_data)
             response = self.client.messages.create(
                 model="claude-sonnet-4-6",
-                max_tokens=512,
+                max_tokens=1024,
                 system=[{
                     "type": "text",
                     "text": _SYSTEM_PROMPT,
@@ -154,7 +154,7 @@ class ClaudeAdvisor:
             user_message = self._build_params_prompt(market_data, current_params)
             response = self.client.messages.create(
                 model="claude-sonnet-4-6",
-                max_tokens=512,
+                max_tokens=1024,
                 system=[{
                     "type": "text",
                     "text": _SYSTEM_PROMPT,
@@ -247,7 +247,7 @@ Responde:
         fast_slow_sep = ((ema_fast - ema_slow) / ema_slow * 100) if ema_slow > 0 else 0
         slow_trend_sep = ((ema_slow - ema_trend) / ema_trend * 100) if ema_trend > 0 else 0
 
-        return f"""Analiza el régimen de mercado actual y sugiere los parámetros óptimos para el bot.
+        return f"""Detecta el régimen de mercado y devuelve los parámetros óptimos para el bot.
 
 **Snapshot BTC/USDT 4h:**
 - Precio: ${price:,.2f}
@@ -255,7 +255,7 @@ Responde:
 - Tendencia: {market_data.get('trend_direction', 'unknown')}
 - EMA21 vs EMA50: {fast_slow_sep:+.3f}% | EMA50 vs EMA200: {slow_trend_sep:+.3f}%
 
-**Parámetros actuales del bot:**
+**Parámetros actuales:**
 - rsi_oversold: {current_params.get('rsi_oversold')} (rango 30-45)
 - rsi_overbought: {current_params.get('rsi_overbought')} (rango 60-75)
 - stop_loss_pct: {current_params.get('stop_loss_pct')} (rango 1.0-3.5)
@@ -264,9 +264,5 @@ Responde:
 - trailing_stop_distance: {current_params.get('trailing_stop_distance')} (rango 0.8-3.0)
 - breakeven_threshold: {current_params.get('breakeven_threshold')} (rango 0.5-2.0)
 
-**Regímenes y lógica esperada:**
-- `trending`: EMAs bien alineadas, precio con momentum claro → RSI más laxo, TP mayor, SL ligeramente mayor
-- `ranging`: Mercado lateral, precio rebota entre niveles → RSI más estricto, TP ajustado, confirmación más exigente
-- `volatile`: Alta volatilidad, movimientos bruscos → Confirmación alta, SL más amplio, breakeven rápido
-
-Devuelve los valores ideales para cada parámetro según el régimen actual. Si un parámetro ya es óptimo, devuelve el valor actual."""
+Responde ÚNICAMENTE con este JSON plano (sin campos extra, sin anidamiento):
+{{"regime":"trending|ranging|volatile","rsi_oversold":40,"rsi_overbought":65,"stop_loss_pct":2.0,"take_profit_pct":4.0,"swing_confirmation_threshold":0.15,"trailing_stop_distance":1.5,"breakeven_threshold":1.0,"reasoning":"una sola oración"}}"""
