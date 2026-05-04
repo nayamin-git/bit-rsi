@@ -115,7 +115,6 @@ class ClaudeAdvisor:
                 messages=[{"role": "user", "content": user_message}],
             )
             text = next((b.text for b in response.content if b.type == "text"), None)
-            self.logger.info(f"[validate_signal] raw: {repr(text[:300]) if text else None}")
             if not text:
                 types = [b.type for b in response.content]
                 raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
@@ -140,7 +139,6 @@ class ClaudeAdvisor:
                 messages=[{"role": "user", "content": user_message}],
             )
             text = next((b.text for b in response.content if b.type == "text"), None)
-            self.logger.info(f"[analyze_market_context] raw: {repr(text[:300]) if text else None}")
             if not text:
                 types = [b.type for b in response.content]
                 raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
@@ -165,7 +163,6 @@ class ClaudeAdvisor:
                 messages=[{"role": "user", "content": user_message}],
             )
             text = next((b.text for b in response.content if b.type == "text"), None)
-            self.logger.info(f"[suggest_param_adjustments] raw: {repr(text[:300]) if text else None}")
             if not text:
                 types = [b.type for b in response.content]
                 raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
