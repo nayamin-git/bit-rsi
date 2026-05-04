@@ -103,23 +103,10 @@ class ClaudeAdvisor:
                     "cache_control": {"type": "ephemeral"}
                 }],
                 messages=[{"role": "user", "content": user_message}],
-                output_config={
-                    "format": {
-                        "type": "json_schema",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "action": {"type": "string", "enum": ["CONFIRM", "REJECT"]},
-                                "confidence": {"type": "integer"},
-                                "reasoning": {"type": "string"}
-                            },
-                            "required": ["action", "confidence", "reasoning"],
-                            "additionalProperties": False
-                        }
-                    }
-                }
             )
-            text = next(b.text for b in response.content if b.type == "text")
+            text = next((b.text for b in response.content if b.type == "text"), None)
+            if not text:
+                raise ValueError("No text block in response")
             data = json.loads(text)
             return TradeDecision(**data)
         except Exception as e:
@@ -140,25 +127,10 @@ class ClaudeAdvisor:
                     "cache_control": {"type": "ephemeral"}
                 }],
                 messages=[{"role": "user", "content": user_message}],
-                output_config={
-                    "format": {
-                        "type": "json_schema",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "bias": {"type": "string", "enum": ["long", "short", "neutral"]},
-                                "confidence": {"type": "integer"},
-                                "setup_forming": {"type": "boolean"},
-                                "key_levels": {"type": "string"},
-                                "reasoning": {"type": "string"}
-                            },
-                            "required": ["bias", "confidence", "setup_forming", "key_levels", "reasoning"],
-                            "additionalProperties": False
-                        }
-                    }
-                }
             )
-            text = next(b.text for b in response.content if b.type == "text")
+            text = next((b.text for b in response.content if b.type == "text"), None)
+            if not text:
+                raise ValueError("No text block in response")
             data = json.loads(text)
             return MarketContext(**data)
         except Exception as e:
@@ -179,34 +151,10 @@ class ClaudeAdvisor:
                     "cache_control": {"type": "ephemeral"}
                 }],
                 messages=[{"role": "user", "content": user_message}],
-                output_config={
-                    "format": {
-                        "type": "json_schema",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "regime": {"type": "string", "enum": ["trending", "ranging", "volatile"]},
-                                "rsi_oversold": {"type": "integer"},
-                                "rsi_overbought": {"type": "integer"},
-                                "stop_loss_pct": {"type": "number"},
-                                "take_profit_pct": {"type": "number"},
-                                "swing_confirmation_threshold": {"type": "number"},
-                                "trailing_stop_distance": {"type": "number"},
-                                "breakeven_threshold": {"type": "number"},
-                                "reasoning": {"type": "string"}
-                            },
-                            "required": [
-                                "regime", "rsi_oversold", "rsi_overbought",
-                                "stop_loss_pct", "take_profit_pct",
-                                "swing_confirmation_threshold", "trailing_stop_distance",
-                                "breakeven_threshold", "reasoning"
-                            ],
-                            "additionalProperties": False
-                        }
-                    }
-                }
             )
-            text = next(b.text for b in response.content if b.type == "text")
+            text = next((b.text for b in response.content if b.type == "text"), None)
+            if not text:
+                raise ValueError("No text block in response")
             data = json.loads(text)
             return ParamAdjustments(**data)
         except Exception as e:
