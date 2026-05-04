@@ -106,7 +106,8 @@ class ClaudeAdvisor:
             )
             text = next((b.text for b in response.content if b.type == "text"), None)
             if not text:
-                raise ValueError("No text block in response")
+                types = [b.type for b in response.content]
+                raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
             data = json.loads(text)
             return TradeDecision(**data)
         except Exception as e:
@@ -129,7 +130,8 @@ class ClaudeAdvisor:
             )
             text = next((b.text for b in response.content if b.type == "text"), None)
             if not text:
-                raise ValueError("No text block in response")
+                types = [b.type for b in response.content]
+                raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
             data = json.loads(text)
             return MarketContext(**data)
         except Exception as e:
@@ -152,7 +154,8 @@ class ClaudeAdvisor:
             )
             text = next((b.text for b in response.content if b.type == "text"), None)
             if not text:
-                raise ValueError("No text block in response")
+                types = [b.type for b in response.content]
+                raise ValueError(f"No text block. stop_reason={response.stop_reason} blocks={types}")
             data = json.loads(text)
             return ParamAdjustments(**data)
         except Exception as e:
