@@ -1,0 +1,20 @@
+2026-05-04 19:26:10 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260504.log
+2026-05-04 19:26:10 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-05-04 19:26:14 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-05-04 19:26:14 | INFO | 💰 Balance USDT disponible: $656.23
+2026-05-04 19:26:14 | INFO | 🔄 Iniciando recuperación de estado...
+2026-05-04 19:26:14 | INFO | 📄 No hay archivo de estado previo
+2026-05-04 19:26:14 | INFO | ✅ Bot limpio - Sin estado previo ni posiciones
+2026-05-04 19:26:14 | INFO | 🔄 Recuperación completada
+2026-05-04 19:26:14 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado
+2026-05-04 19:26:14 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 40 | OB: 65
+2026-05-04 19:26:14 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-05-04 19:26:14 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 2.0% | TP: 4.0%
+2026-05-04 19:26:14 | INFO | 🎯 Swing Confirmación: 0.15% | Max espera: 12 períodos
+2026-05-04 19:26:14 | INFO | 🛡️ Trailing Stop: 1.5% | Breakeven: 1.0%
+2026-05-04 19:26:14 | INFO | 💾 Estado guardado en: /app/data/bot_state.json
+2026-05-04 19:26:14 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-05-04 19:26:15 | INFO | 📈 BTC: $79,916.95 | RSI: 63.9 | Tendencia: bullish
+2026-05-04 19:26:15 | INFO | 📊 EMA21: $78706.12 | EMA50: $77944.49 | EMA200: $75175.30
+2026-05-04 19:26:25 | WARNING | ClaudeAdvisor contexto no disponible (bot continúa normalmente): No text block in response
+2026-05-04 19:26:36 | WARNING | ClaudeAdvisor ajuste de parámetros no disponible: No text block in response
