@@ -106,18 +106,15 @@ class ClaudeAdvisor:
                 output_config={
                     "format": {
                         "type": "json_schema",
-                        "json_schema": {
-                            "name": "trade_decision",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "action": {"type": "string", "enum": ["CONFIRM", "REJECT"]},
-                                    "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
-                                    "reasoning": {"type": "string"}
-                                },
-                                "required": ["action", "confidence", "reasoning"],
-                                "additionalProperties": False
-                            }
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "action": {"type": "string", "enum": ["CONFIRM", "REJECT"]},
+                                "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+                                "reasoning": {"type": "string"}
+                            },
+                            "required": ["action", "confidence", "reasoning"],
+                            "additionalProperties": False
                         }
                     }
                 }
@@ -146,20 +143,17 @@ class ClaudeAdvisor:
                 output_config={
                     "format": {
                         "type": "json_schema",
-                        "json_schema": {
-                            "name": "market_context",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "bias": {"type": "string", "enum": ["long", "short", "neutral"]},
-                                    "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
-                                    "setup_forming": {"type": "boolean"},
-                                    "key_levels": {"type": "string"},
-                                    "reasoning": {"type": "string"}
-                                },
-                                "required": ["bias", "confidence", "setup_forming", "key_levels", "reasoning"],
-                                "additionalProperties": False
-                            }
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "bias": {"type": "string", "enum": ["long", "short", "neutral"]},
+                                "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+                                "setup_forming": {"type": "boolean"},
+                                "key_levels": {"type": "string"},
+                                "reasoning": {"type": "string"}
+                            },
+                            "required": ["bias", "confidence", "setup_forming", "key_levels", "reasoning"],
+                            "additionalProperties": False
                         }
                     }
                 }
@@ -188,29 +182,26 @@ class ClaudeAdvisor:
                 output_config={
                     "format": {
                         "type": "json_schema",
-                        "json_schema": {
-                            "name": "param_adjustments",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "regime": {"type": "string", "enum": ["trending", "ranging", "volatile"]},
-                                    "rsi_oversold": {"type": "integer", "minimum": 30, "maximum": 45},
-                                    "rsi_overbought": {"type": "integer", "minimum": 60, "maximum": 75},
-                                    "stop_loss_pct": {"type": "number", "minimum": 1.0, "maximum": 3.5},
-                                    "take_profit_pct": {"type": "number", "minimum": 2.5, "maximum": 7.0},
-                                    "swing_confirmation_threshold": {"type": "number", "minimum": 0.10, "maximum": 0.40},
-                                    "trailing_stop_distance": {"type": "number", "minimum": 0.8, "maximum": 3.0},
-                                    "breakeven_threshold": {"type": "number", "minimum": 0.5, "maximum": 2.0},
-                                    "reasoning": {"type": "string"}
-                                },
-                                "required": [
-                                    "regime", "rsi_oversold", "rsi_overbought",
-                                    "stop_loss_pct", "take_profit_pct",
-                                    "swing_confirmation_threshold", "trailing_stop_distance",
-                                    "breakeven_threshold", "reasoning"
-                                ],
-                                "additionalProperties": False
-                            }
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "regime": {"type": "string", "enum": ["trending", "ranging", "volatile"]},
+                                "rsi_oversold": {"type": "integer", "minimum": 30, "maximum": 45},
+                                "rsi_overbought": {"type": "integer", "minimum": 60, "maximum": 75},
+                                "stop_loss_pct": {"type": "number", "minimum": 1.0, "maximum": 3.5},
+                                "take_profit_pct": {"type": "number", "minimum": 2.5, "maximum": 7.0},
+                                "swing_confirmation_threshold": {"type": "number", "minimum": 0.10, "maximum": 0.40},
+                                "trailing_stop_distance": {"type": "number", "minimum": 0.8, "maximum": 3.0},
+                                "breakeven_threshold": {"type": "number", "minimum": 0.5, "maximum": 2.0},
+                                "reasoning": {"type": "string"}
+                            },
+                            "required": [
+                                "regime", "rsi_oversold", "rsi_overbought",
+                                "stop_loss_pct", "take_profit_pct",
+                                "swing_confirmation_threshold", "trailing_stop_distance",
+                                "breakeven_threshold", "reasoning"
+                            ],
+                            "additionalProperties": False
                         }
                     }
                 }
