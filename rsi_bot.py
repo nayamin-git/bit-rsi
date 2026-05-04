@@ -2,6 +2,8 @@ import time
 import os
 import ccxt
 from datetime import datetime
+
+BOT_VERSION = "2.2.0"
 from dotenv import load_dotenv
 from config import BotConfig
 from claude_advisor import ClaudeAdvisor, ParamAdjustments
@@ -515,7 +517,7 @@ class BinanceRSIEMABot:
     
     def run(self):
         """Ejecuta el bot en un loop continuo optimizado para swing trading"""
-        self.logger.info("🤖 RSI + EMA + Trend Filter Swing Bot v2.0 iniciado")
+        self.logger.info(f"🤖 RSI + EMA + Trend Filter Swing Bot v{BOT_VERSION} iniciado")
         self.logger.info(f"📊 Timeframe: {self.config.timeframe} | RSI({self.config.rsi_period}) | OS: {self.config.rsi_oversold} | OB: {self.config.rsi_overbought}")
         self.logger.info(f"📈 EMAs: Fast({self.config.ema_fast_period}) | Slow({self.config.ema_slow_period}) | Trend({self.config.ema_trend_period})")
         self.logger.info(f"⚡ Leverage: {self.config.leverage}x | Risk: {self.config.position_size_pct}% | SL: {self.config.stop_loss_pct}% | TP: {self.config.take_profit_pct}%")
@@ -620,8 +622,8 @@ if __name__ == "__main__":
         print("🐳 Variables requeridas: BINANCE_API_KEY, BINANCE_API_SECRET")
         exit(1)
     
-    print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'}")
-    print("🔔 CARACTERÍSTICAS SWING TRADING v2.1:")
+    print(f"🤖 Iniciando bot en modo: {'TESTNET' if USE_TESTNET else 'REAL TRADING'} | versión {BOT_VERSION}")
+    print(f"🔔 CARACTERÍSTICAS SWING TRADING v{BOT_VERSION}:")
     print("  • Timeframe 4H para swing trading")
     print("  • Filtro de tendencia con EMA200")
     print("  • Confirmación de señales con EMAs 21/50")
