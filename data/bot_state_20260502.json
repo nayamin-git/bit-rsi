@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-02T00:32:45.511179",
+  "timestamp": "2026-05-02T23:41:52.615709",
   "in_position": false,
   "position": null,
   "last_signal_time": 0,
@@ -24,10 +24,10 @@
     "ema_confirmations": 0,
     "pullback_entries": 0
   },
-  "last_rsi": 87.86554575975092,
-  "last_price": 78338.42,
-  "last_ema_fast": 77243.48482210685,
-  "last_ema_slow": 77018.45019867287,
-  "last_ema_trend": 74447.17561101032,
+  "last_rsi": 82.4868998560296,
+  "last_price": 78703.02,
+  "last_ema_fast": 77697.8880180689,
+  "last_ema_slow": 77274.13528494486,
+  "last_ema_trend": 74447.0629326299,
   "trend_direction": "bullish"
 }
