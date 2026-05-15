@@ -1,0 +1,211 @@
+2026-05-07 09:00:55 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260507.log
+2026-05-07 09:00:55 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-05-07 09:01:23 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260507.log
+2026-05-07 09:01:23 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-05-07 09:01:28 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-05-07 09:01:28 | INFO | 💰 Balance USDT disponible: $474.95
+2026-05-07 09:01:28 | INFO | 🔄 Iniciando recuperación de estado...
+2026-05-07 09:01:28 | INFO | 📥 Estado del bot cargado desde 08:56:27
+2026-05-07 09:01:28 | ERROR | ❌ Estado dice posición abierta pero no existe en exchange
+2026-05-07 09:01:28 | ERROR | 🔧 Limpiando estado inconsistente...
+2026-05-07 09:01:28 | INFO | 🔄 Recuperación completada
+2026-05-07 09:01:28 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.2.4 iniciado
+2026-05-07 09:01:28 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 40 | OB: 65
+2026-05-07 09:01:28 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-05-07 09:01:28 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 2.0% | TP: 4.0%
+2026-05-07 09:01:28 | INFO | 🎯 Swing Confirmación: 0.15% | Max espera: 12 períodos
+2026-05-07 09:01:28 | INFO | 🛡️ Trailing Stop: 1.5% | Breakeven: 1.0%
+2026-05-07 09:01:28 | INFO | 💾 Estado guardado en: /app/data/bot_state.json
+2026-05-07 09:01:28 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-05-07 09:01:28 | INFO | 📈 BTC: $81,207.47 | RSI: 52.5 | Tendencia: bullish
+2026-05-07 09:01:28 | INFO | 📊 EMA21: $80775.15 | EMA50: $79538.00 | EMA200: $75887.19
+2026-05-07 09:01:34 | INFO | 🤖 Claude [📈 LONG 55%] — SETUP FORMÁNDOSE: Estructura alcista sólida con EMAs correctamente alineadas y precio por encima de todas ellas, pero el RSI en 52.5 y la extensión del +2.1% sobre EMA5
+2026-05-07 09:01:34 | INFO | 🤖 Niveles clave: Soporte EMA21 $80,775 | EMA50 $79,538 | Resistencia $82,500-$83,000
+2026-05-07 09:01:38 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 40 → 38, rsi_overbought: 65 → 68, stop_loss_pct: 2.0 → 2.5, take_profit_pct: 4.0 → 5.5, swing_confirmation_threshold: 0.15 → 0.2, trailing_stop_distance: 1.5 → 2.0, breakeven_threshold: 1.0 → 1.2
+2026-05-07 09:01:38 | INFO | 🤖 Motivo: Tendencia bullish consolidada con EMAs bien separadas (EMA21/EMA50 +1.55%, EMA50/EMA200 +4.81%) confirman momentum alcista sostenido, por lo que se amplían stops y targets para capturar movimientos tendenciales más amplios y reducir ruido en las entradas.
+2026-05-07 09:31:38 | INFO | 📈 BTC: $81,080.06 | RSI: 51.5 | Tendencia: bullish
+2026-05-07 09:31:38 | INFO | 📊 EMA21: $80763.57 | EMA50: $79533.01 | EMA200: $75885.92
+2026-05-07 09:31:38 | INFO | 🟡 NEUTRAL ZONE LONG detected - RSI: 51.47 | Pullback: EMA21 | Trend: bullish
+2026-05-07 09:40:05 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260507.log
+2026-05-07 09:40:05 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-05-07 09:40:11 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260507.log
+2026-05-07 09:40:11 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-05-07 09:40:15 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-05-07 09:40:15 | INFO | 💰 Balance USDT disponible: $474.95
+2026-05-07 09:40:15 | INFO | 🔄 Iniciando recuperación de estado...
+2026-05-07 09:40:15 | INFO | 📥 Estado del bot cargado desde 09:31:38
+2026-05-07 09:40:16 | INFO | 🔄 Recuperación completada
+2026-05-07 09:40:16 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.2.4 iniciado
+2026-05-07 09:40:16 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 40 | OB: 65
+2026-05-07 09:40:16 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-05-07 09:40:16 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 2.0% | TP: 4.0%
+2026-05-07 09:40:16 | INFO | 🎯 Swing Confirmación: 0.15% | Max espera: 12 períodos
+2026-05-07 09:40:16 | INFO | 🛡️ Trailing Stop: 1.5% | Breakeven: 1.0%
+2026-05-07 09:40:16 | INFO | 💾 Estado guardado en: /app/data/bot_state.json
+2026-05-07 09:40:16 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-05-07 09:40:16 | INFO | 📈 BTC: $80,920.01 | RSI: 50.2 | Tendencia: bullish
+2026-05-07 09:40:16 | INFO | 📊 EMA21: $80749.02 | EMA50: $79526.73 | EMA200: $75884.33
+2026-05-07 10:10:16 | INFO | 📈 BTC: $80,955.17 | RSI: 50.5 | Tendencia: bullish
+2026-05-07 10:10:16 | INFO | 📊 EMA21: $80752.21 | EMA50: $79528.11 | EMA200: $75884.68
+2026-05-07 10:40:17 | INFO | 📈 BTC: $80,808.67 | RSI: 49.4 | Tendencia: bullish
+2026-05-07 10:40:17 | INFO | 📊 EMA21: $80738.90 | EMA50: $79522.36 | EMA200: $75883.22
+2026-05-07 11:10:17 | INFO | 📈 BTC: $80,986.73 | RSI: 50.7 | Tendencia: bullish
+2026-05-07 11:10:17 | INFO | 📊 EMA21: $80755.08 | EMA50: $79529.35 | EMA200: $75885.00
+2026-05-07 11:40:17 | INFO | 📈 BTC: $80,984.00 | RSI: 50.7 | Tendencia: bullish
+2026-05-07 11:40:17 | INFO | 📊 EMA21: $80754.84 | EMA50: $79529.24 | EMA200: $75884.97
+2026-05-07 12:10:18 | INFO | 📈 BTC: $81,002.46 | RSI: 51.1 | Tendencia: bullish
+2026-05-07 12:10:18 | INFO | 📊 EMA21: $80767.65 | EMA50: $79582.59 | EMA200: $75930.40
+2026-05-07 12:40:18 | INFO | 📈 BTC: $81,054.00 | RSI: 51.5 | Tendencia: bullish
+2026-05-07 12:40:18 | INFO | 📊 EMA21: $80772.33 | EMA50: $79584.61 | EMA200: $75930.91
+2026-05-07 13:10:18 | INFO | 📈 BTC: $81,004.70 | RSI: 51.1 | Tendencia: bullish
+2026-05-07 13:10:18 | INFO | 📊 EMA21: $80767.85 | EMA50: $79582.68 | EMA200: $75930.42
+2026-05-07 13:10:18 | INFO | ======================================================================
+2026-05-07 13:10:18 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-05-07 13:10:18 | INFO | ======================================================================
+2026-05-07 13:10:18 | INFO | 🔔 Señales detectadas: 2
+2026-05-07 13:10:18 | INFO | ✅ Señales confirmadas: 0
+2026-05-07 13:10:18 | INFO | ⏰ Señales expiradas: 0
+2026-05-07 13:10:18 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-05-07 13:10:18 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-05-07 13:10:18 | INFO | 📊 Confirmaciones EMA: 0
+2026-05-07 13:10:18 | INFO | 🔄 Entradas por pullback: 0
+2026-05-07 13:10:18 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-05-07 13:10:18 | INFO | --------------------------------------------------
+2026-05-07 13:10:18 | INFO | 📊 Sin trades completados aún
+2026-05-07 13:10:19 | INFO | 💵 Balance Actual: $474.95
+2026-05-07 13:10:19 | INFO | ⏳ Esperando confirmación SWING LONG (8/12)
+2026-05-07 13:10:19 | INFO | 📊 Alineación EMAs: ALCISTA
+2026-05-07 13:10:19 | INFO | 📈 EMA21: $80767.85 | EMA50: $79582.68 | EMA200: $75930.42
+2026-05-07 13:10:19 | INFO | 📏 Separación EMA21-EMA50: 1.49%
+2026-05-07 13:10:19 | INFO | ======================================================================
+2026-05-07 13:40:19 | INFO | 📈 BTC: $80,653.05 | RSI: 48.5 | Tendencia: bullish
+2026-05-07 13:40:19 | INFO | 📊 EMA21: $80735.88 | EMA50: $79568.89 | EMA200: $75926.92
+2026-05-07 14:10:19 | INFO | 📈 BTC: $80,487.59 | RSI: 47.3 | Tendencia: bullish
+2026-05-07 14:10:19 | INFO | 📊 EMA21: $80720.84 | EMA50: $79562.40 | EMA200: $75925.28
+2026-05-07 14:40:20 | INFO | 📈 BTC: $80,180.82 | RSI: 45.3 | Tendencia: bullish
+2026-05-07 14:40:20 | INFO | 📊 EMA21: $80692.95 | EMA50: $79550.37 | EMA200: $75922.22
+2026-05-07 15:10:20 | INFO | 📈 BTC: $80,271.41 | RSI: 45.9 | Tendencia: bullish
+2026-05-07 15:10:20 | INFO | 📊 EMA21: $80701.19 | EMA50: $79553.92 | EMA200: $75923.12
+2026-05-07 15:10:20 | WARNING | ⏰ LONG signal expired after 12 periods
+2026-05-07 15:10:20 | INFO | 🟡 NEUTRAL ZONE LONG detected - RSI: 45.90 | Pullback: Entre_EMAs | Trend: bullish
+2026-05-07 15:10:26 | INFO | 🤖 Claude [📈 LONG 62%] — SETUP FORMÁNDOSE: Estructura alcista sólida con EMA21 > EMA50 > EMA200 y separaciones saludables, pero el precio está ligeramente por debajo de EMA21 (-0.53%) con RSI e
+2026-05-07 15:10:26 | INFO | 🤖 Niveles clave: Soporte EMA21 $80,701 (resistencia inmediata), EMA50 $79,554 (soporte clave), zona de entrada ideal $79,500–$80,300
+2026-05-07 15:10:29 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 40 → 38, rsi_overbought: 65 → 68, stop_loss_pct: 2.0 → 2.5, take_profit_pct: 4.0 → 5.5, swing_confirmation_threshold: 0.15 → 0.2, trailing_stop_distance: 1.5 → 2.0, breakeven_threshold: 1.0 → 1.2
+2026-05-07 15:10:29 | INFO | 🤖 Motivo: Tendencia alcista confirmada con separación EMA21/EMA50 del 1.44% y EMA50/EMA200 del 4.78%, por lo que se amplían stops y targets para capturar movimientos tendenciales más amplios y se eleva el umbral de confirmación para filtrar entradas de baja calidad.
+2026-05-07 15:40:30 | INFO | 📈 BTC: $79,960.00 | RSI: 44.0 | Tendencia: bullish
+2026-05-07 15:40:30 | INFO | 📊 EMA21: $80672.88 | EMA50: $79541.71 | EMA200: $75920.03
+2026-05-07 16:10:30 | INFO | 📈 BTC: $79,807.06 | RSI: 41.9 | Tendencia: bullish
+2026-05-07 16:10:30 | INFO | 📊 EMA21: $80588.44 | EMA50: $79549.49 | EMA200: $75939.38
+2026-05-07 16:40:30 | INFO | 📈 BTC: $79,783.89 | RSI: 41.8 | Tendencia: bullish
+2026-05-07 16:40:30 | INFO | 📊 EMA21: $80586.33 | EMA50: $79548.58 | EMA200: $75939.15
+2026-05-07 17:10:31 | INFO | 📈 BTC: $79,849.83 | RSI: 42.1 | Tendencia: bullish
+2026-05-07 17:10:31 | INFO | 📊 EMA21: $80592.32 | EMA50: $79551.17 | EMA200: $75939.81
+2026-05-07 17:10:31 | INFO | ======================================================================
+2026-05-07 17:10:31 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-05-07 17:10:31 | INFO | ======================================================================
+2026-05-07 17:10:31 | INFO | 🔔 Señales detectadas: 3
+2026-05-07 17:10:31 | INFO | ✅ Señales confirmadas: 0
+2026-05-07 17:10:31 | INFO | ⏰ Señales expiradas: 0
+2026-05-07 17:10:31 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-05-07 17:10:31 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-05-07 17:10:31 | INFO | 📊 Confirmaciones EMA: 0
+2026-05-07 17:10:31 | INFO | 🔄 Entradas por pullback: 0
+2026-05-07 17:10:31 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-05-07 17:10:31 | INFO | --------------------------------------------------
+2026-05-07 17:10:31 | INFO | 📊 Sin trades completados aún
+2026-05-07 17:10:31 | INFO | 💵 Balance Actual: $474.95
+2026-05-07 17:10:31 | INFO | ⏳ Esperando confirmación SWING LONG (4/12)
+2026-05-07 17:10:31 | INFO | 📊 Alineación EMAs: ALCISTA
+2026-05-07 17:10:31 | INFO | 📈 EMA21: $80592.32 | EMA50: $79551.17 | EMA200: $75939.81
+2026-05-07 17:10:31 | INFO | 📏 Separación EMA21-EMA50: 1.31%
+2026-05-07 17:10:31 | INFO | ======================================================================
+2026-05-07 17:40:31 | INFO | 📈 BTC: $79,893.56 | RSI: 42.4 | Tendencia: bullish
+2026-05-07 17:40:31 | INFO | 📊 EMA21: $80596.30 | EMA50: $79552.88 | EMA200: $75940.25
+2026-05-07 18:10:32 | INFO | 📈 BTC: $80,118.07 | RSI: 44.1 | Tendencia: bullish
+2026-05-07 18:10:32 | INFO | 📊 EMA21: $80616.71 | EMA50: $79561.69 | EMA200: $75942.48
+2026-05-07 18:40:33 | INFO | 📈 BTC: $80,235.55 | RSI: 44.9 | Tendencia: bullish
+2026-05-07 18:40:33 | INFO | 📊 EMA21: $80627.39 | EMA50: $79566.29 | EMA200: $75943.65
+2026-05-07 19:10:33 | INFO | 📈 BTC: $80,112.26 | RSI: 44.0 | Tendencia: bullish
+2026-05-07 19:10:33 | INFO | 📊 EMA21: $80616.18 | EMA50: $79561.46 | EMA200: $75942.42
+2026-05-07 19:40:33 | INFO | 📈 BTC: $80,178.26 | RSI: 44.5 | Tendencia: bullish
+2026-05-07 19:40:33 | INFO | 📊 EMA21: $80622.18 | EMA50: $79564.05 | EMA200: $75943.08
+2026-05-07 20:10:34 | INFO | 📈 BTC: $80,207.14 | RSI: 40.8 | Tendencia: bullish
+2026-05-07 20:10:34 | INFO | 📊 EMA21: $80581.79 | EMA50: $79587.97 | EMA200: $75834.35
+2026-05-07 20:40:34 | INFO | 📈 BTC: $79,961.89 | RSI: 39.3 | Tendencia: bullish
+2026-05-07 20:40:34 | INFO | 📊 EMA21: $80559.50 | EMA50: $79578.35 | EMA200: $75831.90
+2026-05-07 21:10:34 | INFO | 📈 BTC: $79,694.80 | RSI: 37.9 | Tendencia: bullish
+2026-05-07 21:10:34 | INFO | 📊 EMA21: $80535.22 | EMA50: $79567.88 | EMA200: $75829.25
+2026-05-07 21:10:34 | WARNING | ⏰ LONG signal expired after 12 periods
+2026-05-07 21:10:34 | INFO | 🟡 FLEXIBLE LONG detected - RSI: 37.88 | Trend: bullish
+2026-05-07 21:10:39 | INFO | 🤖 Claude [📈 LONG 62%] — SETUP FORMÁNDOSE: El precio está comprimido entre EMA50 y EMA21 con RSI en 37.9 rozando sobreventa, lo que sugiere un pullback maduro dentro de tendencia alcista estruc
+2026-05-07 21:10:39 | INFO | 🤖 Niveles clave: Soporte EMA50 $79,567 | Resistencia EMA21 $80,535 | Zona de entrada ideal $79,400–$79,700
+2026-05-07 21:10:46 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 38 → 40
+2026-05-07 21:10:46 | INFO | 🤖 Motivo: Tendencia alcista confirmada con EMAs bien alineadas y separación EMA50/EMA200 del 4.93%, RSI en sobreventa relativa (37.9) sugiere pullback en tendencia, por lo que se amplían stops y objetivos para capturar movimientos trending evitando salidas prematuras.
+2026-05-07 21:10:46 | INFO | ======================================================================
+2026-05-07 21:10:46 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-05-07 21:10:46 | INFO | ======================================================================
+2026-05-07 21:10:46 | INFO | 🔔 Señales detectadas: 4
+2026-05-07 21:10:46 | INFO | ✅ Señales confirmadas: 0
+2026-05-07 21:10:46 | INFO | ⏰ Señales expiradas: 0
+2026-05-07 21:10:46 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-05-07 21:10:46 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-05-07 21:10:46 | INFO | 📊 Confirmaciones EMA: 0
+2026-05-07 21:10:46 | INFO | 🔄 Entradas por pullback: 0
+2026-05-07 21:10:46 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-05-07 21:10:46 | INFO | --------------------------------------------------
+2026-05-07 21:10:46 | INFO | 📊 Sin trades completados aún
+2026-05-07 21:10:47 | INFO | 💵 Balance Actual: $474.95
+2026-05-07 21:10:47 | INFO | ⏳ Esperando confirmación SWING LONG (0/12)
+2026-05-07 21:10:47 | INFO | 📊 Alineación EMAs: ALCISTA
+2026-05-07 21:10:47 | INFO | 📈 EMA21: $80535.22 | EMA50: $79567.88 | EMA200: $75829.25
+2026-05-07 21:10:47 | INFO | 📏 Separación EMA21-EMA50: 1.22%
+2026-05-07 21:10:47 | INFO | ======================================================================
+2026-05-07 21:40:47 | INFO | 📈 BTC: $79,877.26 | RSI: 38.8 | Tendencia: bullish
+2026-05-07 21:40:47 | INFO | 📊 EMA21: $80551.80 | EMA50: $79575.03 | EMA200: $75831.06
+2026-05-07 22:10:47 | INFO | 📈 BTC: $79,664.56 | RSI: 37.7 | Tendencia: bullish
+2026-05-07 22:10:47 | INFO | 📊 EMA21: $80532.47 | EMA50: $79566.69 | EMA200: $75828.95
+2026-05-07 22:40:48 | INFO | 📈 BTC: $79,842.57 | RSI: 38.6 | Tendencia: bullish
+2026-05-07 22:40:48 | INFO | 📊 EMA21: $80548.65 | EMA50: $79573.67 | EMA200: $75830.72
+2026-05-07 23:10:48 | INFO | 📈 BTC: $80,006.20 | RSI: 39.5 | Tendencia: bullish
+2026-05-07 23:10:48 | INFO | 📊 EMA21: $80563.53 | EMA50: $79580.09 | EMA200: $75832.35
+2026-05-07 23:40:48 | INFO | 📈 BTC: $80,000.01 | RSI: 39.5 | Tendencia: bullish
+2026-05-07 23:40:48 | INFO | 📊 EMA21: $80562.96 | EMA50: $79579.85 | EMA200: $75832.28
+2026-05-08 00:10:49 | INFO | 📈 BTC: $80,081.62 | RSI: 39.5 | Tendencia: bullish
+2026-05-08 00:10:49 | INFO | 📊 EMA21: $80519.70 | EMA50: $79599.72 | EMA200: $75826.20
+2026-05-08 00:40:49 | INFO | 📈 BTC: $79,929.32 | RSI: 38.4 | Tendencia: bullish
+2026-05-08 00:40:49 | INFO | 📊 EMA21: $80505.85 | EMA50: $79593.75 | EMA200: $75824.68
+2026-05-08 01:10:49 | INFO | 📈 BTC: $79,750.01 | RSI: 37.5 | Tendencia: bullish
+2026-05-08 01:10:49 | INFO | 📊 EMA21: $80489.55 | EMA50: $79586.72 | EMA200: $75822.90
+2026-05-08 01:10:49 | INFO | ======================================================================
+2026-05-08 01:10:49 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-05-08 01:10:49 | INFO | ======================================================================
+2026-05-08 01:10:49 | INFO | 🔔 Señales detectadas: 4
+2026-05-08 01:10:49 | INFO | ✅ Señales confirmadas: 0
+2026-05-08 01:10:49 | INFO | ⏰ Señales expiradas: 0
+2026-05-08 01:10:49 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-05-08 01:10:49 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-05-08 01:10:49 | INFO | 📊 Confirmaciones EMA: 0
+2026-05-08 01:10:49 | INFO | 🔄 Entradas por pullback: 0
+2026-05-08 01:10:49 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-05-08 01:10:49 | INFO | --------------------------------------------------
+2026-05-08 01:10:49 | INFO | 📊 Sin trades completados aún
+2026-05-08 01:10:50 | INFO | 💵 Balance Actual: $474.95
+2026-05-08 01:10:50 | INFO | ⏳ Esperando confirmación SWING LONG (8/12)
+2026-05-08 01:10:50 | INFO | 📊 Alineación EMAs: ALCISTA
+2026-05-08 01:10:50 | INFO | 📈 EMA21: $80489.55 | EMA50: $79586.72 | EMA200: $75822.90
+2026-05-08 01:10:50 | INFO | 📏 Separación EMA21-EMA50: 1.13%
+2026-05-08 01:10:50 | INFO | ======================================================================
+2026-05-08 01:40:50 | INFO | 📈 BTC: $79,816.37 | RSI: 37.8 | Tendencia: bullish
+2026-05-08 01:40:50 | INFO | 📊 EMA21: $80495.59 | EMA50: $79589.32 | EMA200: $75823.56
+2026-05-08 02:10:50 | INFO | 📈 BTC: $79,563.16 | RSI: 36.6 | Tendencia: bullish
+2026-05-08 02:10:50 | INFO | 📊 EMA21: $80472.57 | EMA50: $79579.39 | EMA200: $75821.04
+2026-05-08 02:40:51 | INFO | 📈 BTC: $79,557.18 | RSI: 36.5 | Tendencia: bullish
+2026-05-08 02:40:51 | INFO | 📊 EMA21: $80472.02 | EMA50: $79579.16 | EMA200: $75820.98
+2026-05-08 03:10:51 | INFO | 📈 BTC: $79,443.02 | RSI: 36.0 | Tendencia: bullish
+2026-05-08 03:10:51 | INFO | 📊 EMA21: $80461.64 | EMA50: $79574.68 | EMA200: $75819.85
+2026-05-08 03:10:51 | WARNING | ⏰ LONG signal expired after 12 periods
+2026-05-08 03:10:51 | INFO | 🟡 FLEXIBLE LONG detected - RSI: 35.99 | Trend: bullish
+2026-05-08 03:10:55 | INFO | 🤖 Claude [📈 LONG 62%] — SETUP FORMÁNDOSE: La estructura de EMAs es alcista sólida (EMA21>EMA50>EMA200 con separaciones saludables) y el precio está en pullback sobre EMA50 con RSI en 36 rozand
+2026-05-08 03:10:55 | INFO | 🤖 Niveles clave: Soporte EMA50 $79,574 | Trigger confirmación ~$79,600-$79,900 | Resistencia EMA21 $80,461
+2026-05-08 03:10:59 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 40 → 38
+2026-05-08 03:10:59 | INFO | 🤖 Motivo: Tendencia alcista sólida con EMAs bien alineadas y separación EMA50/EMA200 del 4.95% confirma momentum trending, por lo que se mantienen parámetros amplios para capturar movimientos mayores y evitar salidas prematuras en el pullback actual con RSI en 36.
