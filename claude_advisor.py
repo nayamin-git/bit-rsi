@@ -13,7 +13,11 @@ def _parse_json_response(text: str) -> dict:
     # Strip ```json ... ``` or ``` ... ``` wrappers
     text = re.sub(r'^```(?:json)?\s*', '', text)
     text = re.sub(r'\s*```$', '', text.strip())
-    return json.loads(text.strip())
+    data = json.loads(text.strip())
+    # Normalize: model sometimes uses "decision" instead of "action"
+    if 'decision' in data and 'action' not in data:
+        data['action'] = data.pop('decision')
+    return data
 
 _SYSTEM_PROMPT = """Eres un experto en trading técnico de criptomonedas, especializado en análisis de BTC/USDT en timeframe 4h usando la estrategia RSI + EMA.
 
@@ -201,7 +205,10 @@ class ClaudeAdvisor:
 - EMA50 vs EMA200: {slow_trend_sep:+.3f}%
 - Precio vs EMA21: {price_vs_fast:+.3f}%
 
-¿Debo CONFIRMAR o RECHAZAR esta señal {direction}?"""
+¿Debo CONFIRMAR o RECHAZAR esta señal {direction}?
+
+Responde ÚNICAMENTE con este JSON (sin texto adicional):
+{{"action":"CONFIRM","confidence":85,"reasoning":"motivo breve"}}"""
 
     def _build_context_prompt(self, market_data: dict) -> str:
         ema_fast = market_data.get('ema_fast', 0)

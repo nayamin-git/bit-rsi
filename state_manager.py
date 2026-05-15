@@ -199,15 +199,14 @@ class StateManager:
             if btc_balance > 0.001:
                 ticker = self.exchange.fetch_ticker(self.config.symbol)
                 current_price = ticker['last']
+                value_usdt = btc_balance * current_price
 
-                self.logger.warning(f"🔍 Balance BTC detectado: {btc_balance:.6f} BTC (≈${btc_balance * current_price:.2f})")
-
-                return {
-                    'side': 'long',
-                    'size': btc_balance,
-                    'entryPrice': current_price,
-                    'symbol': self.config.symbol
-                }
+                self.logger.warning(f"🔍 BTC residual detectado: {btc_balance:.6f} BTC (≈${value_usdt:.2f}) — liquidando...")
+                try:
+                    order = self.exchange.create_market_order(self.config.symbol, 'sell', btc_balance)
+                    self.logger.info(f"✅ BTC residual liquidado: vendido {btc_balance:.6f} BTC @ ≈${current_price:,.2f} (orden {order.get('id', '?')})")
+                except Exception as sell_err:
+                    self.logger.error(f"❌ No se pudo liquidar BTC residual: {sell_err}")
 
             return None
 
