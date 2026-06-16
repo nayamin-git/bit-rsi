@@ -151,30 +151,68 @@ class StateManager:
         # Intentar cargar estado desde archivo
         state_loaded = self.load_bot_state()
 
-        # Verificar posiciones reales en el exchange
-        exchange_position = self.check_exchange_positions()
+        if state_loaded and self.position_manager.in_position and self.position_manager.position:
+            # Hay una posición registrada en el estado: verificarla contra el exchange
+            # usando su cantidad real, en vez del umbral de "dust" (pensado para
+            # detectar residuos, no para confirmar posiciones legítimas pequeñas).
+            if self.verify_position_on_exchange(self.position_manager.position):
+                self.logger.info("✅ Estado y posición recuperados correctamente")
+            else:
+                self.logger.error("❌ Estado dice posición abierta pero no existe en exchange")
+                self.logger.error("🔧 Limpiando estado inconsistente...")
+                self.position_manager.position = None
+                self.position_manager.in_position = False
+                self.check_exchange_positions()
 
-        # Reconciliar estado
-        if state_loaded and self.position_manager.in_position and exchange_position:
-            self.logger.info("✅ Estado y posición recuperados correctamente")
+        else:
+            # Sin posición registrada en el estado: buscar posiciones huérfanas o dust
+            exchange_position = self.check_exchange_positions()
 
-        elif not state_loaded and exchange_position:
-            self.logger.warning("⚠️ Posición encontrada sin estado guardado - Recuperando...")
-            self.recover_position_from_exchange(exchange_position)
-
-        elif state_loaded and self.position_manager.in_position and not exchange_position:
-            self.logger.error("❌ Estado dice posición abierta pero no existe en exchange")
-            self.logger.error("🔧 Limpiando estado inconsistente...")
-            self.position_manager.position = None
-            self.position_manager.in_position = False
-
-        elif not state_loaded and not exchange_position:
-            self.logger.info("✅ Bot limpio - Sin estado previo ni posiciones")
+            if exchange_position:
+                self.logger.warning("⚠️ Posición encontrada sin estado guardado - Recuperando...")
+                self.recover_position_from_exchange(exchange_position)
+            else:
+                self.logger.info("✅ Bot limpio - Sin estado previo ni posiciones")
 
         # Guardar estado actualizado
         self.save_bot_state()
 
         self.logger.info("🔄 Recuperación completada")
+
+    def verify_position_on_exchange(self, position):
+        """
+        Verifica que una posición cargada desde el estado siga existiendo en el exchange.
+
+        Para spot, check_exchange_positions() no sirve para esto: su umbral de
+        detección (0.001 BTC) es mayor que el tamaño real de una posición del bot
+        (~0.00015-0.0002 BTC), así que siempre devolvería "no encontrada" y
+        terminaría borrando posiciones legítimas en cada reinicio. Aquí se compara
+        el balance real contra la cantidad registrada en la posición.
+        """
+        try:
+            if not self.config.testnet and self.config.leverage > 1:
+                try:
+                    self.exchange.set_sandbox_mode(False)
+                    positions = self.exchange.fetch_positions([self.config.symbol])
+                    return any(pos['size'] > 0 for pos in positions)
+                except Exception:
+                    pass
+
+            quantity = position.get('quantity', 0)
+            if quantity <= 0:
+                return False
+
+            balance = self.exchange.fetch_balance()
+            btc_balance = float(balance.get('BTC', {}).get('free', 0))
+
+            # Tolerancia del 5% para cubrir comisiones pagadas en el activo base
+            return btc_balance >= quantity * 0.95
+
+        except Exception as e:
+            self.logger.error(f"Error verificando posición en exchange: {e}")
+            # Ante un fallo de verificación (ej. red), no destruir el estado:
+            # es más seguro asumir que la posición sigue abierta.
+            return True
 
     def check_exchange_positions(self):
         """Verifica posiciones reales en el exchange"""
