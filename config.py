@@ -57,8 +57,11 @@ class BotConfig:
         self.min_time_between_signals = 7200  # 4 horas en segundos
 
         # VARIABLES PARA TRAILING STOP INTELIGENTE (optimizado para protección)
-        self.trailing_stop_distance = 1.5  # Reducido de 2.5% - protección más ajustada
-        self.breakeven_threshold = 1.0  # Reducido de 1.5% - breakeven más rápido
+        # Subido de 1.5%/1.0%: en mayo-junio 2026 ningún trade llegó al take-profit
+        # (4%) porque el trailing se activaba y ajustaba demasiado pronto/cerca,
+        # cortando ganancias en +0.3% mientras los stops perdedores se tomaban completos
+        self.trailing_stop_distance = 2.2
+        self.breakeven_threshold = 1.5
 
         # ARCHIVOS DE PERSISTENCIA (compatible con Docker)
         self.logs_dir = os.path.join(os.getcwd(), 'logs')

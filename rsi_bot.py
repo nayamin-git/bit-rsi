@@ -3,7 +3,7 @@ import os
 import ccxt
 from datetime import datetime
 
-BOT_VERSION = "2.2.6"
+BOT_VERSION = "2.2.7"
 from dotenv import load_dotenv
 from config import BotConfig
 from claude_advisor import ClaudeAdvisor, ParamAdjustments
