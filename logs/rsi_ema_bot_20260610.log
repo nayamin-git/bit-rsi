@@ -1,0 +1,308 @@
+2026-06-10 02:52:07 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 02:52:07 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 02:52:15 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 02:52:16 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 02:52:20 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-06-10 02:52:20 | INFO | 💰 Balance USDT disponible: $433.52
+2026-06-10 02:52:20 | INFO | 🔄 Iniciando recuperación de estado...
+2026-06-10 02:52:20 | INFO | 📥 Estado del bot cargado desde 02:09:18
+2026-06-10 02:52:21 | INFO | 🔄 Recuperación completada
+2026-06-10 02:52:21 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.2.5 iniciado
+2026-06-10 02:52:21 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 40 | OB: 65
+2026-06-10 02:52:21 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-06-10 02:52:21 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 2.0% | TP: 4.0%
+2026-06-10 02:52:21 | INFO | 🎯 Swing Confirmación: 0.15% | Max espera: 12 períodos
+2026-06-10 02:52:21 | INFO | 🛡️ Trailing Stop: 1.5% | Breakeven: 1.0%
+2026-06-10 02:52:21 | INFO | 💾 Estado guardado en: /app/data/bot_state.json
+2026-06-10 02:52:21 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-06-10 02:52:21 | INFO | 📉 BTC: $61,260.01 | RSI: 49.6 | Tendencia: bearish
+2026-06-10 02:52:21 | INFO | 📊 EMA21: $62483.26 | EMA50: $64387.38 | EMA200: $71397.49
+2026-06-10 02:52:26 | INFO | 🤖 Claude [📉 SHORT 72%] — SETUP FORMÁNDOSE: Estructura bajista sólida con EMA21 < EMA50 < EMA200 y precio un 1.96% por debajo de EMA21, confirmando rechazo continuado en EMAs dinámicas. RSI en 4
+2026-06-10 02:52:26 | INFO | 🤖 Niveles clave: Resistencia EMA21 $62,483 | EMA50 $64,387 | Soporte inmediato $60,000–$60,500
+2026-06-10 02:52:30 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 40 → 35, rsi_overbought: 65 → 68, stop_loss_pct: 2.0 → 2.5, take_profit_pct: 4.0 → 5.5, swing_confirmation_threshold: 0.15 → 0.25, trailing_stop_distance: 1.5 → 2.0, breakeven_threshold: 1.0 → 1.5
+2026-06-10 02:52:30 | INFO | 🤖 Motivo: Tendencia bajista fuerte con separación EMA50/EMA200 del -9.8% confirma trend direccional consolidado, requiriendo stops más amplios, confirmaciones más exigentes y mayor recorrido para capturar movimientos en la dirección del momentum bajista.
+2026-06-10 03:22:30 | INFO | 📉 BTC: $61,412.00 | RSI: 50.5 | Tendencia: bearish
+2026-06-10 03:22:30 | INFO | 📊 EMA21: $62497.08 | EMA50: $64393.34 | EMA200: $71399.00
+2026-06-10 03:52:31 | INFO | 📉 BTC: $61,523.42 | RSI: 51.3 | Tendencia: bearish
+2026-06-10 03:52:31 | INFO | 📊 EMA21: $62507.21 | EMA50: $64397.71 | EMA200: $71400.11
+2026-06-10 04:22:31 | INFO | 📉 BTC: $61,485.99 | RSI: 33.8 | Tendencia: bearish
+2026-06-10 04:22:31 | INFO | 📊 EMA21: $62416.54 | EMA50: $64284.50 | EMA200: $71272.14
+2026-06-10 04:52:32 | INFO | 📉 BTC: $61,332.00 | RSI: 33.0 | Tendencia: bearish
+2026-06-10 04:52:32 | INFO | 📊 EMA21: $62402.54 | EMA50: $64278.46 | EMA200: $71270.61
+2026-06-10 05:22:32 | INFO | 📉 BTC: $61,123.94 | RSI: 31.8 | Tendencia: bearish
+2026-06-10 05:22:32 | INFO | 📊 EMA21: $62383.62 | EMA50: $64270.30 | EMA200: $71268.54
+2026-06-10 05:52:33 | INFO | 📉 BTC: $61,259.99 | RSI: 32.6 | Tendencia: bearish
+2026-06-10 05:52:33 | INFO | 📊 EMA21: $62395.99 | EMA50: $64275.63 | EMA200: $71269.89
+2026-06-10 06:22:33 | INFO | 📉 BTC: $61,388.01 | RSI: 33.3 | Tendencia: bearish
+2026-06-10 06:22:33 | INFO | 📊 EMA21: $62407.63 | EMA50: $64280.65 | EMA200: $71271.17
+2026-06-10 06:22:33 | INFO | ======================================================================
+2026-06-10 06:22:33 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-06-10 06:22:33 | INFO | ======================================================================
+2026-06-10 06:22:33 | INFO | 🔔 Señales detectadas: 46
+2026-06-10 06:22:33 | INFO | ✅ Señales confirmadas: 0
+2026-06-10 06:22:33 | INFO | ⏰ Señales expiradas: 0
+2026-06-10 06:22:33 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-06-10 06:22:33 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-06-10 06:22:33 | INFO | 📊 Confirmaciones EMA: 0
+2026-06-10 06:22:33 | INFO | 🔄 Entradas por pullback: 0
+2026-06-10 06:22:33 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-06-10 06:22:33 | INFO | --------------------------------------------------
+2026-06-10 06:22:33 | INFO | 🔢 Total Swings: 4
+2026-06-10 06:22:33 | INFO | 🎯 Win Rate: 25.0%
+2026-06-10 06:22:33 | INFO | 💰 PnL Promedio: -1.04%
+2026-06-10 06:22:33 | INFO | 💰 PnL Total: -4.18%
+2026-06-10 06:22:33 | INFO | ✅ Ganadores: 1
+2026-06-10 06:22:33 | INFO | ❌ Perdedores: 3
+2026-06-10 06:22:33 | INFO | 📉 Max Pérdidas Consecutivas: 2
+2026-06-10 06:22:33 | INFO | 💵 Balance Actual: $433.52
+2026-06-10 06:22:33 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: bearish
+2026-06-10 06:22:33 | INFO | 📊 Alineación EMAs: BAJISTA
+2026-06-10 06:22:33 | INFO | 📈 EMA21: $62407.63 | EMA50: $64280.65 | EMA200: $71271.17
+2026-06-10 06:22:33 | INFO | 📏 Separación EMA21-EMA50: 2.91%
+2026-06-10 06:22:33 | INFO | ======================================================================
+2026-06-10 06:52:35 | INFO | 📉 BTC: $61,470.01 | RSI: 33.8 | Tendencia: bearish
+2026-06-10 06:52:35 | INFO | 📊 EMA21: $62415.08 | EMA50: $64283.87 | EMA200: $71271.98
+2026-06-10 06:52:41 | INFO | 🤖 Claude [📉 SHORT 72%]: Estructura bajista consolidada con EMA21 < EMA50 << EMA200 y precio por debajo de todas las EMAs; el RSI en 33.8 se aproxima a sobreventa pero sin div
+2026-06-10 06:52:41 | INFO | 🤖 Niveles clave: Resistencias: EMA21 $62,415 | EMA50 $64,284 | Soporte inmediato: $60,000
+2026-06-10 06:52:46 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 35 → 32, rsi_overbought: 68 → 65, take_profit_pct: 5.5 → 6.0, swing_confirmation_threshold: 0.25 → 0.3, trailing_stop_distance: 2.0 → 2.5
+2026-06-10 06:52:46 | INFO | 🤖 Motivo: Tendencia bajista fuerte con EMA50 un 9.8% por debajo de EMA200 y RSI en sobreventa exige stops amplios, confirmaciones más estrictas y mayor ratio riesgo/beneficio para evitar entradas prematuras en caída libre.
+2026-06-10 07:20:05 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 07:20:06 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 07:20:12 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-06-10 07:20:12 | INFO | 💰 Balance USDT disponible: $433.52
+2026-06-10 07:20:12 | INFO | 🔄 Iniciando recuperación de estado...
+2026-06-10 07:20:12 | INFO | 📥 Estado del bot cargado desde 06:22:33
+2026-06-10 07:20:12 | INFO | 🔄 Recuperación completada
+2026-06-10 07:20:12 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.2.5 iniciado
+2026-06-10 07:20:12 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 40 | OB: 65
+2026-06-10 07:20:12 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-06-10 07:20:12 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 2.0% | TP: 4.0%
+2026-06-10 07:20:12 | INFO | 🎯 Swing Confirmación: 0.15% | Max espera: 12 períodos
+2026-06-10 07:20:12 | INFO | 🛡️ Trailing Stop: 1.5% | Breakeven: 1.0%
+2026-06-10 07:20:12 | INFO | 💾 Estado guardado en: /app/data/bot_state.json
+2026-06-10 07:20:12 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-06-10 07:20:13 | INFO | 📉 BTC: $61,695.81 | RSI: 35.9 | Tendencia: bearish
+2026-06-10 07:20:13 | INFO | 📊 EMA21: $62435.61 | EMA50: $64292.72 | EMA200: $71274.23
+2026-06-10 07:20:19 | INFO | 🤖 Claude [📉 SHORT 72%]: Estructura bajista sólida con EMA21 < EMA50 < EMA200 y precio un 4% por debajo de EMA50, confirmando presión vendedora sostenida. RSI en 35.9 se acerc
+2026-06-10 07:20:19 | INFO | 🤖 Niveles clave: Resistencias: EMA21 $62,435 / EMA50 $64,292 | Soporte: $60,000 psicológico
+2026-06-10 07:20:23 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 40 → 33, rsi_overbought: 65 → 63, stop_loss_pct: 2.0 → 2.5, take_profit_pct: 4.0 → 5.5, swing_confirmation_threshold: 0.15 → 0.25, trailing_stop_distance: 1.5 → 2.0, breakeven_threshold: 1.0 → 1.5
+2026-06-10 07:20:23 | INFO | 🤖 Motivo: Tendencia bajista fuerte con EMA50 un 9.8% por debajo de EMA200 y RSI en sobreventa confirman un mercado en tendencia descendente pronunciada, requiriendo stops más amplios, mayor confirmación de entrada y objetivos extendidos para capturar movimientos direccionales evitando ruido.
+2026-06-10 07:50:23 | INFO | 📉 BTC: $61,690.00 | RSI: 35.8 | Tendencia: bearish
+2026-06-10 07:50:23 | INFO | 📊 EMA21: $62435.08 | EMA50: $64292.50 | EMA200: $71274.17
+2026-06-10 08:20:24 | INFO | 📉 BTC: $61,637.29 | RSI: 36.8 | Tendencia: bearish
+2026-06-10 08:20:24 | INFO | 📊 EMA21: $62362.36 | EMA50: $64188.29 | EMA200: $71196.00
+2026-06-10 08:50:24 | INFO | 📉 BTC: $61,236.01 | RSI: 34.3 | Tendencia: bearish
+2026-06-10 08:50:24 | INFO | 📊 EMA21: $62325.88 | EMA50: $64172.55 | EMA200: $71192.01
+2026-06-10 09:20:24 | INFO | 📉 BTC: $61,021.45 | RSI: 33.1 | Tendencia: bearish
+2026-06-10 09:20:24 | INFO | 📊 EMA21: $62306.37 | EMA50: $64164.14 | EMA200: $71189.87
+2026-06-10 09:50:25 | INFO | 📉 BTC: $61,225.10 | RSI: 34.3 | Tendencia: bearish
+2026-06-10 09:50:25 | INFO | 📊 EMA21: $62324.88 | EMA50: $64172.12 | EMA200: $71191.90
+2026-06-10 10:20:25 | INFO | 📉 BTC: $61,174.07 | RSI: 34.0 | Tendencia: bearish
+2026-06-10 10:20:25 | INFO | 📊 EMA21: $62320.24 | EMA50: $64170.12 | EMA200: $71191.39
+2026-06-10 10:50:25 | INFO | 📉 BTC: $61,353.99 | RSI: 35.0 | Tendencia: bearish
+2026-06-10 10:50:25 | INFO | 📊 EMA21: $62336.60 | EMA50: $64177.18 | EMA200: $71193.18
+2026-06-10 10:50:25 | INFO | ======================================================================
+2026-06-10 10:50:25 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-06-10 10:50:25 | INFO | ======================================================================
+2026-06-10 10:50:25 | INFO | 🔔 Señales detectadas: 46
+2026-06-10 10:50:25 | INFO | ✅ Señales confirmadas: 0
+2026-06-10 10:50:25 | INFO | ⏰ Señales expiradas: 0
+2026-06-10 10:50:25 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-06-10 10:50:25 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-06-10 10:50:25 | INFO | 📊 Confirmaciones EMA: 0
+2026-06-10 10:50:25 | INFO | 🔄 Entradas por pullback: 0
+2026-06-10 10:50:25 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-06-10 10:50:25 | INFO | --------------------------------------------------
+2026-06-10 10:50:25 | INFO | 🔢 Total Swings: 4
+2026-06-10 10:50:25 | INFO | 🎯 Win Rate: 25.0%
+2026-06-10 10:50:25 | INFO | 💰 PnL Promedio: -1.04%
+2026-06-10 10:50:25 | INFO | 💰 PnL Total: -4.18%
+2026-06-10 10:50:25 | INFO | ✅ Ganadores: 1
+2026-06-10 10:50:25 | INFO | ❌ Perdedores: 3
+2026-06-10 10:50:25 | INFO | 📉 Max Pérdidas Consecutivas: 2
+2026-06-10 10:50:26 | INFO | 💵 Balance Actual: $433.52
+2026-06-10 10:50:26 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: bearish
+2026-06-10 10:50:26 | INFO | 📊 Alineación EMAs: BAJISTA
+2026-06-10 10:50:26 | INFO | 📈 EMA21: $62336.60 | EMA50: $64177.18 | EMA200: $71193.18
+2026-06-10 10:50:26 | INFO | 📏 Separación EMA21-EMA50: 2.87%
+2026-06-10 10:50:26 | INFO | ======================================================================
+2026-06-10 11:20:26 | INFO | 📉 BTC: $61,070.01 | RSI: 33.4 | Tendencia: bearish
+2026-06-10 11:20:26 | INFO | 📊 EMA21: $62310.78 | EMA50: $64166.04 | EMA200: $71190.35
+2026-06-10 11:20:31 | INFO | 🤖 Claude [📉 SHORT 72%]: Tendencia bearish consolidada con EMAs en cascada bajista y precio un 4.8% por debajo de EMA50, sin señal de reversión estructural. RSI en 33.4 se ace
+2026-06-10 11:20:31 | INFO | 🤖 Niveles clave: Resistencias: EMA21 $62,310 / EMA50 $64,166 | Soporte inmediato: $60,000 zona psicológica
+2026-06-10 11:20:36 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 33 → 32, swing_confirmation_threshold: 0.25 → 0.3
+2026-06-10 11:20:36 | INFO | 🤖 Motivo: Tendencia bajista fuerte con separación EMA50/EMA200 del -9.87% y RSI en sobreventa confirman trending bajista profundo, priorizando stops amplios y confirmación exigente para evitar trampas alcistas.
+2026-06-10 11:50:36 | INFO | 📉 BTC: $61,037.99 | RSI: 33.2 | Tendencia: bearish
+2026-06-10 11:50:36 | INFO | 📊 EMA21: $62307.87 | EMA50: $64164.79 | EMA200: $71190.04
+2026-06-10 12:20:36 | INFO | 📉 BTC: $61,092.01 | RSI: 32.2 | Tendencia: bearish
+2026-06-10 12:20:36 | INFO | 📊 EMA21: $62197.01 | EMA50: $64044.14 | EMA200: $71101.68
+2026-06-10 12:50:37 | INFO | 📉 BTC: $61,754.01 | RSI: 38.8 | Tendencia: bearish
+2026-06-10 12:50:37 | INFO | 📊 EMA21: $62257.20 | EMA50: $64070.10 | EMA200: $71108.26
+2026-06-10 13:20:38 | INFO | 📉 BTC: $61,466.79 | RSI: 36.1 | Tendencia: bearish
+2026-06-10 13:20:38 | INFO | 📊 EMA21: $62231.09 | EMA50: $64058.84 | EMA200: $71105.41
+2026-06-10 13:50:38 | INFO | 📉 BTC: $62,321.61 | RSI: 43.5 | Tendencia: bearish
+2026-06-10 13:50:38 | INFO | 📊 EMA21: $62308.80 | EMA50: $64092.36 | EMA200: $71113.91
+2026-06-10 14:19:32 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 14:19:32 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 14:19:47 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 14:19:47 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 14:22:05 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 14:22:05 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 14:22:17 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 14:22:18 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 14:22:28 | INFO | 🐳 RSI+EMA+Trend Bot iniciando - Logs en: /app/logs/rsi_ema_bot_20260610.log
+2026-06-10 14:22:28 | INFO | 🤖 Claude Advisor activo — validación de señales habilitada
+2026-06-10 14:22:34 | INFO | ✅ Conexión exitosa con Binance Mainnet
+2026-06-10 14:22:34 | INFO | 💰 Balance USDT disponible: $433.52
+2026-06-10 14:22:34 | INFO | 🔄 Iniciando recuperación de estado...
+2026-06-10 14:22:34 | INFO | 📥 Estado del bot cargado desde 13:50:38
+2026-06-10 14:22:34 | INFO | 🔄 Recuperación completada
+2026-06-10 14:22:34 | INFO | 🤖 RSI + EMA + Trend Filter Swing Bot v2.2.5 iniciado
+2026-06-10 14:22:34 | INFO | 📊 Timeframe: 4h | RSI(14) | OS: 40 | OB: 65
+2026-06-10 14:22:34 | INFO | 📈 EMAs: Fast(21) | Slow(50) | Trend(200)
+2026-06-10 14:22:34 | INFO | ⚡ Leverage: 1x | Risk: 3% | SL: 2.0% | TP: 4.0%
+2026-06-10 14:22:34 | INFO | 🎯 Swing Confirmación: 0.15% | Max espera: 12 períodos
+2026-06-10 14:22:34 | INFO | 🛡️ Trailing Stop: 1.5% | Breakeven: 1.0%
+2026-06-10 14:22:34 | INFO | 💾 Estado guardado en: /app/data/bot_state.json
+2026-06-10 14:22:34 | INFO | 🐳 Ejecutándose en Docker - PID: 1
+2026-06-10 14:22:35 | INFO | 📉 BTC: $61,973.98 | RSI: 40.7 | Tendencia: bearish
+2026-06-10 14:22:35 | INFO | 📊 EMA21: $62277.19 | EMA50: $64078.73 | EMA200: $71110.45
+2026-06-10 14:22:47 | INFO | 🤖 Claude [📉 SHORT 72%] — SETUP FORMÁNDOSE: Estructura bajista sólida con EMA21 < EMA50 < EMA200 y precio por debajo de todas las EMAs, confirmando presión vendedora dominante. RSI en 40.7 se ac
+2026-06-10 14:22:47 | INFO | 🤖 Niveles clave: Resistencia EMA21 $62,277 | EMA50 $64,079 | Soporte inmediato $61,500-$61,000
+2026-06-10 14:22:54 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 40 → 35, rsi_overbought: 65 → 62, stop_loss_pct: 2.0 → 2.5, take_profit_pct: 4.0 → 5.5, swing_confirmation_threshold: 0.15 → 0.25, trailing_stop_distance: 1.5 → 2.0, breakeven_threshold: 1.0 → 1.5
+2026-06-10 14:22:54 | INFO | 🤖 Motivo: Tendencia bajista fuerte con EMA50 un 9.9% por debajo de EMA200 y RSI rozando sobreventa confirman un mercado en tendencia direccional bajista, requiriendo stops más amplios, umbrales de confirmación más exigentes y mayor recorrido para capturar movimientos extendidos.
+2026-06-10 14:52:55 | INFO | 📉 BTC: $61,882.48 | RSI: 39.9 | Tendencia: bearish
+2026-06-10 14:52:55 | INFO | 📊 EMA21: $62268.88 | EMA50: $64075.14 | EMA200: $71109.54
+2026-06-10 15:22:55 | INFO | 📉 BTC: $62,228.66 | RSI: 42.8 | Tendencia: bearish
+2026-06-10 15:22:55 | INFO | 📊 EMA21: $62300.35 | EMA50: $64088.72 | EMA200: $71112.99
+2026-06-10 15:52:56 | INFO | 📉 BTC: $62,461.99 | RSI: 44.5 | Tendencia: bearish
+2026-06-10 15:52:56 | INFO | 📊 EMA21: $62321.56 | EMA50: $64097.87 | EMA200: $71115.31
+2026-06-10 16:22:56 | INFO | 📉 BTC: $62,308.01 | RSI: 42.5 | Tendencia: bearish
+2026-06-10 16:22:56 | INFO | 📊 EMA21: $62334.97 | EMA50: $64034.37 | EMA200: $71048.59
+2026-06-10 16:52:56 | INFO | 📉 BTC: $62,164.38 | RSI: 41.7 | Tendencia: bearish
+2026-06-10 16:52:56 | INFO | 📊 EMA21: $62321.92 | EMA50: $64028.73 | EMA200: $71047.16
+2026-06-10 17:22:57 | INFO | 📉 BTC: $62,031.00 | RSI: 41.1 | Tendencia: bearish
+2026-06-10 17:22:57 | INFO | 📊 EMA21: $62309.79 | EMA50: $64023.50 | EMA200: $71045.83
+2026-06-10 17:52:57 | INFO | 📉 BTC: $61,857.40 | RSI: 40.2 | Tendencia: bearish
+2026-06-10 17:52:57 | INFO | 📊 EMA21: $62294.01 | EMA50: $64016.70 | EMA200: $71044.11
+2026-06-10 17:52:57 | INFO | ======================================================================
+2026-06-10 17:52:57 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-06-10 17:52:57 | INFO | ======================================================================
+2026-06-10 17:52:57 | INFO | 🔔 Señales detectadas: 46
+2026-06-10 17:52:57 | INFO | ✅ Señales confirmadas: 0
+2026-06-10 17:52:57 | INFO | ⏰ Señales expiradas: 0
+2026-06-10 17:52:57 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-06-10 17:52:57 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-06-10 17:52:57 | INFO | 📊 Confirmaciones EMA: 0
+2026-06-10 17:52:57 | INFO | 🔄 Entradas por pullback: 0
+2026-06-10 17:52:57 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-06-10 17:52:57 | INFO | --------------------------------------------------
+2026-06-10 17:52:57 | INFO | 🔢 Total Swings: 4
+2026-06-10 17:52:57 | INFO | 🎯 Win Rate: 25.0%
+2026-06-10 17:52:57 | INFO | 💰 PnL Promedio: -1.04%
+2026-06-10 17:52:57 | INFO | 💰 PnL Total: -4.18%
+2026-06-10 17:52:57 | INFO | ✅ Ganadores: 1
+2026-06-10 17:52:57 | INFO | ❌ Perdedores: 3
+2026-06-10 17:52:57 | INFO | 📉 Max Pérdidas Consecutivas: 2
+2026-06-10 17:52:57 | INFO | 💵 Balance Actual: $433.52
+2026-06-10 17:52:57 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: bearish
+2026-06-10 17:52:57 | INFO | 📊 Alineación EMAs: BAJISTA
+2026-06-10 17:52:57 | INFO | 📈 EMA21: $62294.01 | EMA50: $64016.70 | EMA200: $71044.11
+2026-06-10 17:52:57 | INFO | 📏 Separación EMA21-EMA50: 2.69%
+2026-06-10 17:52:57 | INFO | ======================================================================
+2026-06-10 18:22:58 | INFO | 📉 BTC: $61,879.44 | RSI: 40.3 | Tendencia: bearish
+2026-06-10 18:22:58 | INFO | 📊 EMA21: $62296.01 | EMA50: $64017.56 | EMA200: $71044.33
+2026-06-10 18:23:03 | INFO | 🤖 Claude [📉 SHORT 72%]: La estructura bajista es clara con EMA21 < EMA50 < EMA200 y precio un 3.34% por debajo de EMA21, sin señal de rebote técnico válido para largo. El RSI
+2026-06-10 18:23:03 | INFO | 🤖 Niveles clave: Resistencia EMA21 $62,296 | EMA50 $64,017 | Soporte inmediato $61,000–$60,500
+2026-06-10 18:23:08 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 35 → 33, swing_confirmation_threshold: 0.25 → 0.3, trailing_stop_distance: 2.0 → 2.5
+2026-06-10 18:23:08 | INFO | 🤖 Motivo: Tendencia bajista fuerte con separación EMA50/EMA200 del -9.89% confirma trending bear; se amplían stops y confirmación para evitar entradas prematuras en pullbacks trampa.
+2026-06-10 18:53:09 | INFO | 📉 BTC: $61,745.99 | RSI: 39.7 | Tendencia: bearish
+2026-06-10 18:53:09 | INFO | 📊 EMA21: $62283.88 | EMA50: $64012.33 | EMA200: $71043.00
+2026-06-10 19:23:10 | INFO | 📉 BTC: $61,681.52 | RSI: 39.4 | Tendencia: bearish
+2026-06-10 19:23:10 | INFO | 📊 EMA21: $62278.02 | EMA50: $64009.80 | EMA200: $71042.36
+2026-06-10 19:53:10 | INFO | 📉 BTC: $61,983.99 | RSI: 40.8 | Tendencia: bearish
+2026-06-10 19:53:10 | INFO | 📊 EMA21: $62305.52 | EMA50: $64021.66 | EMA200: $71045.37
+2026-06-10 20:23:10 | INFO | 📉 BTC: $61,936.00 | RSI: 38.4 | Tendencia: bearish
+2026-06-10 20:23:10 | INFO | 📊 EMA21: $62268.49 | EMA50: $63938.30 | EMA200: $70945.92
+2026-06-10 20:53:11 | INFO | 📉 BTC: $61,729.56 | RSI: 37.4 | Tendencia: bearish
+2026-06-10 20:53:11 | INFO | 📊 EMA21: $62249.72 | EMA50: $63930.20 | EMA200: $70943.87
+2026-06-10 21:23:11 | INFO | 📉 BTC: $61,643.99 | RSI: 37.0 | Tendencia: bearish
+2026-06-10 21:23:11 | INFO | 📊 EMA21: $62241.95 | EMA50: $63926.85 | EMA200: $70943.02
+2026-06-10 21:53:12 | INFO | 📉 BTC: $61,264.74 | RSI: 35.4 | Tendencia: bearish
+2026-06-10 21:53:12 | INFO | 📊 EMA21: $62207.47 | EMA50: $63911.98 | EMA200: $70939.25
+2026-06-10 21:53:12 | INFO | ======================================================================
+2026-06-10 21:53:12 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-06-10 21:53:12 | INFO | ======================================================================
+2026-06-10 21:53:12 | INFO | 🔔 Señales detectadas: 46
+2026-06-10 21:53:12 | INFO | ✅ Señales confirmadas: 0
+2026-06-10 21:53:12 | INFO | ⏰ Señales expiradas: 0
+2026-06-10 21:53:12 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-06-10 21:53:12 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-06-10 21:53:12 | INFO | 📊 Confirmaciones EMA: 0
+2026-06-10 21:53:12 | INFO | 🔄 Entradas por pullback: 0
+2026-06-10 21:53:12 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-06-10 21:53:12 | INFO | --------------------------------------------------
+2026-06-10 21:53:12 | INFO | 🔢 Total Swings: 4
+2026-06-10 21:53:12 | INFO | 🎯 Win Rate: 25.0%
+2026-06-10 21:53:12 | INFO | 💰 PnL Promedio: -1.04%
+2026-06-10 21:53:12 | INFO | 💰 PnL Total: -4.18%
+2026-06-10 21:53:12 | INFO | ✅ Ganadores: 1
+2026-06-10 21:53:12 | INFO | ❌ Perdedores: 3
+2026-06-10 21:53:12 | INFO | 📉 Max Pérdidas Consecutivas: 2
+2026-06-10 21:53:12 | INFO | 💵 Balance Actual: $433.52
+2026-06-10 21:53:12 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: bearish
+2026-06-10 21:53:12 | INFO | 📊 Alineación EMAs: BAJISTA
+2026-06-10 21:53:12 | INFO | 📈 EMA21: $62207.47 | EMA50: $63911.98 | EMA200: $70939.25
+2026-06-10 21:53:12 | INFO | 📏 Separación EMA21-EMA50: 2.67%
+2026-06-10 21:53:12 | INFO | ======================================================================
+2026-06-10 22:23:13 | INFO | 📉 BTC: $61,196.00 | RSI: 35.1 | Tendencia: bearish
+2026-06-10 22:23:13 | INFO | 📊 EMA21: $62201.22 | EMA50: $63909.28 | EMA200: $70938.56
+2026-06-10 22:23:18 | INFO | 🤖 Claude [📉 SHORT 72%]: La estructura bajista es clara con EMA21 < EMA50 < EMA200 y precio un 4.25% por debajo de EMA50, confirmando momentum descendente sostenido. El RSI en
+2026-06-10 22:23:18 | INFO | 🤖 Niveles clave: Resistencias: EMA21 $62,201 | EMA50 $63,909 | Soporte inmediato: $60,000
+2026-06-10 22:23:22 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_overbought: 62 → 65, swing_confirmation_threshold: 0.3 → 0.35
+2026-06-10 22:23:22 | INFO | 🤖 Motivo: Tendencia bajista fuerte con EMA50 un 9.9% por debajo de EMA200 y RSI en sobreventa confirman un mercado en tendencia direccional bajista, por lo que se amplían stops y confirmación para evitar entradas prematuras en longs y capturar recorridos mayores en shorts.
+2026-06-10 22:53:22 | INFO | 📉 BTC: $61,425.10 | RSI: 36.0 | Tendencia: bearish
+2026-06-10 22:53:22 | INFO | 📊 EMA21: $62222.05 | EMA50: $63918.26 | EMA200: $70940.84
+2026-06-10 23:23:23 | INFO | 📉 BTC: $61,498.00 | RSI: 36.4 | Tendencia: bearish
+2026-06-10 23:23:23 | INFO | 📊 EMA21: $62228.67 | EMA50: $63921.12 | EMA200: $70941.57
+2026-06-10 23:53:23 | INFO | 📉 BTC: $61,585.00 | RSI: 36.7 | Tendencia: bearish
+2026-06-10 23:53:23 | INFO | 📊 EMA21: $62236.58 | EMA50: $63924.53 | EMA200: $70942.43
+2026-06-11 00:23:24 | INFO | 📉 BTC: $61,859.99 | RSI: 40.9 | Tendencia: bearish
+2026-06-11 00:23:24 | INFO | 📊 EMA21: $62196.23 | EMA50: $63840.80 | EMA200: $70885.33
+2026-06-11 00:53:24 | INFO | 📉 BTC: $61,883.81 | RSI: 41.0 | Tendencia: bearish
+2026-06-11 00:53:24 | INFO | 📊 EMA21: $62198.40 | EMA50: $63841.74 | EMA200: $70885.56
+2026-06-11 01:23:24 | INFO | 📉 BTC: $62,146.00 | RSI: 42.8 | Tendencia: bearish
+2026-06-11 01:23:24 | INFO | 📊 EMA21: $62222.23 | EMA50: $63852.02 | EMA200: $70888.17
+2026-06-11 01:53:25 | INFO | 📉 BTC: $62,268.00 | RSI: 43.6 | Tendencia: bearish
+2026-06-11 01:53:25 | INFO | 📊 EMA21: $62233.32 | EMA50: $63856.80 | EMA200: $70889.39
+2026-06-11 01:53:25 | INFO | ======================================================================
+2026-06-11 01:53:25 | INFO | 📊 RESUMEN DE PERFORMANCE SWING TRADING
+2026-06-11 01:53:25 | INFO | ======================================================================
+2026-06-11 01:53:25 | INFO | 🔔 Señales detectadas: 46
+2026-06-11 01:53:25 | INFO | ✅ Señales confirmadas: 0
+2026-06-11 01:53:25 | INFO | ⏰ Señales expiradas: 0
+2026-06-11 01:53:25 | INFO | 📈 Tasa de confirmación: 0.0%
+2026-06-11 01:53:25 | INFO | 🎯 Filtros de tendencia aplicados: 0
+2026-06-11 01:53:25 | INFO | 📊 Confirmaciones EMA: 0
+2026-06-11 01:53:25 | INFO | 🔄 Entradas por pullback: 0
+2026-06-11 01:53:25 | INFO | 🔧 Recuperaciones realizadas: 0
+2026-06-11 01:53:25 | INFO | --------------------------------------------------
+2026-06-11 01:53:25 | INFO | 🔢 Total Swings: 4
+2026-06-11 01:53:25 | INFO | 🎯 Win Rate: 25.0%
+2026-06-11 01:53:25 | INFO | 💰 PnL Promedio: -1.04%
+2026-06-11 01:53:25 | INFO | 💰 PnL Total: -4.18%
+2026-06-11 01:53:25 | INFO | ✅ Ganadores: 1
+2026-06-11 01:53:25 | INFO | ❌ Perdedores: 3
+2026-06-11 01:53:25 | INFO | 📉 Max Pérdidas Consecutivas: 2
+2026-06-11 01:53:25 | INFO | 💵 Balance Actual: $433.52
+2026-06-11 01:53:25 | INFO | 🔍 Buscando oportunidades swing... | Tendencia actual: bearish
+2026-06-11 01:53:25 | INFO | 📊 Alineación EMAs: BAJISTA
+2026-06-11 01:53:25 | INFO | 📈 EMA21: $62233.32 | EMA50: $63856.80 | EMA200: $70889.39
+2026-06-11 01:53:25 | INFO | 📏 Separación EMA21-EMA50: 2.54%
+2026-06-11 01:53:25 | INFO | ======================================================================
+2026-06-11 02:23:26 | INFO | 📉 BTC: $62,072.01 | RSI: 42.3 | Tendencia: bearish
+2026-06-11 02:23:26 | INFO | 📊 EMA21: $62215.50 | EMA50: $63849.12 | EMA200: $70887.44
+2026-06-11 02:23:31 | INFO | 🤖 Claude [📉 SHORT 72%] — SETUP FORMÁNDOSE: La estructura bajista es clara con EMA21 < EMA50 < EMA200 y el precio por debajo de todas las medias móviles, con una separación EMA50-EMA200 del -9.9
+2026-06-11 02:23:31 | INFO | 🤖 Niveles clave: Resistencia EMA21 $62,215 | EMA50 $63,849 | Soporte inmediato $61,500-$61,000
+2026-06-11 02:23:37 | INFO | 🤖 Claude ajustó parámetros [trending]: rsi_oversold: 33 → 35, rsi_overbought: 65 → 63
+2026-06-11 02:23:37 | INFO | 🤖 Motivo: Tendencia bajista fuerte con EMA50 un 9.9% por debajo de EMA200 y RSI en 42 confirmando momentum vendedor, por lo que se mantienen stops amplios y umbrales de confirmación altos para evitar entradas prematuras en contra de la tendencia dominante.

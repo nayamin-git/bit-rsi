@@ -1,0 +1,3 @@
+timestamp,action,side,price,quantity,rsi,ema_fast,ema_slow,ema_trend,trend_direction,stop_loss,take_profit,reason,pnl_pct,pnl_usdt,balance_before,balance_after,trade_duration_hours,signal_confirmed,confirmation_time_hours,pullback_type
+2026-06-14T17:01:33.652686,OPEN,short,63929.98,0.000203,53.91177803755041,63788.805982103426,63874.22237605247,69729.04524742006,bearish,65528.229499999994,60413.8311,Swing Short + EMA Filter,,,446.29639554,,,NO,0,Unknown
+2026-06-14T23:31:39.826419,CLOSE,short,65721.0,0.000203,76.80183584225058,63953.88312418574,63941.78207592603,69613.77566213034,neutral,,,Stop Loss Emergencia,-2.801533803076423,-12.13492192999293,,433.15279354,6.501714985277777,,,
