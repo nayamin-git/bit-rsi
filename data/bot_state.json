@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-22T21:08:08.678692",
+  "timestamp": "2026-06-22T22:26:24.251942",
   "in_position": false,
   "position": null,
   "last_signal_time": 1782086137.6960766,
@@ -22,12 +22,13 @@
     "recoveries_performed": 0,
     "trend_filters_applied": 0,
     "ema_confirmations": 0,
-    "pullback_entries": 0
+    "pullback_entries": 0,
+    "last_loss_time": 1782167183.999495
   },
-  "last_rsi": 53.316241480995195,
-  "last_price": 64416.67,
-  "last_ema_fast": 64164.46492149097,
-  "last_ema_slow": 64199.77859954918,
-  "last_ema_trend": 67744.3562783709,
+  "last_rsi": 51.51295714578225,
+  "last_price": 64281.22,
+  "last_ema_fast": 64152.151285127344,
+  "last_ema_slow": 64194.4668348433,
+  "last_ema_trend": 67743.00851717687,
   "trend_direction": "weak_bearish"
 }
