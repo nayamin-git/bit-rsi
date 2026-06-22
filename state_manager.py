@@ -127,6 +127,13 @@ class StateManager:
             # Restaurar métricas
             if state_data.get('performance_metrics'):
                 self.performance_metrics.update(state_data['performance_metrics'])
+                # Migración: estados guardados con versiones anteriores no tienen
+                # last_loss_time. Si hay pérdidas consecutivas sin timestamp,
+                # inicializar desde ahora para que el cooldown del circuit breaker
+                # sea razonable en lugar de mostrar ~56 años desde epoch Unix.
+                if (not self.performance_metrics.get('last_loss_time') and
+                        self.performance_metrics.get('consecutive_losses', 0) > 0):
+                    self.performance_metrics['last_loss_time'] = time.time()
 
             # Restaurar market state (será actualizado por el bot)
             self.market_state['last_signal_time'] = state_data.get('last_signal_time', 0)

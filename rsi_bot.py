@@ -3,7 +3,7 @@ import os
 import ccxt
 from datetime import datetime
 
-BOT_VERSION = "2.2.8"
+BOT_VERSION = "2.2.9"
 from dotenv import load_dotenv
 from config import BotConfig
 from claude_advisor import ClaudeAdvisor, ParamAdjustments
@@ -542,10 +542,11 @@ class BinanceRSIEMABot:
         elif not (self.signal_detector.pending_long_signal or self.signal_detector.pending_short_signal):
             if self._is_circuit_breaker_active(trend_direction, current_rsi):
                 consecutive = self.performance_metrics.get('consecutive_losses', 0)
-                hours = (time.time() - self.performance_metrics.get('last_loss_time', 0)) / 3600
+                last_loss = self.performance_metrics.get('last_loss_time', 0)
+                hours_str = f"{(time.time() - last_loss) / 3600:.1f}h" if last_loss else "desconocido"
                 self.logger.warning(
                     f"🛑 Circuit breaker activo ({consecutive} pérdidas consecutivas, "
-                    f"{hours:.1f}h desde la última) — esperando tendencia fuerte + RSI extremo"
+                    f"{hours_str} desde la última) — esperando tendencia fuerte + RSI extremo"
                 )
             else:
                 self._scan_for_new_signal(market_data, current_time)
