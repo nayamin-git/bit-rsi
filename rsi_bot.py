@@ -3,7 +3,7 @@ import os
 import ccxt
 from datetime import datetime
 
-BOT_VERSION = "2.2.7"
+BOT_VERSION = "2.2.8"
 from dotenv import load_dotenv
 from config import BotConfig
 from claude_advisor import ClaudeAdvisor, ParamAdjustments
@@ -90,7 +90,8 @@ class BinanceRSIEMABot:
             'recoveries_performed': 0,
             'trend_filters_applied': 0,
             'ema_confirmations': 0,
-            'pullback_entries': 0
+            'pullback_entries': 0,
+            'last_loss_time': 0
         }
         
         # Configuración del exchange DESPUÉS de definir variables
@@ -491,6 +492,32 @@ class BinanceRSIEMABot:
         else:
             self.logger.debug(f"🤖 Claude evaluó parámetros [{adjustments.regime}]: sin cambios necesarios")
 
+    def _is_circuit_breaker_active(self, trend_direction, rsi):
+        """
+        Devuelve True si el bot debe pausar búsqueda de señales nuevas.
+
+        Activa tras N pérdidas consecutivas (config.circuit_breaker_losses).
+        Se desactiva una vez pasadas config.circuit_breaker_hours Y el mercado
+        muestra convicción real: tendencia fuerte (bullish/bearish) + RSI extremo.
+        """
+        consecutive = self.performance_metrics.get('consecutive_losses', 0)
+        if consecutive < self.config.circuit_breaker_losses:
+            return False
+
+        last_loss = self.performance_metrics.get('last_loss_time', 0)
+        hours_elapsed = (time.time() - last_loss) / 3600
+
+        if hours_elapsed < self.config.circuit_breaker_hours:
+            return True
+
+        # Cooldown cumplido: reanudar solo con señal clara de mercado
+        strong_trend = trend_direction in ('bullish', 'bearish')
+        extreme_rsi = rsi < 35 or rsi > 70
+        if strong_trend and extreme_rsi:
+            return False
+
+        return True
+
     def analyze_and_trade(self):
         """Análisis principal y ejecución de trades para swing"""
         market_data = self.get_market_data()
@@ -513,7 +540,15 @@ class BinanceRSIEMABot:
         if confirmed:
             self._handle_confirmed_signal(signal_type, market_data, current_time)
         elif not (self.signal_detector.pending_long_signal or self.signal_detector.pending_short_signal):
-            self._scan_for_new_signal(market_data, current_time)
+            if self._is_circuit_breaker_active(trend_direction, current_rsi):
+                consecutive = self.performance_metrics.get('consecutive_losses', 0)
+                hours = (time.time() - self.performance_metrics.get('last_loss_time', 0)) / 3600
+                self.logger.warning(
+                    f"🛑 Circuit breaker activo ({consecutive} pérdidas consecutivas, "
+                    f"{hours:.1f}h desde la última) — esperando tendencia fuerte + RSI extremo"
+                )
+            else:
+                self._scan_for_new_signal(market_data, current_time)
     
     def run(self):
         """Ejecuta el bot en un loop continuo optimizado para swing trading"""

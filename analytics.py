@@ -1,5 +1,6 @@
 import csv
 import os
+import time
 from datetime import datetime
 
 
@@ -151,6 +152,7 @@ class Analytics:
         else:
             self.performance_metrics['losing_trades'] += 1
             self.performance_metrics['consecutive_losses'] += 1
+            self.performance_metrics['last_loss_time'] = time.time()
 
         if self.performance_metrics['consecutive_losses'] > self.performance_metrics['max_consecutive_losses']:
             self.performance_metrics['max_consecutive_losses'] = self.performance_metrics['consecutive_losses']

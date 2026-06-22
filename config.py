@@ -63,6 +63,10 @@ class BotConfig:
         self.trailing_stop_distance = 2.2
         self.breakeven_threshold = 1.5
 
+        # CIRCUIT BREAKER: pausa automática tras N pérdidas consecutivas
+        self.circuit_breaker_losses = 3   # Pérdidas consecutivas para activar pausa
+        self.circuit_breaker_hours = 24   # Horas mínimas antes de reanudar
+
         # ARCHIVOS DE PERSISTENCIA (compatible con Docker)
         self.logs_dir = os.path.join(os.getcwd(), 'logs')
         self.data_dir = os.path.join(os.getcwd(), 'data')
